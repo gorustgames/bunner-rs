@@ -26,7 +26,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(SpriteBundle {
             texture: asset_server.load("images/sit1.png"),
-            transform: Transform::from_xyz(100., 0., 0.),
+            transform: Transform::from_xyz(0., 0., 0.), // see https://bevy-cheatbook.github.io/features/coords.html
             ..default()
         })
         .insert(Direction::Up);
