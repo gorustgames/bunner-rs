@@ -55,6 +55,20 @@ fn setup(
         .insert(AnimationTimer(Timer::from_seconds(0.1, true)));
 }
 
+fn change_sprite_icon(
+    direction: &PlayerDirection,
+    direction_idx: &mut PlayerDirectionIndex,
+    sprite: &mut TextureAtlasSprite,
+) {
+    direction_idx.0 = if direction_idx.0 == 0 { 1 } else { 0 };
+    match *direction {
+        PlayerDirection::Up => sprite.index = 0 + direction_idx.0,
+        PlayerDirection::Down => sprite.index = 7 + direction_idx.0,
+        PlayerDirection::Left => sprite.index = 9 + direction_idx.0,
+        PlayerDirection::Right => sprite.index = 3 + direction_idx.0,
+    }
+}
+
 // https://github.com/bevyengine/bevy/discussions/2892
 // https://codeshack.io/images-sprite-sheet-generator/
 fn sprite_movement(
@@ -92,13 +106,7 @@ fn sprite_movement(
             }
 
             if timer.just_finished() {
-                direction_idx.0 = if direction_idx.0 == 0 { 1 } else { 0 };
-                match *direction {
-                    PlayerDirection::Up => sprite.index = 0 + direction_idx.0,
-                    PlayerDirection::Down => sprite.index = 7 + direction_idx.0,
-                    PlayerDirection::Left => sprite.index = 9 + direction_idx.0,
-                    PlayerDirection::Right => sprite.index = 3 + direction_idx.0,
-                }
+                change_sprite_icon(&mut direction, &mut direction_idx, &mut sprite);
             }
             // println!("going up. y {}", transform.translation.y);
         }
@@ -111,13 +119,7 @@ fn sprite_movement(
             }
 
             if timer.just_finished() {
-                direction_idx.0 = if direction_idx.0 == 0 { 1 } else { 0 };
-                match *direction {
-                    PlayerDirection::Up => sprite.index = 0 + direction_idx.0,
-                    PlayerDirection::Down => sprite.index = 7 + direction_idx.0,
-                    PlayerDirection::Left => sprite.index = 9 + direction_idx.0,
-                    PlayerDirection::Right => sprite.index = 3 + direction_idx.0,
-                }
+                change_sprite_icon(&mut direction, &mut direction_idx, &mut sprite);
             }
             // println!("going down. y {}", transform.translation.y);
         }
@@ -130,13 +132,7 @@ fn sprite_movement(
             }
 
             if timer.just_finished() {
-                direction_idx.0 = if direction_idx.0 == 0 { 1 } else { 0 };
-                match *direction {
-                    PlayerDirection::Up => sprite.index = 0 + direction_idx.0,
-                    PlayerDirection::Down => sprite.index = 7 + direction_idx.0,
-                    PlayerDirection::Left => sprite.index = 9 + direction_idx.0,
-                    PlayerDirection::Right => sprite.index = 3 + direction_idx.0,
-                }
+                change_sprite_icon(&mut direction, &mut direction_idx, &mut sprite);
             }
             // println!("going left. x {}", transform.translation.x);
         }
@@ -149,13 +145,7 @@ fn sprite_movement(
             }
 
             if timer.just_finished() {
-                direction_idx.0 = if direction_idx.0 == 0 { 1 } else { 0 };
-                match *direction {
-                    PlayerDirection::Up => sprite.index = 0 + direction_idx.0,
-                    PlayerDirection::Down => sprite.index = 7 + direction_idx.0,
-                    PlayerDirection::Left => sprite.index = 9 + direction_idx.0,
-                    PlayerDirection::Right => sprite.index = 3 + direction_idx.0,
-                }
+                change_sprite_icon(&mut direction, &mut direction_idx, &mut sprite);
             }
             // println!("going right. x {}", transform.translation.x);
         }
