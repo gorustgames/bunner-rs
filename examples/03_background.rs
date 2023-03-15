@@ -1,12 +1,11 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use bunner_rs::game_objects::*;
 use std::boxed::Box;
 
 const SEGMENT_HEIGHT: f32 = 40.;
 const SCREEN_HEIGHT: f32 = 800.;
 const SCREEN_WIDTH: f32 = 480.;
-#[allow(dead_code)]
-const SEGMENT_OVERLAP_OFFSET: f32 = 5.;
 
 fn main() {
     App::new()
@@ -20,15 +19,6 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .run();
-}
-
-trait Row {
-    fn next(&self) -> Box<dyn Row>;
-    fn get_index(&self) -> i8;
-    fn get_img_base(&self) -> String;
-    fn get_img_name(&self) -> String {
-        format!("images/{}{}.png", self.get_img_base(), self.get_index())
-    }
 }
 
 fn draw_n_rows(
@@ -59,173 +49,6 @@ fn draw_n_rows(
             transform: Transform::from_xyz(x, y, 0.),
             ..default()
         });
-    }
-}
-
-/// rail
-struct RailRow {
-    index: i8,
-}
-
-impl RailRow {
-    fn new_rail_row(index: i8) -> Self {
-        RailRow { index }
-    }
-}
-
-impl Row for RailRow {
-    fn next(&self) -> Box<dyn Row> {
-        if self.index < 3 {
-            Box::new(RailRow::new_rail_row(self.index + 1))
-        } else {
-            Box::new(WaterRow::new_water_row(0))
-        }
-    }
-
-    fn get_index(&self) -> i8 {
-        self.index
-    }
-    fn get_img_base(&self) -> String {
-        "rail".to_string()
-    }
-}
-
-/// water
-struct WaterRow {
-    index: i8,
-}
-
-impl WaterRow {
-    fn new_water_row(index: i8) -> Self {
-        WaterRow { index }
-    }
-}
-
-impl Row for WaterRow {
-    fn next(&self) -> Box<dyn Row> {
-        if self.index < 7 {
-            Box::new(WaterRow::new_water_row(self.index + 1))
-        } else {
-            Box::new(PavementRow::new_pavement_row(0))
-        }
-    }
-    fn get_index(&self) -> i8 {
-        self.index
-    }
-    fn get_img_base(&self) -> String {
-        "water".to_string()
-    }
-}
-
-/// pavement
-struct PavementRow {
-    index: i8,
-}
-
-impl PavementRow {
-    fn new_pavement_row(index: i8) -> Self {
-        PavementRow { index }
-    }
-}
-
-impl Row for PavementRow {
-    fn next(&self) -> Box<dyn Row> {
-        if self.index < 2 {
-            Box::new(PavementRow::new_pavement_row(self.index + 1))
-        } else {
-            Box::new(RoadRow::new_road_row(0))
-        }
-    }
-    fn get_index(&self) -> i8 {
-        self.index
-    }
-    fn get_img_base(&self) -> String {
-        "side".to_string()
-    }
-}
-
-/// road
-struct RoadRow {
-    index: i8,
-}
-
-impl RoadRow {
-    fn new_road_row(index: i8) -> Self {
-        RoadRow { index }
-    }
-}
-
-impl Row for RoadRow {
-    fn next(&self) -> Box<dyn Row> {
-        if self.index < 2 {
-            Box::new(RoadRow::new_road_row(self.index + 1))
-        } else {
-            Box::new(WaterRow::new_water_row(0))
-        }
-    }
-    fn get_index(&self) -> i8 {
-        self.index
-    }
-    fn get_img_base(&self) -> String {
-        "road".to_string()
-    }
-}
-
-/// dirt
-struct DirtRow {
-    index: i8,
-}
-
-impl DirtRow {
-    fn new_dirt_row(index: i8) -> Self {
-        DirtRow { index }
-    }
-}
-
-impl Row for DirtRow {
-    fn next(&self) -> Box<dyn Row> {
-        match self.index {
-            1..=5 => Box::new(DirtRow::new_dirt_row(self.index + 8)),
-            6 => Box::new(DirtRow::new_dirt_row(7)),
-            7 => Box::new(DirtRow::new_dirt_row(15)),
-            8..=14 => Box::new(DirtRow::new_dirt_row(self.index + 1)),
-            _ => Box::new(WaterRow::new_water_row(0)),
-        }
-    }
-    fn get_index(&self) -> i8 {
-        self.index
-    }
-    fn get_img_base(&self) -> String {
-        "dirt".to_string()
-    }
-}
-
-///grass
-struct GrassRow {
-    index: i8,
-}
-
-impl GrassRow {
-    fn new_grass_row(index: i8) -> Self {
-        GrassRow { index }
-    }
-}
-
-impl Row for GrassRow {
-    fn next(&self) -> Box<dyn Row> {
-        match self.index {
-            1..=5 => Box::new(GrassRow::new_grass_row(self.index + 8)),
-            6 => Box::new(GrassRow::new_grass_row(7)),
-            7 => Box::new(GrassRow::new_grass_row(15)),
-            8..=14 => Box::new(GrassRow::new_grass_row(self.index + 1)),
-            _ => Box::new(WaterRow::new_water_row(0)),
-        }
-    }
-    fn get_index(&self) -> i8 {
-        self.index
-    }
-    fn get_img_base(&self) -> String {
-        "grass".to_string()
     }
 }
 
