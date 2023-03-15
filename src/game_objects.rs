@@ -1,9 +1,22 @@
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+
 pub trait Row {
     fn next(&self) -> Box<dyn Row>;
     fn get_index(&self) -> i8;
     fn get_img_base(&self) -> String;
     fn get_img_name(&self) -> String {
         format!("images/{}{}.png", self.get_img_base(), self.get_index())
+    }
+}
+
+fn get_road_or_water_row() -> Box<dyn Row> {
+    let mut rng = thread_rng();
+
+    if *[0, 1].choose(&mut rng).unwrap() == 1 {
+        Box::new(WaterRow::new_water_row(0))
+    } else {
+        Box::new(RoadRow::new_road_row(0))
     }
 }
 
@@ -134,7 +147,7 @@ impl Row for DirtRow {
             6 => Box::new(DirtRow::new_dirt_row(7)),
             7 => Box::new(DirtRow::new_dirt_row(15)),
             8..=14 => Box::new(DirtRow::new_dirt_row(self.index + 1)),
-            _ => Box::new(WaterRow::new_water_row(0)),
+            _ => get_road_or_water_row(),
         }
     }
     fn get_index(&self) -> i8 {
@@ -163,7 +176,7 @@ impl Row for GrassRow {
             6 => Box::new(GrassRow::new_grass_row(7)),
             7 => Box::new(GrassRow::new_grass_row(15)),
             8..=14 => Box::new(GrassRow::new_grass_row(self.index + 1)),
-            _ => Box::new(WaterRow::new_water_row(0)),
+            _ => get_road_or_water_row(),
         }
     }
     fn get_index(&self) -> i8 {
