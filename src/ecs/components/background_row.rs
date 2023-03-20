@@ -1,7 +1,8 @@
+use bevy::prelude::*;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
-pub trait Row {
+pub trait Row: Send + Sync {
     fn next(&self) -> Box<dyn Row>;
     fn get_index(&self) -> i8;
     fn get_img_base(&self) -> String;
@@ -186,3 +187,6 @@ impl Row for GrassRow {
         "grass".to_string()
     }
 }
+
+#[derive(Component)]
+struct BackGroundRow(Box<dyn Row>);

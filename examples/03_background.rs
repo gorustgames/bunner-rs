@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use bunner_rs::game_objects::*;
+use bunner_rs::ecs::components::background_row::{RailRow, Row};
 use std::boxed::Box;
 
 const SEGMENT_HEIGHT: f32 = 40.;
