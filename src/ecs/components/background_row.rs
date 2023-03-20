@@ -2,8 +2,9 @@ use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use std::fmt::Debug;
 
-pub trait Row: Send + Sync {
+pub trait Row: Send + Sync + Debug {
     fn next(&self) -> Box<dyn Row>;
     fn get_index(&self) -> i8;
     fn get_img_base(&self) -> String;
@@ -23,6 +24,7 @@ fn get_road_or_water_row() -> Box<dyn Row> {
 }
 
 /// rail
+#[derive(Debug)]
 pub struct RailRow {
     index: i8,
 }
@@ -51,6 +53,7 @@ impl Row for RailRow {
 }
 
 /// water
+#[derive(Debug)]
 pub struct WaterRow {
     index: i8,
 }
@@ -78,6 +81,7 @@ impl Row for WaterRow {
 }
 
 /// pavement
+#[derive(Debug)]
 pub struct PavementRow {
     index: i8,
 }
@@ -105,6 +109,7 @@ impl Row for PavementRow {
 }
 
 /// road
+#[derive(Debug)]
 pub struct RoadRow {
     index: i8,
 }
@@ -132,6 +137,7 @@ impl Row for RoadRow {
 }
 
 /// dirt
+#[derive(Debug)]
 pub struct DirtRow {
     index: i8,
 }
@@ -145,7 +151,7 @@ impl DirtRow {
 impl Row for DirtRow {
     fn next(&self) -> Box<dyn Row> {
         match self.index {
-            1..=5 => Box::new(DirtRow::new_dirt_row(self.index + 8)),
+            0..=5 => Box::new(DirtRow::new_dirt_row(self.index + 8)),
             6 => Box::new(DirtRow::new_dirt_row(7)),
             7 => Box::new(DirtRow::new_dirt_row(15)),
             8..=14 => Box::new(DirtRow::new_dirt_row(self.index + 1)),
@@ -161,6 +167,7 @@ impl Row for DirtRow {
 }
 
 ///grass
+#[derive(Debug)]
 pub struct GrassRow {
     index: i8,
 }
@@ -174,7 +181,8 @@ impl GrassRow {
 impl Row for GrassRow {
     fn next(&self) -> Box<dyn Row> {
         match self.index {
-            1..=5 => Box::new(GrassRow::new_grass_row(self.index + 8)),
+            // match inclusive range
+            0..=5 => Box::new(GrassRow::new_grass_row(self.index + 8)),
             6 => Box::new(GrassRow::new_grass_row(7)),
             7 => Box::new(GrassRow::new_grass_row(15)),
             8..=14 => Box::new(GrassRow::new_grass_row(self.index + 1)),
@@ -189,18 +197,27 @@ impl Row for GrassRow {
     }
 }
 
-#[derive(Component)]
-pub struct BackGroundRow(Box<dyn Row>);
+#[derive(Component, Debug)]
+pub struct BackgroundRow {
+    pub row: Box<dyn Row>,
+    pub is_top_row: bool,
+}
 
 #[derive(Bundle)]
 pub struct GameRowBundle {
     #[bundle]
     sprite_bundle: SpriteBundle,
-    game_row: BackGroundRow,
+    game_row: BackgroundRow,
 }
 
 impl GameRowBundle {
-    pub fn new(row: Box<dyn Row>, x: f32, y: f32, asset_server: &Res<AssetServer>) -> Self {
+    pub fn new(
+        row: Box<dyn Row>,
+        x: f32,
+        y: f32,
+        asset_server: &Res<AssetServer>,
+        is_top_row: bool,
+    ) -> Self {
         GameRowBundle {
             sprite_bundle: SpriteBundle {
                 sprite: Sprite {
@@ -211,7 +228,7 @@ impl GameRowBundle {
                 transform: Transform::from_xyz(x, y, 0.),
                 ..default()
             },
-            game_row: BackGroundRow(row),
+            game_row: BackgroundRow { row, is_top_row },
         }
     }
 }
