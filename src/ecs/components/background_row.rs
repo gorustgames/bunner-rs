@@ -218,7 +218,7 @@ impl GameRowBundle {
         asset_server: &Res<AssetServer>,
         is_top_row: bool,
     ) -> Self {
-        GameRowBundle {
+        let new_bundle = GameRowBundle {
             sprite_bundle: SpriteBundle {
                 sprite: Sprite {
                     anchor: Anchor::BottomLeft,
@@ -229,6 +229,8 @@ impl GameRowBundle {
                 ..default()
             },
             game_row: BackgroundRow { row, is_top_row },
-        }
+        };
+        println!("adding new row {:?}", new_bundle.game_row);
+        new_bundle
     }
 }

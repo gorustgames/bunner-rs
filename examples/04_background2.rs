@@ -45,8 +45,6 @@ fn draw_n_rows(
         let x = -1. * (SCREEN_WIDTH / 2.);
         let row = rows.pop().unwrap();
 
-        println!("drawing {}", row.get_img_name());
-
         commands.spawn_bundle(GameRowBundle::new(row, x, y, asset_server, i == n - 1));
     }
 }
