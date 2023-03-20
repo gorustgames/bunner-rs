@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-use bevy::sprite::Anchor;
-use bunner_rs::ecs::components::background_row::{RailRow, Row};
+use bunner_rs::ecs::components::background_row::{GameRowBundle, RailRow, Row};
 use std::boxed::Box;
 
 const SEGMENT_HEIGHT: f32 = 40.;
@@ -28,27 +27,26 @@ fn draw_n_rows(
     n: i8,
     offset_from_bottom: f32,
 ) {
-    let mut row_to_draw = row;
+    let mut rows = vec![];
+    let mut next_row = row;
 
     for i in 0..n {
         if i > 0 {
-            row_to_draw = row_to_draw.next();
+            next_row = next_row.next();
         }
+        rows.push(next_row.next())
+    }
 
+    rows.reverse();
+
+    for i in 0..n {
         let y = -1. * (SCREEN_HEIGHT / 2.) + SEGMENT_HEIGHT * (i as f32) + offset_from_bottom;
         let x = -1. * (SCREEN_WIDTH / 2.);
+        let row = rows.pop().unwrap();
 
-        println!("drawing {}", row_to_draw.get_img_name());
+        println!("drawing {}", row.get_img_name());
 
-        commands.spawn_bundle(SpriteBundle {
-            sprite: Sprite {
-                anchor: Anchor::BottomLeft,
-                ..default()
-            },
-            texture: asset_server.load(&row_to_draw.get_img_name()),
-            transform: Transform::from_xyz(x, y, 0.),
-            ..default()
-        });
+        commands.spawn_bundle(GameRowBundle::new(row, x, y, asset_server));
     }
 }
 
@@ -67,5 +65,5 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         Box::new(RailRow::new_rail_row(0)),
         rail_count + water_count + sidewalk_count + road_count + water_count_2,
         0.,
-    ); /**/
+    );
 }

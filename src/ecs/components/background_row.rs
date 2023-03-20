@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::sprite::Anchor;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
@@ -189,4 +190,28 @@ impl Row for GrassRow {
 }
 
 #[derive(Component)]
-struct BackGroundRow(Box<dyn Row>);
+pub struct BackGroundRow(Box<dyn Row>);
+
+#[derive(Bundle)]
+pub struct GameRowBundle {
+    #[bundle]
+    sprite_bundle: SpriteBundle,
+    game_row: BackGroundRow,
+}
+
+impl GameRowBundle {
+    pub fn new(row: Box<dyn Row>, x: f32, y: f32, asset_server: &Res<AssetServer>) -> Self {
+        GameRowBundle {
+            sprite_bundle: SpriteBundle {
+                sprite: Sprite {
+                    anchor: Anchor::BottomLeft,
+                    ..default()
+                },
+                texture: asset_server.load(&row.get_img_name()),
+                transform: Transform::from_xyz(x, y, 0.),
+                ..default()
+            },
+            game_row: BackGroundRow(row),
+        }
+    }
+}
