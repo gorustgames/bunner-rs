@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use rand::Rng;
 use std::fmt::Debug;
 
 pub trait Row: Send + Sync + Debug {
@@ -23,6 +24,19 @@ fn get_road_or_water_row() -> Box<dyn Row> {
     }
 }
 
+/// returns a random float from interval <0.,1.)
+fn get_random_float() -> f64 {
+    let mut rng = rand::thread_rng();
+    rng.gen::<f64>()
+}
+
+/// returns a random value from interval <from, to>
+fn get_random_int(from: i8, to: i8) -> i8 {
+    let mut rng = rand::thread_rng();
+    // https://rust-lang-nursery.github.io/rust-cookbook/algorithms/randomness.html#generate-random-numbers-within-a-range
+    rng.gen_range(from..to + 1)
+}
+
 /// rail
 #[derive(Debug)]
 pub struct RailRow {
@@ -40,7 +54,7 @@ impl Row for RailRow {
         if self.index < 3 {
             Box::new(RailRow::new_rail_row(self.index + 1))
         } else {
-            Box::new(WaterRow::new_water_row(0))
+            get_road_or_water_row()
         }
     }
 
@@ -66,10 +80,11 @@ impl WaterRow {
 
 impl Row for WaterRow {
     fn next(&self) -> Box<dyn Row> {
-        if self.index < 7 {
-            Box::new(WaterRow::new_water_row(self.index + 1))
+        // After 2 water rows, there's a 50-50 chance of the next row being either another water row, or a dirt row
+        if (self.index == 7) || (self.index >= 1 && get_random_float() < 0.5) {
+            Box::new(DirtRow::new_dirt_row(get_random_int(4, 6)))
         } else {
-            Box::new(PavementRow::new_pavement_row(0))
+            Box::new(WaterRow::new_water_row(self.index + 1))
         }
     }
     fn get_index(&self) -> i8 {
@@ -122,10 +137,28 @@ impl RoadRow {
 
 impl Row for RoadRow {
     fn next(&self) -> Box<dyn Row> {
-        if self.index < 2 {
+        if self.index == 0 {
             Box::new(RoadRow::new_road_row(self.index + 1))
+        } else if self.index < 5 {
+            let r = get_random_float();
+            if r < 0.8 {
+                Box::new(RoadRow::new_road_row(self.index + 1))
+            } else if r < 0.88 {
+                Box::new(GrassRow::new_grass_row(get_random_int(0, 6)))
+            } else if r < 0.94 {
+                Box::new(RailRow::new_rail_row(0))
+            } else {
+                Box::new(PavementRow::new_pavement_row(0))
+            }
         } else {
-            Box::new(WaterRow::new_water_row(0))
+            let r = get_random_float();
+            if r < 0.6 {
+                Box::new(GrassRow::new_grass_row(get_random_int(0, 6)))
+            } else if r < 0.9 {
+                Box::new(RailRow::new_rail_row(0))
+            } else {
+                Box::new(PavementRow::new_pavement_row(0))
+            }
         }
     }
     fn get_index(&self) -> i8 {
