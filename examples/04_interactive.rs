@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use bunner_rs::ecs::components::background_row::{BackgroundRow, GameRowBundle, GrassRow, Row};
+use bunner_rs::ecs::components::log::{LogBundle, LogSize};
+use bunner_rs::MovementDirection;
 use std::boxed::Box;
 
 const SEGMENT_HEIGHT: f32 = 40.;
@@ -19,6 +21,8 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_system(background_scrolling)
+        .add_system(children_scrolling)
+        .add_system(put_log_on_water)
         .run();
 }
 
@@ -91,6 +95,47 @@ fn background_scrolling(
         if transform.translation.y < y_bellow_bottom {
             println!("despawning {:?} {:?}", entity, bg_row);
             commands.entity(entity).despawn();
+        }
+    }
+}
+
+fn children_scrolling(
+    q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
+    mut q_child: Query<&mut Transform, Without<BackgroundRow>>,
+) {
+    for (parent_transform, bg_row, children) in q_parent.iter() {
+        if bg_row.row.get_img_base() == "water" {
+            for &child in children.iter() {
+                if let Ok(mut child_transform) = q_child.get_mut(child) {
+                    child_transform.translation.y = parent_transform.translation.y;
+                }
+            }
+        }
+    }
+}
+
+fn put_log_on_water(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    _time: Res<Time>,
+    mut q: Query<(Entity, &Transform, &BackgroundRow)>,
+) {
+    for (entity, transform, bg_row) in q.iter_mut() {
+        if bg_row.row.get_img_base() == "water" {
+            let x = 0.;
+            let y = transform.translation.y;
+
+            let log = commands
+                .spawn_bundle(LogBundle::new(
+                    MovementDirection::LEFT,
+                    LogSize::BIG,
+                    x,
+                    y,
+                    &asset_server,
+                ))
+                .id();
+
+            commands.entity(entity).add_child(log);
         }
     }
 }
