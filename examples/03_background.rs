@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use bunner_rs::ecs::components::log::{LogBundle, LogSize};
+use bunner_rs::MovementDirection;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::boxed::Box;
@@ -316,4 +318,20 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         rail_count + water_count + sidewalk_count + road_count + water_count_2,
         0.,
     ); /**/
+
+    commands.spawn_bundle(LogBundle::new(
+        MovementDirection::LEFT,
+        LogSize::BIG,
+        -240.,
+        -400. + 160.,
+        &asset_server,
+    ));
+
+    commands.spawn_bundle(LogBundle::new(
+        MovementDirection::LEFT,
+        LogSize::BIG,
+        -240. + 138., // big log is 138x60 px
+        -400. + 200.,
+        &asset_server,
+    ));
 }
