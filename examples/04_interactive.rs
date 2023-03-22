@@ -21,7 +21,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_system(background_scrolling)
-        .add_system(children_scrolling)
+        .add_system(children_movement)
         .add_system(put_log_on_water)
         .run();
 }
@@ -99,15 +99,16 @@ fn background_scrolling(
     }
 }
 
-fn children_scrolling(
+fn children_movement(
     q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
     mut q_child: Query<&mut Transform, Without<BackgroundRow>>,
+    time: Res<Time>,
 ) {
-    for (parent_transform, bg_row, children) in q_parent.iter() {
+    for (_parent_transform, bg_row, children) in q_parent.iter() {
         if bg_row.row.get_img_base() == "water" {
             for &child in children.iter() {
                 if let Ok(mut child_transform) = q_child.get_mut(child) {
-                    child_transform.translation.y = parent_transform.translation.y;
+                    child_transform.translation.x += SCROLLING_SPEED * time.delta_seconds();
                 }
             }
         }
@@ -120,10 +121,11 @@ fn put_log_on_water(
     _time: Res<Time>,
     mut q: Query<(Entity, &Transform, &BackgroundRow)>,
 ) {
-    for (entity, transform, bg_row) in q.iter_mut() {
+    for (entity, _transform, bg_row) in q.iter_mut() {
         if bg_row.row.get_img_base() == "water" {
+            // child position relative to parent!
             let x = 0.;
-            let y = transform.translation.y;
+            let y = 0.;
 
             let log = commands
                 .spawn_bundle(LogBundle::new(
