@@ -1,5 +1,7 @@
 use bevy::prelude::*;
-use bunner_rs::ecs::components::background_row::{BackgroundRow, GameRowBundle, GrassRow, Row};
+use bunner_rs::ecs::components::background_row::{
+    BackgroundRow, GameRowBundle, GrassRow, Row, WaterRowMarker,
+};
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
 use bunner_rs::MovementDirection;
 use std::boxed::Box;
@@ -26,17 +28,16 @@ fn main() {
         .run();
 }
 
-fn draw_n_rows(
-    commands: &mut Commands,
-    asset_server: &Res<AssetServer>,
-    row: Box<dyn Row>,
-    n: i8,
-    offset_from_bottom: f32,
-) {
-    let mut rows = vec![];
-    rows.push(row);
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
-    for i in 0..n {
+    let offset_from_bottom = 0.;
+    let row_count = 20;
+
+    let mut rows: Vec<Box<dyn Row>> = vec![];
+    rows.push(Box::new(GrassRow::new_grass_row(0)));
+
+    for i in 0..row_count {
         if i > 0 {
             rows.push(rows.get(i as usize - 1).unwrap().next())
         }
@@ -44,25 +45,19 @@ fn draw_n_rows(
 
     rows.reverse();
 
-    for i in 0..n {
+    for i in 0..row_count {
         let y = -1. * (SCREEN_HEIGHT / 2.) + SEGMENT_HEIGHT * (i as f32) + offset_from_bottom;
         let x = -1. * (SCREEN_WIDTH / 2.);
         let row = rows.pop().unwrap();
 
-        commands.spawn_bundle(GameRowBundle::new(row, x, y, asset_server, i == n - 1));
+        commands.spawn_bundle(GameRowBundle::new(
+            row,
+            x,
+            y,
+            &asset_server,
+            i == row_count - 1,
+        ));
     }
-}
-
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-
-    draw_n_rows(
-        &mut commands,
-        &asset_server,
-        Box::new(GrassRow::new_grass_row(0)),
-        20, // draw 20 rows x 40 px = 800 px i.e. populate whole screen initially
-        0.,
-    );
 }
 
 fn background_scrolling(
@@ -81,13 +76,13 @@ fn background_scrolling(
             // create new row and position it at the top of current top row
             let x = -1. * (SCREEN_WIDTH / 2.);
             let y = transform.translation.y + SEGMENT_HEIGHT;
-            commands.spawn_bundle(GameRowBundle::new(
-                bg_row.row.next(),
-                x,
-                y,
-                &asset_server,
-                true,
-            ));
+
+            let new_bundle = GameRowBundle::new(bg_row.row.next(), x, y, &asset_server, true);
+            if new_bundle.game_row.is_water_row {
+                commands.spawn_bundle(new_bundle).insert(WaterRowMarker);
+            } else {
+                commands.spawn_bundle(new_bundle);
+            }
         }
 
         // remove entity which has scrolled down bellow screen bottom and is not visible any more
@@ -115,11 +110,13 @@ fn children_movement(
     }
 }
 
+/// puts new log on newly added water row
+/// With<Added<WaterRowMarker>>
+/// uses bevy change detection to do it only once
 fn put_log_on_water(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    _time: Res<Time>,
-    mut q: Query<(Entity, &Transform, &BackgroundRow)>,
+    mut q: Query<(Entity, &Transform, &BackgroundRow), Added<WaterRowMarker>>,
 ) {
     for (entity, _transform, bg_row) in q.iter_mut() {
         if bg_row.is_water_row {

@@ -237,11 +237,14 @@ pub struct BackgroundRow {
     pub is_water_row: bool,
 }
 
+#[derive(Component)]
+pub struct WaterRowMarker;
+
 #[derive(Bundle)]
 pub struct GameRowBundle {
     #[bundle]
     sprite_bundle: SpriteBundle,
-    game_row: BackgroundRow,
+    pub game_row: BackgroundRow,
 }
 
 impl GameRowBundle {
