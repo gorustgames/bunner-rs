@@ -31,9 +31,9 @@ impl LogBundle {
                     ..default()
                 },
                 texture: asset_server.load(if log_size == LogSize::BIG {
-                    "images/log0.png"
-                } else {
                     "images/log1.png"
+                } else {
+                    "images/log0.png"
                 }),
                 transform: Transform::from_xyz(x, y, 1.), // z=1 since log is child component drawn over its parent
                 ..default()
