@@ -94,7 +94,7 @@ fn background_scrolling(
         let y_bellow_bottom = -1. * (SCREEN_HEIGHT / 2.) - SEGMENT_HEIGHT;
         if transform.translation.y < y_bellow_bottom {
             println!("despawning {:?} {:?}", entity, bg_row);
-            commands.entity(entity).despawn();
+            commands.entity(entity).despawn_recursive(); // remove background row entity and its children (i.e. logs, trains, cars)
         }
     }
 }
