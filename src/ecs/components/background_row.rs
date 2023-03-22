@@ -234,6 +234,7 @@ impl Row for GrassRow {
 pub struct BackgroundRow {
     pub row: Box<dyn Row>,
     pub is_top_row: bool,
+    pub is_water_row: bool,
 }
 
 #[derive(Bundle)]
@@ -251,6 +252,7 @@ impl GameRowBundle {
         asset_server: &Res<AssetServer>,
         is_top_row: bool,
     ) -> Self {
+        let is_water_row = row.get_img_base() == "water";
         let new_bundle = GameRowBundle {
             sprite_bundle: SpriteBundle {
                 sprite: Sprite {
@@ -261,7 +263,11 @@ impl GameRowBundle {
                 transform: Transform::from_xyz(x, y, 0.),
                 ..default()
             },
-            game_row: BackgroundRow { row, is_top_row },
+            game_row: BackgroundRow {
+                row,
+                is_top_row,
+                is_water_row,
+            },
         };
         println!("adding new row {:?}", new_bundle.game_row);
         new_bundle

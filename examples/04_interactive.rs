@@ -105,7 +105,7 @@ fn children_movement(
     time: Res<Time>,
 ) {
     for (_parent_transform, bg_row, children) in q_parent.iter() {
-        if bg_row.row.get_img_base() == "water" {
+        if bg_row.is_water_row {
             for &child in children.iter() {
                 if let Ok(mut child_transform) = q_child.get_mut(child) {
                     child_transform.translation.x += SCROLLING_SPEED * time.delta_seconds();
@@ -122,8 +122,8 @@ fn put_log_on_water(
     mut q: Query<(Entity, &Transform, &BackgroundRow)>,
 ) {
     for (entity, _transform, bg_row) in q.iter_mut() {
-        if bg_row.row.get_img_base() == "water" {
-            // child position relative to parent!
+        if bg_row.is_water_row {
+            // child position is relative to parent!
             let x = 0.;
             let y = 0.;
 
