@@ -272,7 +272,11 @@ impl GameRowBundle {
                 is_water_row,
             },
         };
-        println!("adding new row {:?}", new_bundle.game_row);
+
+        if is_water_row {
+            println!("adding new row {:?}", new_bundle.game_row);
+        }
+
         new_bundle
     }
 }

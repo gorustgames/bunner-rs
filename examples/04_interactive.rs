@@ -50,13 +50,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         let x = -1. * (SCREEN_WIDTH / 2.);
         let row = rows.pop().unwrap();
 
-        commands.spawn_bundle(GameRowBundle::new(
-            row,
-            x,
-            y,
-            &asset_server,
-            i == row_count - 1,
-        ));
+        let new_bundle = GameRowBundle::new(row, x, y, &asset_server, i == row_count - 1);
+        if new_bundle.game_row.is_water_row {
+            commands.spawn_bundle(new_bundle).insert(WaterRowMarker);
+        } else {
+            commands.spawn_bundle(new_bundle);
+        }
     }
 }
 
@@ -70,7 +69,7 @@ fn background_scrolling(
         transform.translation.y -= SCROLLING_SPEED * time.delta_seconds();
 
         // if current top row's top Y coord is already below top of the screen (i.e. there is blank space) -> create new top row
-        if bg_row.is_top_row && transform.translation.y < SCREEN_HEIGHT - SEGMENT_HEIGHT {
+        if bg_row.is_top_row && transform.translation.y < SCREEN_HEIGHT / 2. - SEGMENT_HEIGHT {
             bg_row.is_top_row = false; // make current top row as non-top since we are going to create new top level block
 
             // create new row and position it at the top of current top row
@@ -88,7 +87,7 @@ fn background_scrolling(
         // remove entity which has scrolled down bellow screen bottom and is not visible any more
         let y_bellow_bottom = -1. * (SCREEN_HEIGHT / 2.) - SEGMENT_HEIGHT;
         if transform.translation.y < y_bellow_bottom {
-            println!("despawning {:?} {:?}", entity, bg_row);
+            //println!("despawning {:?} {:?}", entity, bg_row);
             commands.entity(entity).despawn_recursive(); // remove background row entity and its children (i.e. logs, trains, cars)
         }
     }
