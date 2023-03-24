@@ -253,14 +253,18 @@ fn add_segments(
     for i in 0..count {
         let y = -1. * (SCREEN_HEIGHT / 2.) + SEGMENT_HEIGHT * (i as f32) + offset_from_bottom;
         let x = -1. * (SCREEN_WIDTH / 2.);
-        println!("y=={}", y);
+
+        // for some reason road will overlap grass segment cutting of its top
+        // explicit ordering helps to solve the issue
+        let z = if image_base != "road" { 1. } else { 0.5 };
+        println!("y={}", y);
         commands.spawn_bundle(SpriteBundle {
             sprite: Sprite {
                 anchor: Anchor::BottomLeft,
                 ..default()
             },
             texture: asset_server.load(&format!("images/{}{}.png", image_base, i)),
-            transform: Transform::from_xyz(x, y, 0.), // see https://bevy-cheatbook.github.io/features/coords.html
+            transform: Transform::from_xyz(x, y, z), // see https://bevy-cheatbook.github.io/features/coords.html
             ..default()
         });
     }
@@ -274,7 +278,7 @@ fn add_rail(commands: &mut Commands, asset_server: &Res<AssetServer>, offset_fro
 
 #[allow(dead_code)]
 fn add_road(commands: &mut Commands, asset_server: &Res<AssetServer>, offset_from_bottom: f32) {
-    add_segments(commands, asset_server, 6, "road", offset_from_bottom);
+    add_segments(commands, asset_server, 2, "road", offset_from_bottom);
 }
 
 #[allow(dead_code)]
@@ -284,7 +288,7 @@ fn add_side(commands: &mut Commands, asset_server: &Res<AssetServer>, offset_fro
 
 #[allow(dead_code)]
 fn add_water(commands: &mut Commands, asset_server: &Res<AssetServer>, offset_from_bottom: f32) {
-    add_segments(commands, asset_server, 8, "water", offset_from_bottom);
+    add_segments(commands, asset_server, 2, "water", offset_from_bottom);
 }
 
 #[allow(dead_code)]
@@ -297,13 +301,28 @@ fn add_dirt(commands: &mut Commands, asset_server: &Res<AssetServer>, offset_fro
     add_segments(commands, asset_server, 15, "dirt", offset_from_bottom);
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+#[allow(dead_code)]
+fn setup2(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
-    // rail+water+pavement
-    /*add_rail(&mut commands, &asset_server, 0.); // 4 rails x 40 px
-    add_water(&mut commands, &asset_server, 160.); // 8 waters x 40 px
-    add_side(&mut commands, &asset_server, 160. + 320.); */
+    add_rail(&mut commands, &asset_server, 0.); // 4 rails x 40 px
+    add_road(&mut commands, &asset_server, 4. * 40.); // 2 road x 40
+    add_rail(&mut commands, &asset_server, 4. * 40. + 2. * 40.); // 4 rails x 40 px
+    add_water(&mut commands, &asset_server, 4. * 40. + 2. * 40. + 4. * 40.); // 2 waters x 40 px
+    add_side(
+        &mut commands,
+        &asset_server,
+        4. * 40. + 2. * 40. + 4. * 40. + 2. * 40.,
+    ); // 3 sides x 40 px
+    add_road(
+        &mut commands,
+        &asset_server,
+        4. * 40. + 2. * 40. + 4. * 40. + 2. * 40. + 3. * 40.,
+    ); // 2 road x 40
+}
+
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     let rail_count = 4;
     let water_count = 8;
