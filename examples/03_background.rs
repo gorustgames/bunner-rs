@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
-use bunner_rs::MovementDirection;
+use bunner_rs::ecs::components::MovementDirection;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::boxed::Box;

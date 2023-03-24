@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bunner_rs::ecs::components::background_row::{
     BackgroundRow, GameRowBundle, GrassRow, Row, WaterRowMarker,
 };
+use bunner_rs::ecs::components::MovementDirection;
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
-use bunner_rs::MovementDirection;
 use std::boxed::Box;
 
 const SEGMENT_HEIGHT: f32 = 40.;
@@ -24,7 +24,7 @@ fn main() {
         .add_startup_system(setup)
         .add_system(background_scrolling)
         .add_system(children_movement)
-        .add_system(put_log_on_water)
+        .add_system(put_logs_on_water)
         .run();
 }
 
@@ -112,28 +112,33 @@ fn children_movement(
 /// puts new log on newly added water row
 /// With<Added<WaterRowMarker>>
 /// uses bevy change detection to do it only once
-fn put_log_on_water(
+fn put_logs_on_water(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut q: Query<(Entity, &Transform, &BackgroundRow), Added<WaterRowMarker>>,
 ) {
+    const LOG_BIG_WIDTH: f32 = 138.;
+    const LOG_SMALL_WIDTH: f32 = 84.;
+
+    // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
+    let mut x = 0.;
+    let mut y = 0.;
+
     for (entity, _transform, bg_row) in q.iter_mut() {
         if bg_row.is_water_row {
-            // child position is relative to parent!
-            let x = 0.;
-            let y = 0.;
+            for n in 1..11 {
+                let log = commands
+                    .spawn_bundle(LogBundle::new(
+                        MovementDirection::LEFT,
+                        LogSize::BIG,
+                        x,
+                        y,
+                        &asset_server,
+                    ))
+                    .id();
 
-            let log = commands
-                .spawn_bundle(LogBundle::new(
-                    MovementDirection::LEFT,
-                    LogSize::BIG,
-                    x,
-                    y,
-                    &asset_server,
-                ))
-                .id();
-
-            commands.entity(entity).add_child(log);
+                commands.entity(entity).add_child(log);
+            }
         }
     }
 }

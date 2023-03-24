@@ -1,8 +1,8 @@
+use crate::{get_random_float, get_random_int};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
-use rand::Rng;
 use std::fmt::Debug;
 
 pub trait Row: Send + Sync + Debug {
@@ -22,19 +22,6 @@ fn get_road_or_water_row() -> Box<dyn Row> {
     } else {
         Box::new(RoadRow::new_road_row(0))
     }
-}
-
-/// returns a random float from interval <0.,1.)
-fn get_random_float() -> f64 {
-    let mut rng = rand::thread_rng();
-    rng.gen::<f64>()
-}
-
-/// returns a random value from interval <from, to>
-fn get_random_int(from: i8, to: i8) -> i8 {
-    let mut rng = rand::thread_rng();
-    // https://rust-lang-nursery.github.io/rust-cookbook/algorithms/randomness.html#generate-random-numbers-within-a-range
-    rng.gen_range(from..to + 1)
 }
 
 /// rail

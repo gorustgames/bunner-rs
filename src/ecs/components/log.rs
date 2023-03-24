@@ -1,4 +1,4 @@
-use crate::MovementDirection;
+use crate::ecs::components::MovementDirection;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 
