@@ -1,4 +1,4 @@
-use crate::{get_random_float, get_random_int};
+use crate::{get_random_float, get_random_i8};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use rand::seq::SliceRandom;
@@ -69,7 +69,7 @@ impl Row for WaterRow {
     fn next(&self) -> Box<dyn Row> {
         // After 2 water rows, there's a 50-50 chance of the next row being either another water row, or a dirt row
         if (self.index == 7) || (self.index >= 1 && get_random_float() < 0.5) {
-            Box::new(DirtRow::new_dirt_row(get_random_int(4, 6)))
+            Box::new(DirtRow::new_dirt_row(get_random_i8(4, 6)))
         } else {
             Box::new(WaterRow::new_water_row(self.index + 1))
         }
@@ -131,7 +131,7 @@ impl Row for RoadRow {
             if r < 0.8 {
                 Box::new(RoadRow::new_road_row(self.index + 1))
             } else if r < 0.88 {
-                Box::new(GrassRow::new_grass_row(get_random_int(0, 6)))
+                Box::new(GrassRow::new_grass_row(get_random_i8(0, 6)))
             } else if r < 0.94 {
                 Box::new(RailRow::new_rail_row(0))
             } else {
@@ -140,7 +140,7 @@ impl Row for RoadRow {
         } else {
             let r = get_random_float();
             if r < 0.6 {
-                Box::new(GrassRow::new_grass_row(get_random_int(0, 6)))
+                Box::new(GrassRow::new_grass_row(get_random_i8(0, 6)))
             } else if r < 0.9 {
                 Box::new(RailRow::new_rail_row(0))
             } else {

@@ -2,8 +2,9 @@ use bevy::prelude::*;
 use bunner_rs::ecs::components::background_row::{
     BackgroundRow, GameRowBundle, GrassRow, Row, WaterRowMarker,
 };
-use bunner_rs::ecs::components::MovementDirection;
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
+use bunner_rs::ecs::components::MovementDirection;
+use bunner_rs::get_random_i32;
 use std::boxed::Box;
 
 const SEGMENT_HEIGHT: f32 = 40.;
@@ -117,20 +118,37 @@ fn put_logs_on_water(
     asset_server: Res<AssetServer>,
     mut q: Query<(Entity, &Transform, &BackgroundRow), Added<WaterRowMarker>>,
 ) {
-    const LOG_BIG_WIDTH: f32 = 138.;
-    const LOG_SMALL_WIDTH: f32 = 84.;
+    const LOG_BIG_WIDTH: i32 = 138;
+    const LOG_SMALL_WIDTH: i32 = 84;
 
     // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
     let mut x = 0.;
-    let mut y = 0.;
+    let y = 0.;
 
     for (entity, _transform, bg_row) in q.iter_mut() {
         if bg_row.is_water_row {
-            for n in 1..11 {
+            for i in 1..11 {
+                // choose big or small randomly
+                let log_size = if get_random_i32(1, 2) == 1 {
+                    LogSize::SMALL
+                } else {
+                    LogSize::BIG
+                };
+
+                // choose negative X offset from previous log randomly so that logs do not overlap
+                // the space between two logs will be within range <20,200>
+                if i > 1 {
+                    x = if log_size == LogSize::BIG {
+                        x - get_random_i32(LOG_BIG_WIDTH + 20, LOG_BIG_WIDTH + 200) as f32
+                    } else {
+                        x - get_random_i32(LOG_SMALL_WIDTH + 20, LOG_SMALL_WIDTH + 200) as f32
+                    };
+                }
+
                 let log = commands
                     .spawn_bundle(LogBundle::new(
                         MovementDirection::LEFT,
-                        LogSize::BIG,
+                        log_size,
                         x,
                         y,
                         &asset_server,
