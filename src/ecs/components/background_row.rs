@@ -256,6 +256,15 @@ impl GameRowBundle {
         is_top_row: bool,
     ) -> Self {
         let is_water_row = row.get_img_base() == "water";
+
+        // for some reason road will overlap grass segment cutting of its top
+        // explicit ordering helps to solve the issue
+        let z = if row.get_img_base() != "road" {
+            1.
+        } else {
+            0.5
+        };
+
         let new_bundle = GameRowBundle {
             sprite_bundle: SpriteBundle {
                 sprite: Sprite {
@@ -263,7 +272,7 @@ impl GameRowBundle {
                     ..default()
                 },
                 texture: asset_server.load(&row.get_img_name()),
-                transform: Transform::from_xyz(x, y, 0.),
+                transform: Transform::from_xyz(x, y, z),
                 ..default()
             },
             game_row: BackgroundRow {
