@@ -4,13 +4,14 @@ use bunner_rs::ecs::components::background_row::{
 };
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
 use bunner_rs::ecs::components::MovementDirection;
-use bunner_rs::{get_random_i32, is_odd_number};
+use bunner_rs::{get_random_i32, is_even_number, is_odd_number};
 use std::boxed::Box;
 
 const SEGMENT_HEIGHT: f32 = 40.;
 const SCREEN_HEIGHT: f32 = 800.;
 const SCREEN_WIDTH: f32 = 480.;
-const SCROLLING_SPEED: f32 = 45.;
+const SCROLLING_SPEED_BACKGROUND: f32 = 45.;
+const SCROLLING_SPEED_LOGS: f32 = 45.;
 
 fn main() {
     App::new()
@@ -67,7 +68,7 @@ fn background_scrolling(
     mut q: Query<(Entity, &mut Transform, &mut BackgroundRow)>,
 ) {
     for (entity, mut transform, mut bg_row) in q.iter_mut() {
-        transform.translation.y -= SCROLLING_SPEED * time.delta_seconds();
+        transform.translation.y -= SCROLLING_SPEED_BACKGROUND * time.delta_seconds();
 
         // if current top row's top Y coord is already below top of the screen (i.e. there is blank space) -> create new top row
         if bg_row.is_top_row && transform.translation.y < SCREEN_HEIGHT / 2. - SEGMENT_HEIGHT {
@@ -103,16 +104,36 @@ fn children_movement(
         if bg_row.is_water_row {
             for &child in children.iter() {
                 if let Ok(mut child_transform) = q_child.get_mut(child) {
-                    child_transform.translation.x += SCROLLING_SPEED * time.delta_seconds();
+                    // logs in odd rows flow from right to left
+                    // logs in even rows flow from left to right
+                    if is_odd_number(bg_row.row.get_index()) {
+                        child_transform.translation.x -=
+                            SCROLLING_SPEED_LOGS * time.delta_seconds();
+                    } else {
+                        child_transform.translation.x +=
+                            SCROLLING_SPEED_LOGS * time.delta_seconds();
+                    }
                 }
             }
         }
     }
 }
 
-/// puts new log on newly added water row
+fn get_random_log_size() -> LogSize {
+    if get_random_i32(1, 2) == 1 {
+        LogSize::SMALL
+    } else {
+        LogSize::BIG
+    }
+}
+
+/// puts logs on newly added water row
 /// With<Added<WaterRowMarker>>
 /// uses bevy change detection to do it only once
+/// we are randomizing log size and putting 10 logs in each row
+/// with random distance between them from 20 to 200 pixels.
+/// 10 random logs should be enough so that there are still some logs
+///  on the water while water row is visible (i.e. it does not scroll of vertically) on the screen
 fn put_logs_on_water(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -120,6 +141,7 @@ fn put_logs_on_water(
 ) {
     const LOG_BIG_WIDTH: i32 = 138;
     const LOG_SMALL_WIDTH: i32 = 84;
+    const LOGS_PER_ROW: i32 = 10;
 
     // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
     let mut x = 0.;
@@ -127,16 +149,13 @@ fn put_logs_on_water(
 
     for (entity, bg_row) in q.iter_mut() {
         if bg_row.is_water_row {
-            for i in 1..11 {
+            // handle logs for even rows. these logs are flowing from left to right
+            for i in 1..LOGS_PER_ROW + 1 {
                 if is_odd_number(bg_row.row.get_index()) {
                     continue;
                 }
                 // choose big or small randomly
-                let log_size = if get_random_i32(1, 2) == 1 {
-                    LogSize::SMALL
-                } else {
-                    LogSize::BIG
-                };
+                let log_size = get_random_log_size();
 
                 // choose negative X offset from previous log randomly so that logs do not overlap
                 // the space between two logs will be within range <20,200>
@@ -145,6 +164,38 @@ fn put_logs_on_water(
                         x - get_random_i32(LOG_BIG_WIDTH + 20, LOG_BIG_WIDTH + 200) as f32
                     } else {
                         x - get_random_i32(LOG_SMALL_WIDTH + 20, LOG_SMALL_WIDTH + 200) as f32
+                    };
+                }
+
+                let log = commands
+                    .spawn_bundle(LogBundle::new(
+                        MovementDirection::LEFT,
+                        log_size,
+                        x,
+                        y,
+                        &asset_server,
+                    ))
+                    .id();
+
+                commands.entity(entity).add_child(log);
+            }
+
+            // handle logs for odd rows. these logs are flowing from right to left
+            let mut x = SCREEN_WIDTH / 2. - LOG_SMALL_WIDTH as f32;
+            for i in 1..LOGS_PER_ROW + 1 {
+                if is_even_number(bg_row.row.get_index()) {
+                    continue;
+                }
+                // choose big or small randomly
+                let log_size = get_random_log_size();
+
+                // choose positive X offset from previous log randomly so that logs do not overlap
+                // the space between two logs will be within range <20,200>
+                if i > 1 {
+                    x = if log_size == LogSize::BIG {
+                        x + get_random_i32(LOG_BIG_WIDTH + 20, LOG_BIG_WIDTH + 200) as f32
+                    } else {
+                        x + get_random_i32(LOG_SMALL_WIDTH + 20, LOG_SMALL_WIDTH + 200) as f32
                     };
                 }
 
