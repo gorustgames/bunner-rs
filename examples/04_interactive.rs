@@ -4,7 +4,7 @@ use bunner_rs::ecs::components::background_row::{
 };
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
 use bunner_rs::ecs::components::MovementDirection;
-use bunner_rs::get_random_i32;
+use bunner_rs::{get_random_i32, is_odd_number};
 use std::boxed::Box;
 
 const SEGMENT_HEIGHT: f32 = 40.;
@@ -116,7 +116,7 @@ fn children_movement(
 fn put_logs_on_water(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut q: Query<(Entity, &Transform, &BackgroundRow), Added<WaterRowMarker>>,
+    mut q: Query<(Entity, &BackgroundRow), Added<WaterRowMarker>>,
 ) {
     const LOG_BIG_WIDTH: i32 = 138;
     const LOG_SMALL_WIDTH: i32 = 84;
@@ -125,9 +125,12 @@ fn put_logs_on_water(
     let mut x = 0.;
     let y = 0.;
 
-    for (entity, _transform, bg_row) in q.iter_mut() {
+    for (entity, bg_row) in q.iter_mut() {
         if bg_row.is_water_row {
             for i in 1..11 {
+                if is_odd_number(bg_row.row.get_index()) {
+                    continue;
+                }
                 // choose big or small randomly
                 let log_size = if get_random_i32(1, 2) == 1 {
                     LogSize::SMALL
