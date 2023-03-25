@@ -11,7 +11,7 @@ const SEGMENT_HEIGHT: f32 = 40.;
 const SCREEN_HEIGHT: f32 = 800.;
 const SCREEN_WIDTH: f32 = 480.;
 const SCROLLING_SPEED_BACKGROUND: f32 = 45.;
-const SCROLLING_SPEED_LOGS: f32 = 45.;
+const SCROLLING_SPEED_LOGS: f32 = 60.;
 
 fn main() {
     App::new()
@@ -25,7 +25,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_system(background_scrolling)
-        .add_system(children_movement)
+        .add_system(logs_movement)
         .add_system(put_logs_on_water)
         .run();
 }
@@ -95,7 +95,7 @@ fn background_scrolling(
     }
 }
 
-fn children_movement(
+fn logs_movement(
     q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
     mut q_child: Query<&mut Transform, Without<BackgroundRow>>,
     time: Res<Time>,
@@ -142,74 +142,86 @@ fn put_logs_on_water(
     const LOG_BIG_WIDTH: i32 = 138;
     const LOG_SMALL_WIDTH: i32 = 84;
     const LOGS_PER_ROW: i32 = 10;
+    const LOGS_GAP_FROM: i32 = 20;
+    const LOGS_GAP_TO: i32 = 250;
 
     // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
-    let mut x = 0.;
-    let y = 0.;
+    let mut x_even_row = 0.;
+    let mut x_odd_row = SCREEN_WIDTH / 2. - LOG_SMALL_WIDTH as f32;
 
     for (entity, bg_row) in q.iter_mut() {
         if bg_row.is_water_row {
-            // handle logs for even rows. these logs are flowing from left to right
             for i in 1..LOGS_PER_ROW + 1 {
-                if is_odd_number(bg_row.row.get_index()) {
-                    continue;
-                }
                 // choose big or small randomly
                 let log_size = get_random_log_size();
 
-                // choose negative X offset from previous log randomly so that logs do not overlap
-                // the space between two logs will be within range <20,200>
-                if i > 1 {
-                    x = if log_size == LogSize::BIG {
-                        x - get_random_i32(LOG_BIG_WIDTH + 20, LOG_BIG_WIDTH + 200) as f32
-                    } else {
-                        x - get_random_i32(LOG_SMALL_WIDTH + 20, LOG_SMALL_WIDTH + 200) as f32
-                    };
+                if is_even_number(bg_row.row.get_index())
+                /* even rows*/
+                {
+                    // handle logs for even rows. these logs are flowing from left to right
+                    // choose negative X offset from previous log randomly so that logs do not overlap
+                    // the space between two logs will be within range <LOGS_GAP_FROM, LOGS_GAP_TO>
+                    if i > 1 {
+                        x_even_row = if log_size == LogSize::BIG {
+                            x_even_row
+                                - get_random_i32(
+                                    LOG_BIG_WIDTH + LOGS_GAP_FROM,
+                                    LOG_BIG_WIDTH + LOGS_GAP_TO,
+                                ) as f32
+                        } else {
+                            x_even_row
+                                - get_random_i32(
+                                    LOG_SMALL_WIDTH + LOGS_GAP_FROM,
+                                    LOG_SMALL_WIDTH + LOGS_GAP_TO,
+                                ) as f32
+                        };
+                    }
+
+                    let log = commands
+                        .spawn_bundle(LogBundle::new(
+                            MovementDirection::LEFT,
+                            log_size,
+                            x_even_row,
+                            0.,
+                            &asset_server,
+                        ))
+                        .id();
+
+                    commands.entity(entity).add_child(log);
+                } else
+                /* odd rows */
+                {
+                    // handle logs for odd rows. these logs are flowing from right to left
+                    // choose positive X offset from previous log randomly so that logs do not overlap
+                    // the space between two logs will be within range <20,200>
+                    if i > 1 {
+                        x_odd_row = if log_size == LogSize::BIG {
+                            x_odd_row
+                                + get_random_i32(
+                                    LOG_BIG_WIDTH + LOGS_GAP_FROM,
+                                    LOG_BIG_WIDTH + LOGS_GAP_TO,
+                                ) as f32
+                        } else {
+                            x_odd_row
+                                + get_random_i32(
+                                    LOG_SMALL_WIDTH + LOGS_GAP_FROM,
+                                    LOG_SMALL_WIDTH + LOGS_GAP_TO,
+                                ) as f32
+                        };
+                    }
+
+                    let log = commands
+                        .spawn_bundle(LogBundle::new(
+                            MovementDirection::LEFT,
+                            log_size,
+                            x_odd_row,
+                            0.,
+                            &asset_server,
+                        ))
+                        .id();
+
+                    commands.entity(entity).add_child(log);
                 }
-
-                let log = commands
-                    .spawn_bundle(LogBundle::new(
-                        MovementDirection::LEFT,
-                        log_size,
-                        x,
-                        y,
-                        &asset_server,
-                    ))
-                    .id();
-
-                commands.entity(entity).add_child(log);
-            }
-
-            // handle logs for odd rows. these logs are flowing from right to left
-            let mut x = SCREEN_WIDTH / 2. - LOG_SMALL_WIDTH as f32;
-            for i in 1..LOGS_PER_ROW + 1 {
-                if is_even_number(bg_row.row.get_index()) {
-                    continue;
-                }
-                // choose big or small randomly
-                let log_size = get_random_log_size();
-
-                // choose positive X offset from previous log randomly so that logs do not overlap
-                // the space between two logs will be within range <20,200>
-                if i > 1 {
-                    x = if log_size == LogSize::BIG {
-                        x + get_random_i32(LOG_BIG_WIDTH + 20, LOG_BIG_WIDTH + 200) as f32
-                    } else {
-                        x + get_random_i32(LOG_SMALL_WIDTH + 20, LOG_SMALL_WIDTH + 200) as f32
-                    };
-                }
-
-                let log = commands
-                    .spawn_bundle(LogBundle::new(
-                        MovementDirection::LEFT,
-                        log_size,
-                        x,
-                        y,
-                        &asset_server,
-                    ))
-                    .id();
-
-                commands.entity(entity).add_child(log);
             }
         }
     }
