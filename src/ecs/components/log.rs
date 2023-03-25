@@ -44,4 +44,11 @@ impl LogBundle {
             log_size,
         }
     }
+
+    /// spawn log bundle and add it as child to its parent entity (respective water row)
+    pub fn spawn_log(self, commands: &mut Commands, parent_entity: Entity) {
+        let log = commands.spawn_bundle(self).id();
+
+        commands.entity(parent_entity).add_child(log);
+    }
 }

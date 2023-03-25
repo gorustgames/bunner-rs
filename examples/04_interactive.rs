@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 use bunner_rs::ecs::components::background_row::{
-    BackgroundRow, GameRowBundle, GrassRow, Row, WaterRowMarker,
+    BackgroundRow, GameRowBundle, GrassRow, RailRowMarker, Row, WaterRowMarker,
 };
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
+use bunner_rs::ecs::components::train::TrainBundle;
 use bunner_rs::ecs::components::MovementDirection;
-use bunner_rs::{get_random_i32, is_even_number, is_odd_number};
+use bunner_rs::{get_random_float, get_random_i32, is_even_number, is_odd_number};
 use std::boxed::Box;
 
 const SEGMENT_HEIGHT: f32 = 40.;
@@ -26,6 +27,7 @@ fn main() {
         .add_startup_system(setup)
         .add_system(background_scrolling)
         .add_system(logs_movement)
+        .add_system(put_trains_on_rails)
         .add_system(put_logs_on_water)
         .run();
 }
@@ -119,6 +121,28 @@ fn get_random_log_size() -> LogSize {
     }
 }
 
+fn put_trains_on_rails(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut q: Query<(Entity, &BackgroundRow), Added<RailRowMarker>>,
+) {
+    let mut x: f32;
+
+    // 50:50 chance of traing coming from left or right side
+    if get_random_float() < 0.5 {
+        x = 0. - 100.;
+    } else {
+        x = SCREEN_WIDTH / 2. - 100.;
+    }
+
+    for (entity, bg_row) in q.iter_mut() {
+        if bg_row.is_rail_row {
+            TrainBundle::new(MovementDirection::LEFT, x, 0., &asset_server)
+                .spawn_train(&mut commands, entity);
+        }
+    }
+}
+
 /// puts logs on newly added water row
 /// With<Added<WaterRowMarker>>
 /// uses bevy change detection to do it only once
@@ -169,17 +193,14 @@ fn put_logs_on_water(
                         };
                     }
 
-                    let log = commands
-                        .spawn_bundle(LogBundle::new(
-                            MovementDirection::LEFT,
-                            log_size,
-                            x_even_row,
-                            0.,
-                            &asset_server,
-                        ))
-                        .id();
-
-                    commands.entity(entity).add_child(log);
+                    LogBundle::new(
+                        MovementDirection::LEFT,
+                        log_size,
+                        x_even_row,
+                        0.,
+                        &asset_server,
+                    )
+                    .spawn_log(&mut commands, entity);
                 } else
                 /* odd rows */
                 {
@@ -202,17 +223,14 @@ fn put_logs_on_water(
                         };
                     }
 
-                    let log = commands
-                        .spawn_bundle(LogBundle::new(
-                            MovementDirection::LEFT,
-                            log_size,
-                            x_odd_row,
-                            0.,
-                            &asset_server,
-                        ))
-                        .id();
-
-                    commands.entity(entity).add_child(log);
+                    LogBundle::new(
+                        MovementDirection::LEFT,
+                        log_size,
+                        x_odd_row,
+                        0.,
+                        &asset_server,
+                    )
+                    .spawn_log(&mut commands, entity);
                 }
             }
         }
