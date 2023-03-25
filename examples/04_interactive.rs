@@ -15,6 +15,7 @@ const SCREEN_HEIGHT: f32 = 800.;
 const SCREEN_WIDTH: f32 = 480.;
 const SCROLLING_SPEED_BACKGROUND: f32 = 45.;
 const SCROLLING_SPEED_LOGS: f32 = 60.;
+const SCROLLING_SPEED_TRAINS: f32 = 120.;
 
 fn main() {
     App::new()
@@ -28,9 +29,10 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_system(background_scrolling)
-        .add_system(logs_movement)
         .add_system(put_trains_on_rails)
         .add_system(put_logs_on_water)
+        .add_system(logs_movement)
+        .add_system(trains_movement)
         .add_system(delayed_despawn_recursive)
         .run();
 }
@@ -123,6 +125,31 @@ fn logs_movement(
     }
 }
 
+fn trains_movement(
+    q_parent: Query<(&BackgroundRow, &mut Children)>,
+    mut q_child: Query<(&mut Transform, &MovementDirection), Without<BackgroundRow>>,
+    time: Res<Time>,
+) {
+    for (bg_row, children) in q_parent.iter() {
+        if bg_row.is_rail_row {
+            for &child in children.iter() {
+                if let Ok((mut child_transform, movement_direction)) = q_child.get_mut(child) {
+                    match movement_direction {
+                        MovementDirection::LEFT => {
+                            child_transform.translation.x -=
+                                SCROLLING_SPEED_TRAINS * time.delta_seconds();
+                        }
+                        MovementDirection::RIGHT => {
+                            child_transform.translation.x +=
+                                SCROLLING_SPEED_TRAINS * time.delta_seconds();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 fn get_random_log_size() -> LogSize {
     if get_random_i32(1, 2) == 1 {
         LogSize::SMALL
@@ -138,11 +165,14 @@ fn put_trains_on_rails(
 ) {
     let mut x: f32;
 
-    // 50:50 chance of traing coming from left or right side
+    // 50:50 chance of train coming from left or right side
+    // we are putting train offset 1200 px so that trains does not
+    // go into screen immediately after rail row scrolling into screen
+    // other approach here would be delay train bundle spawning
     if get_random_float() < 0.5 {
-        x = 0. - 100.;
+        x = 0. - 1200.;
     } else {
-        x = SCREEN_WIDTH / 2. - 100.;
+        x = SCREEN_WIDTH / 2. + 1200.;
     }
 
     for (entity, bg_row) in q.iter_mut() {

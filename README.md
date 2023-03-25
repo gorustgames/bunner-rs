@@ -7,6 +7,10 @@ Simple game utilizing [bevy](https://bevyengine.org/) game engine and [Entity Co
 cargo run --example 01_move_sprite 
 ```
 
+## Issues
+
+* first water segment: sometimes higher rows in this first segment just don't have any logs at all 
+
 ## Bevy quick links
 * [Learn Bevi](https://bevyengine.org/learn/)
 * [Bevy Examples](https://github.com/bevyengine/bevy/tree/latest/examples#examples)
