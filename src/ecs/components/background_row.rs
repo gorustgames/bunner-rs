@@ -253,8 +253,14 @@ impl GameRowBundle {
         let is_water_row = row.get_img_base() == "water";
 
         // for rails there is always just one train for all 4 rail rows
-        ////  hence we need to mark only first one with index 0
-        let is_rail_row = row.get_img_base() == "rail" && row.get_index() == 0;
+        //  hence we need to mark only one of 4 rail segments. we will mark
+        // second one (rail1) since rail sprite is designed in a way it needs to be put
+        // 40 pixels above rail0. by marking rail1 as RailRowMarker we can position train
+        // to relative Y coordinate = 0 (same as we do for water rows)
+        // this has one side effect. train would normally disappear immediately when rail1 scrolls off the screen
+        // resulting in unnatural disappearance of the train. because of this we are postponing de-spawning of all
+        // rail segments and respective child entities (aka trains)
+        let is_rail_row = row.get_img_base() == "rail" && row.get_index() == 1;
         let is_road_row = row.get_img_base() == "road";
 
         // for some reason road will overlap grass segment cutting of its top

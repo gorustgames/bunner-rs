@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
+use bunner_rs::ecs::components::train::TrainBundle;
 use bunner_rs::ecs::components::MovementDirection;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::boxed::Box;
-use bunner_rs::ecs::components::train::TrainBundle;
 
 const SEGMENT_HEIGHT: f32 = 40.;
 const SCREEN_HEIGHT: f32 = 800.;

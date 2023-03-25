@@ -4,7 +4,9 @@ use bunner_rs::ecs::components::background_row::{
 };
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
 use bunner_rs::ecs::components::train::TrainBundle;
+use bunner_rs::ecs::components::DespawnEntityTimer;
 use bunner_rs::ecs::components::MovementDirection;
+use bunner_rs::ecs::systems::delayed_despawn_recursive;
 use bunner_rs::{get_random_float, get_random_i32, is_even_number, is_odd_number};
 use std::boxed::Box;
 
@@ -29,6 +31,7 @@ fn main() {
         .add_system(logs_movement)
         .add_system(put_trains_on_rails)
         .add_system(put_logs_on_water)
+        .add_system(delayed_despawn_recursive)
         .run();
 }
 
@@ -84,7 +87,13 @@ fn background_scrolling(
         let y_bellow_bottom = -1. * (SCREEN_HEIGHT / 2.) - SEGMENT_HEIGHT;
         if transform.translation.y < y_bellow_bottom {
             //println!("despawning {:?} {:?}", entity, bg_row);
+
+            // do not remove immediatelly...
             commands.entity(entity).despawn_recursive(); // remove background row entity and its children (i.e. logs, trains, cars)
+
+            // ...instead delay the despawning!!!
+            // let empty_entity = commands.spawn().id();
+            // commands.entity(entity).insert(DespawnEntityTimer::new(5.));
         }
     }
 }
