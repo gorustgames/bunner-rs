@@ -86,14 +86,15 @@ fn background_scrolling(
         // remove entity which has scrolled down bellow screen bottom and is not visible any more
         let y_bellow_bottom = -1. * (SCREEN_HEIGHT / 2.) - SEGMENT_HEIGHT;
         if transform.translation.y < y_bellow_bottom {
+            // remove background row entity and its children (i.e. logs, trains, cars)
             //println!("despawning {:?} {:?}", entity, bg_row);
 
-            // do not remove immediatelly...
-            commands.entity(entity).despawn_recursive(); // remove background row entity and its children (i.e. logs, trains, cars)
+            // do not remove immediately...
+            //commands.entity(entity).despawn_recursive();
 
             // ...instead delay the despawning!!!
-            // let empty_entity = commands.spawn().id();
-            // commands.entity(entity).insert(DespawnEntityTimer::new(5.));
+            // let _empty_entity = commands.spawn().id();
+            commands.entity(entity).insert(DespawnEntityTimer::new(5.));
         }
     }
 }
