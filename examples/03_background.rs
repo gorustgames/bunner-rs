@@ -5,6 +5,7 @@ use bunner_rs::ecs::components::MovementDirection;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::boxed::Box;
+use bunner_rs::ecs::components::train::TrainBundle;
 
 const SEGMENT_HEIGHT: f32 = 40.;
 const SCREEN_HEIGHT: f32 = 800.;
@@ -351,6 +352,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         LogSize::BIG,
         -240. + 138., // big log is 138x60 px
         -400. + 200.,
+        &asset_server,
+    ));
+
+    commands.spawn_bundle(TrainBundle::new(
+        MovementDirection::LEFT,
+        -240. + 100., // big log is 860x134 px
+        -400. + 40., // train looks good when its bottom is aligned to rail1.png row, i.e. offset 40px representing rail0.jpg
         &asset_server,
     ));
 }
