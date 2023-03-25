@@ -53,11 +53,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         let row = rows.pop().unwrap();
 
         let new_bundle = GameRowBundle::new(row, x, y, &asset_server, i == row_count - 1);
-        if new_bundle.game_row.is_water_row {
-            commands.spawn_bundle(new_bundle).insert(WaterRowMarker);
-        } else {
-            commands.spawn_bundle(new_bundle);
-        }
+        new_bundle.spawn_bundle_with_markers(&mut commands);
     }
 }
 
@@ -79,11 +75,7 @@ fn background_scrolling(
             let y = transform.translation.y + SEGMENT_HEIGHT;
 
             let new_bundle = GameRowBundle::new(bg_row.row.next(), x, y, &asset_server, true);
-            if new_bundle.game_row.is_water_row {
-                commands.spawn_bundle(new_bundle).insert(WaterRowMarker);
-            } else {
-                commands.spawn_bundle(new_bundle);
-            }
+            new_bundle.spawn_bundle_with_markers(&mut commands);
         }
 
         // remove entity which has scrolled down bellow screen bottom and is not visible any more

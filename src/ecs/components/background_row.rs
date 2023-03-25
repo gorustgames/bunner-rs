@@ -222,10 +222,18 @@ pub struct BackgroundRow {
     pub row: Box<dyn Row>,
     pub is_top_row: bool,
     pub is_water_row: bool,
+    pub is_rail_row: bool,
+    pub is_road_row: bool,
 }
 
 #[derive(Component)]
 pub struct WaterRowMarker;
+
+#[derive(Component)]
+pub struct RailRowMarker;
+
+#[derive(Component)]
+pub struct RoadRowMarker;
 
 #[derive(Bundle)]
 pub struct GameRowBundle {
@@ -243,6 +251,11 @@ impl GameRowBundle {
         is_top_row: bool,
     ) -> Self {
         let is_water_row = row.get_img_base() == "water";
+
+        // for rails there is always just one train for all 4 rail rows
+        ////  hence we need to mark only first one with index 0
+        let is_rail_row = row.get_img_base() == "rail" && row.get_index() == 0;
+        let is_road_row = row.get_img_base() == "road";
 
         // for some reason road will overlap grass segment cutting of its top
         // explicit ordering helps to solve the issue
@@ -266,6 +279,8 @@ impl GameRowBundle {
                 row,
                 is_top_row,
                 is_water_row,
+                is_rail_row,
+                is_road_row,
             },
         };
 
@@ -274,5 +289,18 @@ impl GameRowBundle {
         }
 
         new_bundle
+    }
+
+    /// consumes GameRowBundle and spawns it with or without specific row markers based on row type
+    pub fn spawn_bundle_with_markers(self, commands: &mut Commands) {
+        if self.game_row.is_water_row {
+            commands.spawn_bundle(self).insert(WaterRowMarker);
+        } else if self.game_row.is_rail_row {
+            commands.spawn_bundle(self).insert(RailRowMarker);
+        } else if self.game_row.is_road_row {
+            commands.spawn_bundle(self).insert(RoadRowMarker);
+        } else {
+            commands.spawn_bundle(self);
+        }
     }
 }
