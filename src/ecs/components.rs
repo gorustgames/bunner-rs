@@ -4,7 +4,7 @@ pub mod background_row;
 pub mod log;
 pub mod train;
 
-#[derive(Debug, Component, PartialEq)]
+#[derive(Debug, Component, PartialEq, Clone)]
 pub enum MovementDirection {
     LEFT,
     RIGHT,

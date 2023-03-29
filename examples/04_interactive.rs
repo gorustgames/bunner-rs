@@ -15,7 +15,7 @@ const SCREEN_HEIGHT: f32 = 800.;
 const SCREEN_WIDTH: f32 = 480.;
 const SCROLLING_SPEED_BACKGROUND: f32 = 45.;
 const SCROLLING_SPEED_LOGS: f32 = 60.;
-const SCROLLING_SPEED_TRAINS: f32 = 120.;
+const SCROLLING_SPEED_TRAINS: f32 = 250.;
 
 fn main() {
     App::new()
@@ -169,15 +169,18 @@ fn put_trains_on_rails(
     // we are putting train offset 1200 px so that trains does not
     // go into screen immediately after rail row scrolling into screen
     // other approach here would be delay train bundle spawning
+    let mut train_direction;
     if get_random_float() < 0.5 {
         x = 0. - 1200.;
+        train_direction = MovementDirection::RIGHT
     } else {
         x = SCREEN_WIDTH / 2. + 1200.;
+        train_direction = MovementDirection::LEFT
     }
 
     for (entity, bg_row) in q.iter_mut() {
         if bg_row.is_rail_row {
-            TrainBundle::new(MovementDirection::LEFT, x, 0., &asset_server)
+            TrainBundle::new(train_direction.clone(), x, 0., &asset_server)
                 .spawn_train(&mut commands, entity);
         }
     }
