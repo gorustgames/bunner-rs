@@ -96,6 +96,7 @@ fn background_scrolling(
             //commands.entity(entity).despawn_recursive();
 
             // ...instead delay the despawning!!!
+            // let _empty_entity = commands.spawn().id();
             commands.entity(entity).insert(DespawnEntityTimer::new(5.));
         }
     }
