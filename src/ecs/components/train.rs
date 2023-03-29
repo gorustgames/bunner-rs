@@ -1,4 +1,4 @@
-use crate::ecs::components::{DelayerTrainTimer, MovementDirection};
+use crate::ecs::components::{TrainTimer, MovementDirection};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 
@@ -51,7 +51,7 @@ impl TrainBundle {
     ) {
         let train = commands
             .spawn_bundle(self)
-            .insert(DelayerTrainTimer::new(delay_sec))
+            .insert(TrainTimer::new(delay_sec))
             .id();
 
         commands.entity(parent_entity).add_child(train);

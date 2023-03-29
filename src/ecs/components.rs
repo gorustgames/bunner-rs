@@ -37,13 +37,13 @@ impl DespawnEntityTimer {
 pub struct DelayedTrainReadyToBeDisplayedMarker;
 
 #[derive(Component)]
-pub struct DelayerTrainTimer {
+pub struct TrainTimer {
     pub timer: Timer,
 }
 
-impl DelayerTrainTimer {
+impl TrainTimer {
     pub fn new(delay_sec: f32) -> Self {
-        DelayerTrainTimer {
+        TrainTimer {
             timer: Timer::from_seconds(delay_sec, false),
         }
     }

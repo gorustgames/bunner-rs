@@ -1,5 +1,5 @@
 use crate::ecs::components::{
-    DelayedTrainReadyToBeDisplayedMarker, DelayerTrainTimer, DespawnEntityTimer,
+    DelayedTrainReadyToBeDisplayedMarker, TrainTimer, DespawnEntityTimer,
 };
 use bevy::prelude::*;
 
@@ -20,7 +20,7 @@ pub fn delayed_despawn_recursive(
 pub fn delayed_spawn_train(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut DelayerTrainTimer)>,
+    mut query: Query<(Entity, &mut TrainTimer)>,
 ) {
     for (entity, mut se_timer) in query.iter_mut() {
         if se_timer.timer.tick(time.delta()).just_finished() {
