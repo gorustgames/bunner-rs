@@ -29,3 +29,22 @@ impl DespawnEntityTimer {
         }
     }
 }
+
+/// Marker component we are inserting to delayed train (in timer system) to indicate
+/// timer is finished and train should be displayed. Once this component is added
+/// respective system can pick up the train and start moving it
+#[derive(Component)]
+pub struct DelayedTrainReadyToBeDisplayedMarker;
+
+#[derive(Component)]
+pub struct DelayerTrainTimer {
+    pub timer: Timer,
+}
+
+impl DelayerTrainTimer {
+    pub fn new(delay_sec: f32) -> Self {
+        DelayerTrainTimer {
+            timer: Timer::from_seconds(delay_sec, false),
+        }
+    }
+}

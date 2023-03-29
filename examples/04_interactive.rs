@@ -4,9 +4,9 @@ use bunner_rs::ecs::components::background_row::{
 };
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
 use bunner_rs::ecs::components::train::TrainBundle;
-use bunner_rs::ecs::components::DespawnEntityTimer;
 use bunner_rs::ecs::components::MovementDirection;
-use bunner_rs::ecs::systems::delayed_despawn_recursive;
+use bunner_rs::ecs::components::{DelayedTrainReadyToBeDisplayedMarker, DespawnEntityTimer};
+use bunner_rs::ecs::systems::{delayed_despawn_recursive, delayed_spawn_train};
 use bunner_rs::{get_random_float, get_random_i32, is_even_number, is_odd_number};
 use std::boxed::Box;
 
@@ -15,7 +15,7 @@ const SCREEN_HEIGHT: f32 = 800.;
 const SCREEN_WIDTH: f32 = 480.;
 const SCROLLING_SPEED_BACKGROUND: f32 = 45.;
 const SCROLLING_SPEED_LOGS: f32 = 60.;
-const SCROLLING_SPEED_TRAINS: f32 = 250.;
+const SCROLLING_SPEED_TRAINS: f32 = 400.;
 
 fn main() {
     App::new()
@@ -34,6 +34,7 @@ fn main() {
         .add_system(logs_movement)
         .add_system(trains_movement)
         .add_system(delayed_despawn_recursive)
+        .add_system(delayed_spawn_train)
         .run();
 }
 
@@ -95,7 +96,6 @@ fn background_scrolling(
             //commands.entity(entity).despawn_recursive();
 
             // ...instead delay the despawning!!!
-            // let _empty_entity = commands.spawn().id();
             commands.entity(entity).insert(DespawnEntityTimer::new(5.));
         }
     }
@@ -127,7 +127,13 @@ fn logs_movement(
 
 fn trains_movement(
     q_parent: Query<(&BackgroundRow, &mut Children)>,
-    mut q_child: Query<(&mut Transform, &MovementDirection), Without<BackgroundRow>>,
+    mut q_child: Query<
+        (&mut Transform, &MovementDirection),
+        (
+            Without<BackgroundRow>,
+            With<DelayedTrainReadyToBeDisplayedMarker>,
+        ),
+    >,
     time: Res<Time>,
 ) {
     for (bg_row, children) in q_parent.iter() {
@@ -163,25 +169,28 @@ fn put_trains_on_rails(
     asset_server: Res<AssetServer>,
     mut q: Query<(Entity, &BackgroundRow), Added<RailRowMarker>>,
 ) {
-    let mut x: f32;
+    const TRAIN_WIDTH: f32 = 860.;
+    let x: f32;
 
     // 50:50 chance of train coming from left or right side
     // we are putting train offset 1200 px so that trains does not
     // go into screen immediately after rail row scrolling into screen
     // other approach here would be delay train bundle spawning
-    let mut train_direction;
+    let train_direction;
     if get_random_float() < 0.5 {
-        x = 0. - 1200.;
+        // // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
+        x = -1. * TRAIN_WIDTH - 100.;
         train_direction = MovementDirection::RIGHT
     } else {
-        x = SCREEN_WIDTH / 2. + 1200.;
+        x = SCREEN_WIDTH + 100.;
         train_direction = MovementDirection::LEFT
     }
 
     for (entity, bg_row) in q.iter_mut() {
         if bg_row.is_rail_row {
             TrainBundle::new(train_direction.clone(), x, 0., &asset_server)
-                .spawn_train(&mut commands, entity);
+                //.spawn_train(&mut commands, entity);
+                .spawn_train_with_delay(&mut commands, entity, 5.);
         }
     }
 }

@@ -1,4 +1,4 @@
-use crate::ecs::components::MovementDirection;
+use crate::ecs::components::{DelayerTrainTimer, MovementDirection};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 
@@ -38,6 +38,21 @@ impl TrainBundle {
     /// spawn train bundle and add it as child to its parent entity (respective rail row)
     pub fn spawn_train(self, commands: &mut Commands, parent_entity: Entity) {
         let train = commands.spawn_bundle(self).id();
+
+        commands.entity(parent_entity).add_child(train);
+    }
+
+    /// spawns train bundle with delay
+    pub fn spawn_train_with_delay(
+        self,
+        commands: &mut Commands,
+        parent_entity: Entity,
+        delay_sec: f32,
+    ) {
+        let train = commands
+            .spawn_bundle(self)
+            .insert(DelayerTrainTimer::new(delay_sec))
+            .id();
 
         commands.entity(parent_entity).add_child(train);
     }
