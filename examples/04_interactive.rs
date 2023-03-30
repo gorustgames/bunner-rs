@@ -177,7 +177,7 @@ fn put_trains_on_rails(
         if bg_row.is_rail_row {
             // generate 2 to 4 trains per each track
             let mut train_delay = 0.;
-            for _ in 1..get_random_i8(2, 4) {
+            for _ in 0..get_random_i8(2, 4) {
                 // randomize train delay. do it incrementally so that we don't have
                 // train crash on the track :)
                 train_delay = train_delay + get_random_i8(4, 7) as f32;
