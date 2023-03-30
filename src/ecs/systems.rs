@@ -1,5 +1,5 @@
 use crate::ecs::components::{
-    DelayedTrainReadyToBeDisplayedMarker, TrainTimer, DespawnEntityTimer,
+    DelayedTrainReadyToBeDisplayedMarker, DespawnEntityTimer, TrainTimer,
 };
 use bevy::prelude::*;
 

@@ -7,7 +7,7 @@ use bunner_rs::ecs::components::train::TrainBundle;
 use bunner_rs::ecs::components::MovementDirection;
 use bunner_rs::ecs::components::{DelayedTrainReadyToBeDisplayedMarker, DespawnEntityTimer};
 use bunner_rs::ecs::systems::{delayed_despawn_recursive, delayed_spawn_train};
-use bunner_rs::{get_random_float, get_random_i32, is_even_number, is_odd_number};
+use bunner_rs::{get_random_float, get_random_i32, get_random_i8, is_even_number, is_odd_number};
 use std::boxed::Box;
 
 const SEGMENT_HEIGHT: f32 = 40.;
@@ -15,7 +15,7 @@ const SCREEN_HEIGHT: f32 = 800.;
 const SCREEN_WIDTH: f32 = 480.;
 const SCROLLING_SPEED_BACKGROUND: f32 = 45.;
 const SCROLLING_SPEED_LOGS: f32 = 60.;
-const SCROLLING_SPEED_TRAINS: f32 = 400.;
+const SCROLLING_SPEED_TRAINS: f32 = 800.;
 
 fn main() {
     App::new()
@@ -171,27 +171,34 @@ fn put_trains_on_rails(
     mut q: Query<(Entity, &BackgroundRow), Added<RailRowMarker>>,
 ) {
     const TRAIN_WIDTH: f32 = 860.;
-    let x: f32;
-
-    // 50:50 chance of train coming from left or right side
-    // we are putting train offset 1200 px so that trains does not
-    // go into screen immediately after rail row scrolling into screen
-    // other approach here would be delay train bundle spawning
-    let train_direction;
-    if get_random_float() < 0.5 {
-        // // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
-        x = -1. * TRAIN_WIDTH - 100.;
-        train_direction = MovementDirection::RIGHT
-    } else {
-        x = SCREEN_WIDTH + 100.;
-        train_direction = MovementDirection::LEFT
-    }
+    let mut x: f32;
 
     for (entity, bg_row) in q.iter_mut() {
         if bg_row.is_rail_row {
-            TrainBundle::new(train_direction.clone(), x, 0., &asset_server)
-                //.spawn_train(&mut commands, entity);
-                .spawn_train_with_delay(&mut commands, entity, 5.);
+            // generate 2 to 4 trains per each track
+            let mut train_delay = 0.;
+            for _ in 1..get_random_i8(2, 4) {
+                // randomize train delay. do it incrementally so that we don't have
+                // train crash on the track :)
+                train_delay = train_delay + get_random_i8(4, 7) as f32;
+
+                // 50:50 chance of train coming from left or right side
+                // we are putting train offset 1200 px so that trains does not
+                // go into screen immediately after rail row scrolling into screen
+                // other approach here would be delay train bundle spawning
+                let train_direction;
+                if get_random_float() < 0.5 {
+                    // // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
+                    x = -1. * TRAIN_WIDTH - 100.;
+                    train_direction = MovementDirection::RIGHT
+                } else {
+                    x = SCREEN_WIDTH + 100.;
+                    train_direction = MovementDirection::LEFT
+                }
+                TrainBundle::new(train_direction.clone(), x, 0., &asset_server)
+                    //.spawn_train(&mut commands, entity);
+                    .spawn_train_with_delay(&mut commands, entity, train_delay);
+            }
         }
     }
 }

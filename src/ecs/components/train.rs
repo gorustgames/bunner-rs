@@ -1,6 +1,44 @@
-use crate::ecs::components::{TrainTimer, MovementDirection};
+use crate::ecs::components::{MovementDirection, TrainTimer};
+use crate::get_random_i8;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use lazy_static::lazy_static;
+
+struct TrainType {
+    pub left_dir_train: String,
+    pub right_dir_train: String,
+}
+
+lazy_static! {
+    static ref ALL_TRAIN_TYPES: [TrainType; 3] = {
+        let train1 = TrainType {
+            left_dir_train: "images/train00.png".to_owned(),
+            right_dir_train: "images/train01.png".to_owned(),
+        };
+
+        let train2 = TrainType {
+            left_dir_train: "images/train10.png".to_owned(),
+            right_dir_train: "images/train11.png".to_owned(),
+        };
+
+        let train3 = TrainType {
+            left_dir_train: "images/train20.png".to_owned(),
+            right_dir_train: "images/train21.png".to_owned(),
+        };
+
+        [train1, train2, train3]
+    };
+}
+
+fn get_random_train(direction: &MovementDirection) -> String {
+    let random_train = &ALL_TRAIN_TYPES[get_random_i8(0, 2) as usize];
+
+    if *direction == MovementDirection::LEFT {
+        random_train.left_dir_train.to_owned()
+    } else {
+        random_train.right_dir_train.to_owned()
+    }
+}
 
 #[derive(Bundle)]
 pub struct TrainBundle {
@@ -22,12 +60,7 @@ impl TrainBundle {
                     anchor: Anchor::BottomLeft,
                     ..default()
                 },
-                // TODO: randomize train color!
-                texture: asset_server.load(if direction == MovementDirection::LEFT {
-                    "images/train00.png"
-                } else {
-                    "images/train01.png"
-                }),
+                texture: asset_server.load(&get_random_train(&direction)),
                 transform: Transform::from_xyz(x, y, 1.),
                 ..default()
             },
