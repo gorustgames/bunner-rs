@@ -243,7 +243,7 @@ pub fn put_trains_on_rails(
 /// 1. generate car speed of very first car within <from, to>
 /// 2. each subsequent car has 50:50 chance of having same speed as previous car
 /// 3. if speed should differ it should be only smaller. this is to ensure we have no collisions
-fn get_random_car_speed(max: i32, from: i32, to: i32) -> f32 {
+fn get_random_car_speed(max: i32, from: i32, to: i32) -> i32 {
     let mut car_speed: i32 = 0;
     let mut speed_ok = false;
     while !speed_ok {
@@ -252,7 +252,7 @@ fn get_random_car_speed(max: i32, from: i32, to: i32) -> f32 {
             speed_ok = true;
         }
     }
-    car_speed as f32
+    car_speed
 }
 
 /// this system is generating cars on added road rows
@@ -265,8 +265,7 @@ pub fn put_cars_on_roads(
 
     for (entity, bg_row) in q.iter_mut() {
         if bg_row.is_road_row {
-            // determine max car speed for given road...
-            let max_car_speed = get_random_i32(CAR_SPEED_FROM, CAR_SPEED_TO);
+            let mut previous_car_speed = CAR_SPEED_TO;
 
             let mut car_delay = 0.;
 
@@ -279,25 +278,21 @@ pub fn put_cars_on_roads(
             };
 
             // generate 4 to 20 cars per each road row
-            for i in 0..get_random_i8(4, 20) {
+            for _ in 1..=get_random_i8(4, 20) {
                 // randomize car delay
-                car_delay = car_delay + get_random_i8(1, 4) as f32;
+                car_delay = car_delay + get_random_i8(3, 7) as f32;
 
-                // first car has max_car_speed
-                // each subsequent car can have at most same speed to prevent car clashes
-                let car_speed = if i == 0 {
-                    max_car_speed as f32
-                } else {
-                    get_random_car_speed(max_car_speed, CAR_SPEED_FROM, CAR_SPEED_TO)
-                };
-                println!("carspeed {}  {}", car_speed, i);
+                // each car can have at most same speed as previous car to prevent clashes!
+                let car_speed =get_random_car_speed(previous_car_speed, CAR_SPEED_FROM, CAR_SPEED_TO);
+                previous_car_speed = car_speed;
+
                 if car_direction == MovementDirection::RIGHT {
                     // // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
                     x = -1. * CAR_WIDTH - 100.;
                 } else {
                     x = SCREEN_WIDTH + 100.;
                 }
-                CarBundle::new(car_direction.clone(), x, 0., car_speed, &asset_server)
+                CarBundle::new(car_direction.clone(), x, 0., car_speed as f32, &asset_server)
                     .spawn_car_with_delay(&mut commands, entity, car_delay);
             }
         }
@@ -413,7 +408,7 @@ mod tests {
         for _ in 0..1000 {
             speed = get_random_car_speed(max_speed, CAR_SPEED_FROM, CAR_SPEED_TO);
             println!("generated speed {}", speed);
-            assert_eq!(speed <= max_speed as f32, true);
+            assert_eq!(speed <= max_speed, true);
         }
     }
 }
