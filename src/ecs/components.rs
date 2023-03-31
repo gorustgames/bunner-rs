@@ -49,3 +49,20 @@ impl TrainTimer {
         }
     }
 }
+
+/// same 3 components to support delayed spawning of the cars
+#[derive(Component)]
+pub struct DelayedCarReadyToBeDisplayedMarker;
+
+#[derive(Component)]
+pub struct CarTimer {
+    pub timer: Timer,
+}
+
+impl CarTimer {
+    pub fn new(delay_sec: f32) -> Self {
+        CarTimer {
+            timer: Timer::from_seconds(delay_sec, false),
+        }
+    }
+}

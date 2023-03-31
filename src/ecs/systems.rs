@@ -1,16 +1,17 @@
 use crate::ecs::components::background_row::{
-    BackgroundRow, GameRowBundle, RailRowMarker, WaterRowMarker,
+    BackgroundRow, GameRowBundle, RailRowMarker, RoadRowMarker, WaterRowMarker,
 };
+use crate::ecs::components::car::CarBundle;
 use crate::ecs::components::log::{LogBundle, LogSize};
 use crate::ecs::components::train::TrainBundle;
-use crate::ecs::components::MovementDirection;
 use crate::ecs::components::{
-    DelayedTrainReadyToBeDisplayedMarker, DespawnEntityTimer, TrainTimer,
+    CarTimer, DelayedCarReadyToBeDisplayedMarker, DelayedTrainReadyToBeDisplayedMarker,
+    DespawnEntityTimer, MovementDirection, TrainTimer,
 };
 use crate::{get_random_float, get_random_i32, get_random_i8, is_even_number, is_odd_number};
 use crate::{
-    SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS,
-    SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT,
+    SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_CARS,
+    SCROLLING_SPEED_LOGS, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT,
 };
 use bevy::prelude::*;
 
@@ -41,6 +42,23 @@ pub fn delayed_spawn_train(
             commands
                 .entity(entity)
                 .insert(DelayedTrainReadyToBeDisplayedMarker);
+        }
+    }
+}
+
+/// this system checks if CarTimer associated with CarBundle
+/// has elapsed. If so it will add special marker component to car
+/// which will cause car to come into screen.
+pub fn delayed_spawn_car(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut CarTimer)>,
+) {
+    for (entity, mut se_timer) in query.iter_mut() {
+        if se_timer.timer.tick(time.delta()).just_finished() {
+            commands
+                .entity(entity)
+                .insert(DelayedCarReadyToBeDisplayedMarker);
         }
     }
 }
@@ -140,6 +158,38 @@ pub fn trains_movement(
     }
 }
 
+/// this system moves generated cars on roads
+pub fn cars_movement(
+    q_parent: Query<(&BackgroundRow, &mut Children)>,
+    mut q_child: Query<
+        (&mut Transform, &MovementDirection),
+        (
+            Without<BackgroundRow>,
+            With<DelayedCarReadyToBeDisplayedMarker>,
+        ),
+    >,
+    time: Res<Time>,
+) {
+    for (bg_row, children) in q_parent.iter() {
+        if bg_row.is_road_row {
+            for &child in children.iter() {
+                if let Ok((mut child_transform, movement_direction)) = q_child.get_mut(child) {
+                    match movement_direction {
+                        MovementDirection::LEFT => {
+                            child_transform.translation.x -=
+                                SCROLLING_SPEED_CARS * time.delta_seconds();
+                        }
+                        MovementDirection::RIGHT => {
+                            child_transform.translation.x +=
+                                SCROLLING_SPEED_CARS * time.delta_seconds();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 fn get_random_log_size() -> LogSize {
     if get_random_i32(1, 2) == 1 {
         LogSize::SMALL
@@ -182,6 +232,39 @@ pub fn put_trains_on_rails(
                 TrainBundle::new(train_direction.clone(), x, 0., &asset_server)
                     //.spawn_train(&mut commands, entity);
                     .spawn_train_with_delay(&mut commands, entity, train_delay);
+            }
+        }
+    }
+}
+
+/// this system is generating cars on added road rows
+pub fn put_cars_on_roads(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut q: Query<(Entity, &BackgroundRow), Added<RoadRowMarker>>,
+) {
+    const CAR_WIDTH: f32 = 90.;
+    let mut x: f32;
+
+    for (entity, bg_row) in q.iter_mut() {
+        if bg_row.is_rail_row {
+            // generate 10 to 20 trains per each track
+            let mut car_delay = 0.;
+            for _ in 0..get_random_i8(10, 20) {
+                // randomize car delay
+                car_delay = car_delay + get_random_i8(1, 3) as f32;
+
+                let car_direction;
+                if is_even_number(bg_row.row.get_index()) {
+                    // // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
+                    x = -1. * CAR_WIDTH - 100.;
+                    car_direction = MovementDirection::RIGHT
+                } else {
+                    x = SCREEN_WIDTH + 100.;
+                    car_direction = MovementDirection::LEFT
+                }
+                CarBundle::new(car_direction.clone(), x, 0., 200., &asset_server)
+                    .spawn_car_with_delay(&mut commands, entity, car_delay);
             }
         }
     }

@@ -1,4 +1,4 @@
-use crate::ecs::components::MovementDirection;
+use crate::ecs::components::{CarTimer, MovementDirection};
 use crate::get_random_i8;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
@@ -77,5 +77,20 @@ impl CarBundle {
             direction,
             speed: CarSpeed(speed),
         }
+    }
+
+    /// spawns train bundle with delay
+    pub fn spawn_car_with_delay(
+        self,
+        commands: &mut Commands,
+        parent_entity: Entity,
+        delay_sec: f32,
+    ) {
+        let car = commands
+            .spawn_bundle(self)
+            .insert(CarTimer::new(delay_sec))
+            .id();
+
+        commands.entity(parent_entity).add_child(car);
     }
 }
