@@ -5,6 +5,10 @@ pub mod ecs;
 pub const SCREEN_HEIGHT: f32 = 800.;
 pub const SCREEN_WIDTH: f32 = 480.;
 pub const SEGMENT_HEIGHT: f32 = 40.;
+pub const CAR_SPEED_FROM: i32 = 80;
+pub const CAR_SPEED_TO: i32 = 120;
+pub const CAR_WIDTH: f32 = 90.;
+pub const TRAIN_WIDTH: f32 = 860.;
 
 const SCROLLING_SPEED_BACKGROUND: f32 = 45.;
 const SCROLLING_SPEED_LOGS: f32 = 60.;

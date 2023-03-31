@@ -8,7 +8,10 @@ use crate::ecs::components::{
     CarTimer, DelayedCarReadyToBeDisplayedMarker, DelayedTrainReadyToBeDisplayedMarker,
     DespawnEntityTimer, MovementDirection, TrainTimer,
 };
-use crate::{get_random_float, get_random_i32, get_random_i8, is_even_number, is_odd_number};
+use crate::{
+    get_random_float, get_random_i32, get_random_i8, is_even_number, is_odd_number, CAR_SPEED_FROM,
+    CAR_SPEED_TO, CAR_WIDTH, TRAIN_WIDTH,
+};
 use crate::{
     SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_CARS,
     SCROLLING_SPEED_LOGS, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT,
@@ -204,7 +207,6 @@ pub fn put_trains_on_rails(
     asset_server: Res<AssetServer>,
     mut q: Query<(Entity, &BackgroundRow), Added<RailRowMarker>>,
 ) {
-    const TRAIN_WIDTH: f32 = 860.;
     let mut x: f32;
 
     for (entity, bg_row) in q.iter_mut() {
@@ -237,22 +239,50 @@ pub fn put_trains_on_rails(
     }
 }
 
+/// returns max speed of car from selected interval lower or equal than max
+/// when generating speed for cars on selected row we do following:
+/// 1. generate car speed of very first car within <from, to>
+/// 2. each subsequent car has 50:50 chance of having same speed as previous car
+/// 3. if speed should differ it should be only smaller. this is to ensure we have no collisions
+fn get_random_car_speed(max: i32, from: i32, to: i32) -> f32 {
+    let mut car_speed: i32 = 0;
+    let mut speed_ok = false;
+    while !speed_ok {
+        car_speed = get_random_i32(from, to);
+        if car_speed > 0 && car_speed <= max {
+            speed_ok = true;
+        }
+    }
+    car_speed as f32
+}
+
 /// this system is generating cars on added road rows
 pub fn put_cars_on_roads(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut q: Query<(Entity, &BackgroundRow), Added<RoadRowMarker>>,
 ) {
-    const CAR_WIDTH: f32 = 90.;
     let mut x: f32;
 
     for (entity, bg_row) in q.iter_mut() {
+        // determine max car speed for given road...
+        let max_car_speed = get_random_i32(CAR_SPEED_FROM, CAR_SPEED_TO);
+
         if bg_row.is_road_row {
             // generate 10 to 20 trains per each track
             let mut car_delay = 0.;
-            for _ in 0..get_random_i8(10, 20) {
+
+            for i in 0..get_random_i8(10, 20) {
                 // randomize car delay
-                car_delay = car_delay + get_random_i8(1, 3) as f32;
+                car_delay = car_delay + get_random_i8(1, 4) as f32;
+
+                // first car has max_car_speed
+                // each subsequent car can have at most same speed to prevent car clashes
+                let car_speed = if i == 0 {
+                    max_car_speed as f32
+                } else {
+                    get_random_car_speed(max_car_speed, CAR_SPEED_FROM, CAR_SPEED_TO)
+                };
 
                 let car_direction;
                 if is_even_number(bg_row.row.get_index()) {
@@ -263,7 +293,7 @@ pub fn put_cars_on_roads(
                     x = SCREEN_WIDTH + 100.;
                     car_direction = MovementDirection::LEFT
                 }
-                CarBundle::new(car_direction.clone(), x, 0., 200., &asset_server)
+                CarBundle::new(car_direction.clone(), x, 0., car_speed, &asset_server)
                     .spawn_car_with_delay(&mut commands, entity, car_delay);
             }
         }

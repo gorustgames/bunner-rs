@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use bunner_rs::ecs::components::car::CarBundle;
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
 use bunner_rs::ecs::components::train::TrainBundle;
 use bunner_rs::ecs::components::MovementDirection;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::boxed::Box;
-use bunner_rs::ecs::components::car::CarBundle;
 
 const SEGMENT_HEIGHT: f32 = 40.;
 const SCREEN_HEIGHT: f32 = 800.;
@@ -365,8 +365,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn_bundle(CarBundle::new(
         MovementDirection::LEFT,
-        240. - 90., // car is 90x59 px
-        -400. + 15.*40.,// there are 15 rows till the first road row
+        240. - 90.,        // car is 90x59 px
+        -400. + 15. * 40., // there are 15 rows till the first road row
         200.,
         &asset_server,
     ));
@@ -374,7 +374,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(CarBundle::new(
         MovementDirection::LEFT,
         240. - 90.,
-        -400. + 16.*40.,
+        -400. + 16. * 40.,
         200.,
         &asset_server,
     ));
@@ -382,7 +382,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(CarBundle::new(
         MovementDirection::RIGHT,
         240. - 90.,
-        -400. + 17.*40.,
+        -400. + 17. * 40.,
         200.,
         &asset_server,
     ));

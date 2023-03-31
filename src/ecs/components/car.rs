@@ -79,7 +79,7 @@ impl CarBundle {
         }
     }
 
-    /// spawns train bundle with delay
+    /// spawns car bundle with delay
     pub fn spawn_car_with_delay(
         self,
         commands: &mut Commands,
