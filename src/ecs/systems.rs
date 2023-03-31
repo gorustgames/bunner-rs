@@ -247,7 +247,7 @@ pub fn put_cars_on_roads(
     let mut x: f32;
 
     for (entity, bg_row) in q.iter_mut() {
-        if bg_row.is_rail_row {
+        if bg_row.is_road_row {
             // generate 10 to 20 trains per each track
             let mut car_delay = 0.;
             for _ in 0..get_random_i8(10, 20) {
