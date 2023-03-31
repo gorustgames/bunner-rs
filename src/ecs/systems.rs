@@ -63,7 +63,7 @@ pub fn delayed_spawn_car(
     }
 }
 
-/// this system take care of scrolling of generated background landscape
+/// this system takes care of scrolling of generated background landscape
 pub fn background_scrolling(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
