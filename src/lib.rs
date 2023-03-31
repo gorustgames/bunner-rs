@@ -2,6 +2,14 @@ use rand::Rng;
 
 pub mod ecs;
 
+pub const SCREEN_HEIGHT: f32 = 800.;
+pub const SCREEN_WIDTH: f32 = 480.;
+pub const SEGMENT_HEIGHT: f32 = 40.;
+
+const SCROLLING_SPEED_BACKGROUND: f32 = 45.;
+const SCROLLING_SPEED_LOGS: f32 = 60.;
+const SCROLLING_SPEED_TRAINS: f32 = 800.;
+
 /// returns a random float from interval <0.,1.)
 pub fn get_random_float() -> f64 {
     let mut rng = rand::thread_rng();
