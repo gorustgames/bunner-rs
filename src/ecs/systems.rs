@@ -1,7 +1,7 @@
 use crate::ecs::components::background_row::{
     BackgroundRow, GameRowBundle, RailRowMarker, RoadRowMarker, WaterRowMarker,
 };
-use crate::ecs::components::car::CarBundle;
+use crate::ecs::components::car::{CarBundle, CarSpeed};
 use crate::ecs::components::log::{LogBundle, LogSize};
 use crate::ecs::components::train::TrainBundle;
 use crate::ecs::components::{
@@ -10,11 +10,8 @@ use crate::ecs::components::{
 };
 use crate::{
     get_random_float, get_random_i32, get_random_i8, is_even_number, is_odd_number, CAR_SPEED_FROM,
-    CAR_SPEED_TO, CAR_WIDTH, TRAIN_WIDTH,
-};
-use crate::{
-    SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_CARS,
-    SCROLLING_SPEED_LOGS, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT,
+    CAR_SPEED_TO, CAR_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND,
+    SCROLLING_SPEED_LOGS, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, TRAIN_WIDTH,
 };
 use bevy::prelude::*;
 
@@ -165,7 +162,7 @@ pub fn trains_movement(
 pub fn cars_movement(
     q_parent: Query<(&BackgroundRow, &mut Children)>,
     mut q_child: Query<
-        (&mut Transform, &MovementDirection),
+        (&mut Transform, &MovementDirection, &CarSpeed),
         (
             Without<BackgroundRow>,
             With<DelayedCarReadyToBeDisplayedMarker>,
@@ -176,15 +173,17 @@ pub fn cars_movement(
     for (bg_row, children) in q_parent.iter() {
         if bg_row.is_road_row {
             for &child in children.iter() {
-                if let Ok((mut child_transform, movement_direction)) = q_child.get_mut(child) {
+                if let Ok((mut child_transform, movement_direction, car_speed)) =
+                    q_child.get_mut(child)
+                {
                     match movement_direction {
                         MovementDirection::LEFT => {
                             child_transform.translation.x -=
-                                SCROLLING_SPEED_CARS * time.delta_seconds();
+                                car_speed.value() * time.delta_seconds();
                         }
                         MovementDirection::RIGHT => {
                             child_transform.translation.x +=
-                                SCROLLING_SPEED_CARS * time.delta_seconds();
+                                car_speed.value() * time.delta_seconds();
                         }
                     }
                 }
@@ -265,13 +264,21 @@ pub fn put_cars_on_roads(
     let mut x: f32;
 
     for (entity, bg_row) in q.iter_mut() {
-        // determine max car speed for given road...
-        let max_car_speed = get_random_i32(CAR_SPEED_FROM, CAR_SPEED_TO);
-
         if bg_row.is_road_row {
-            // generate 4 to 20 cars per each road row
+            // determine max car speed for given road...
+            let max_car_speed = get_random_i32(CAR_SPEED_FROM, CAR_SPEED_TO);
+
             let mut car_delay = 0.;
 
+            // for given row there is 50:50 chance for cars going left or right
+            let car_direction = if get_random_float() < 0.5 {
+                // // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
+                MovementDirection::RIGHT
+            } else {
+                MovementDirection::LEFT
+            };
+
+            // generate 4 to 20 cars per each road row
             for i in 0..get_random_i8(4, 20) {
                 // randomize car delay
                 car_delay = car_delay + get_random_i8(1, 4) as f32;
@@ -283,15 +290,12 @@ pub fn put_cars_on_roads(
                 } else {
                     get_random_car_speed(max_car_speed, CAR_SPEED_FROM, CAR_SPEED_TO)
                 };
-
-                let car_direction;
-                if is_even_number(bg_row.row.get_index()) {
+                println!("carspeed {}  {}", car_speed, i);
+                if car_direction == MovementDirection::RIGHT {
                     // // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
                     x = -1. * CAR_WIDTH - 100.;
-                    car_direction = MovementDirection::RIGHT
                 } else {
                     x = SCREEN_WIDTH + 100.;
-                    car_direction = MovementDirection::LEFT
                 }
                 CarBundle::new(car_direction.clone(), x, 0., car_speed, &asset_server)
                     .spawn_car_with_delay(&mut commands, entity, car_delay);
@@ -390,6 +394,26 @@ pub fn put_logs_on_water(
                     .spawn_log(&mut commands, entity);
                 }
             }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::get_random_car_speed;
+    use crate::{CAR_SPEED_FROM, CAR_SPEED_TO};
+
+    // cargo test test_get_random_car_speed -- --show-output
+    #[test]
+    fn test_get_random_car_speed() {
+        let mut speed;
+
+        let max_speed= 90;
+
+        for _ in 0..1000 {
+            speed = get_random_car_speed(max_speed, CAR_SPEED_FROM, CAR_SPEED_TO);
+            println!("generated speed {}", speed);
+            assert_eq!(speed <= max_speed as f32, true);
         }
     }
 }

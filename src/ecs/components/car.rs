@@ -48,6 +48,12 @@ fn get_random_car(direction: &MovementDirection) -> String {
 #[derive(Component)]
 pub struct CarSpeed(f32);
 
+impl CarSpeed {
+    pub fn value(&self) -> f32 {
+        self.0
+    }
+}
+
 #[derive(Bundle)]
 pub struct CarBundle {
     #[bundle]
