@@ -269,10 +269,10 @@ pub fn put_cars_on_roads(
         let max_car_speed = get_random_i32(CAR_SPEED_FROM, CAR_SPEED_TO);
 
         if bg_row.is_road_row {
-            // generate 10 to 20 trains per each track
+            // generate 4 to 20 cars per each road row
             let mut car_delay = 0.;
 
-            for i in 0..get_random_i8(10, 20) {
+            for i in 0..get_random_i8(4, 20) {
                 // randomize car delay
                 car_delay = car_delay + get_random_i8(1, 4) as f32;
 
