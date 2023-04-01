@@ -16,3 +16,4 @@ cargo run --example 01_move_sprite
 * [Bevy Examples](https://github.com/bevyengine/bevy/tree/latest/examples#examples)
 * [Rust Doc](https://docs.rs/bevy/latest/bevy/)
 * [Bevy Cheat Book](https://bevy-cheatbook.github.io/)
+* [Testing ECS systems](https://github.com/bevyengine/bevy/blob/latest/tests/how_to_test_systems.rs)
