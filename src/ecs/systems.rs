@@ -283,7 +283,8 @@ pub fn put_cars_on_roads(
                 car_delay = car_delay + get_random_i8(3, 7) as f32;
 
                 // each car can have at most same speed as previous car to prevent clashes!
-                let car_speed =get_random_car_speed(previous_car_speed, CAR_SPEED_FROM, CAR_SPEED_TO);
+                let car_speed =
+                    get_random_car_speed(previous_car_speed, CAR_SPEED_FROM, CAR_SPEED_TO);
                 previous_car_speed = car_speed;
 
                 if car_direction == MovementDirection::RIGHT {
@@ -292,8 +293,14 @@ pub fn put_cars_on_roads(
                 } else {
                     x = SCREEN_WIDTH + 100.;
                 }
-                CarBundle::new(car_direction.clone(), x, 0., car_speed as f32, &asset_server)
-                    .spawn_car_with_delay(&mut commands, entity, car_delay);
+                CarBundle::new(
+                    car_direction.clone(),
+                    x,
+                    0.,
+                    car_speed as f32,
+                    &asset_server,
+                )
+                .spawn_car_with_delay(&mut commands, entity, car_delay);
             }
         }
     }
@@ -403,7 +410,7 @@ mod tests {
     fn test_get_random_car_speed() {
         let mut speed;
 
-        let max_speed= 90;
+        let max_speed = 90;
 
         for _ in 0..1000 {
             speed = get_random_car_speed(max_speed, CAR_SPEED_FROM, CAR_SPEED_TO);
