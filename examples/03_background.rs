@@ -352,10 +352,9 @@ fn setup_bushes(mut commands: Commands, asset_server: Res<AssetServer>) {
         BushHorizontalType::LEFTMOST,
     ));
 
-
     commands.spawn_bundle(BushBundle::new(
         &asset_server,
-        -200.+40.*1.,
+        -200. + 40. * 1.,
         -360.,
         BushVerticalType::BOTTOM,
         BushHorizontalType::MIDDLE1,
@@ -363,7 +362,7 @@ fn setup_bushes(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn_bundle(BushBundle::new(
         &asset_server,
-        -200.+40.*1.,
+        -200. + 40. * 1.,
         -320.,
         BushVerticalType::TOP,
         BushHorizontalType::MIDDLE1,
@@ -371,7 +370,7 @@ fn setup_bushes(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn_bundle(BushBundle::new(
         &asset_server,
-        -200.+40.*2.,
+        -200. + 40. * 2.,
         -360.,
         BushVerticalType::BOTTOM,
         BushHorizontalType::MIDDLE2,
@@ -379,7 +378,7 @@ fn setup_bushes(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn_bundle(BushBundle::new(
         &asset_server,
-        -200.+40.*2.,
+        -200. + 40. * 2.,
         -320.,
         BushVerticalType::TOP,
         BushHorizontalType::MIDDLE2,
@@ -387,7 +386,7 @@ fn setup_bushes(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn_bundle(BushBundle::new(
         &asset_server,
-        -200.+40.*3.,
+        -200. + 40. * 3.,
         -360.,
         BushVerticalType::BOTTOM,
         BushHorizontalType::MIDDLE3,
@@ -395,7 +394,7 @@ fn setup_bushes(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn_bundle(BushBundle::new(
         &asset_server,
-        -200.+40.*3.,
+        -200. + 40. * 3.,
         -320.,
         BushVerticalType::TOP,
         BushHorizontalType::MIDDLE3,
@@ -403,7 +402,7 @@ fn setup_bushes(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn_bundle(BushBundle::new(
         &asset_server,
-        -200.+40.*4.,
+        -200. + 40. * 4.,
         -360.,
         BushVerticalType::BOTTOM,
         BushHorizontalType::RIGHTMOST,
@@ -411,16 +410,15 @@ fn setup_bushes(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn_bundle(BushBundle::new(
         &asset_server,
-        -200.+40.*4.,
+        -200. + 40. * 4.,
         -320.,
         BushVerticalType::TOP,
         BushHorizontalType::RIGHTMOST,
     ));
 
-
     commands.spawn_bundle(BushBundle::new(
         &asset_server,
-        -200.+40.*6.,
+        -200. + 40. * 6.,
         -360.,
         BushVerticalType::BOTTOM,
         BushHorizontalType::SINGLE,
@@ -428,12 +426,11 @@ fn setup_bushes(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn_bundle(BushBundle::new(
         &asset_server,
-        -200.+40.*6.,
+        -200. + 40. * 6.,
         -320.,
         BushVerticalType::TOP,
         BushHorizontalType::SINGLE,
     ));
-
 }
 
 #[allow(dead_code)]
