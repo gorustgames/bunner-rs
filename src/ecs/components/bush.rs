@@ -1,5 +1,3 @@
-use crate::ecs::components::MovementDirection;
-use crate::get_random_i8;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 

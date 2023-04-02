@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bunner_rs::ecs::components::background_row::{GameRowBundle, GrassRow, Row};
 
+use bunner_rs::ecs::resources::BackgroundRows;
 use bunner_rs::ecs::systems::*;
 use bunner_rs::ecs::systems::{delayed_despawn_recursive, delayed_spawn_train};
 use bunner_rs::{SCREEN_HEIGHT, SCREEN_WIDTH, SEGMENT_HEIGHT};
@@ -27,10 +28,15 @@ fn main() {
         .add_system(delayed_despawn_recursive)
         .add_system(delayed_spawn_train)
         .add_system(delayed_spawn_car)
+        .insert_resource(BackgroundRows::new())
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut bg_rows: ResMut<BackgroundRows>,
+) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     let offset_from_bottom = 0.;
@@ -52,6 +58,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         let x = -1. * (SCREEN_WIDTH / 2.);
         let row = rows.pop().unwrap();
 
+        bg_rows.add_row(row.clone_row());
         let new_bundle = GameRowBundle::new(row, x, y, &asset_server, i == row_count - 1);
         new_bundle.spawn_bundle_with_markers(&mut commands);
     }

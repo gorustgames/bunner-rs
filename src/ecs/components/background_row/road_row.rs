@@ -41,6 +41,11 @@ impl Row for RoadRow {
             }
         }
     }
+
+    fn clone_row(&self) -> Box<dyn Row> {
+        Box::new(Self { index: self.index })
+    }
+
     fn get_index(&self) -> i8 {
         self.index
     }

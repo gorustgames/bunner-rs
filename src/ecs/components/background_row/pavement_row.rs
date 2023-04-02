@@ -20,6 +20,11 @@ impl Row for PavementRow {
             Box::new(RoadRow::new_road_row(0))
         }
     }
+
+    fn clone_row(&self) -> Box<dyn Row> {
+        Box::new(Self { index: self.index })
+    }
+
     fn get_index(&self) -> i8 {
         self.index
     }

@@ -1,9 +1,9 @@
-use crate::ecs::components::background_row::BackgroundRow;
+use crate::ecs::components::background_row::Row;
 use sliding_window::typenum::consts::*;
 use sliding_window::*;
 
 pub struct BackgroundRows {
-    rows: SlidingWindow<BackgroundRow, U20>,
+    rows: SlidingWindow<Box<dyn Row>, U20>,
 }
 
 impl BackgroundRows {
@@ -13,7 +13,7 @@ impl BackgroundRows {
         }
     }
 
-    pub fn add_row(&mut self, bg_row: BackgroundRow) {
-        self.rows.insert(bg_row);
+    pub fn add_row(&mut self, row: Box<dyn Row>) {
+        self.rows.insert(row);
     }
 }

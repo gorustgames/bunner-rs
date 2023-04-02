@@ -8,6 +8,7 @@ use crate::ecs::components::{
     CarTimer, DelayedCarReadyToBeDisplayedMarker, DelayedTrainReadyToBeDisplayedMarker,
     DespawnEntityTimer, MovementDirection, TrainTimer,
 };
+use crate::ecs::resources::BackgroundRows;
 use crate::{
     get_random_float, get_random_i32, get_random_i8, is_even_number, is_odd_number, CAR_SPEED_FROM,
     CAR_SPEED_TO, CAR_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND,
@@ -69,6 +70,7 @@ pub fn background_scrolling(
     asset_server: Res<AssetServer>,
     time: Res<Time>,
     mut q: Query<(Entity, &mut Transform, &mut BackgroundRow)>,
+    mut bg_rows: ResMut<BackgroundRows>,
 ) {
     for (entity, mut transform, mut bg_row) in q.iter_mut() {
         transform.translation.y -= SCROLLING_SPEED_BACKGROUND * time.delta_seconds();
@@ -81,7 +83,9 @@ pub fn background_scrolling(
             let x = -1. * (SCREEN_WIDTH / 2.);
             let y = transform.translation.y + SEGMENT_HEIGHT;
 
-            let new_bundle = GameRowBundle::new(bg_row.row.next(), x, y, &asset_server, true);
+            let next_bg_row = bg_row.row.next();
+            bg_rows.add_row(next_bg_row.clone_row());
+            let new_bundle = GameRowBundle::new(next_bg_row, x, y, &asset_server, true);
             new_bundle.spawn_bundle_with_markers(&mut commands);
         }
 

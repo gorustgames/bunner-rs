@@ -23,6 +23,11 @@ impl Row for GrassRow {
             _ => get_road_or_water_row(),
         }
     }
+
+    fn clone_row(&self) -> Box<dyn Row> {
+        Box::new(Self { index: self.index })
+    }
+
     fn get_index(&self) -> i8 {
         self.index
     }
