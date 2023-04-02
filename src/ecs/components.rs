@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 pub mod background_row;
+pub mod bush;
 pub mod car;
 pub mod log;
 pub mod train;

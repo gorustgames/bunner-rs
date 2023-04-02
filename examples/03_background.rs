@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use bunner_rs::ecs::components::bush::{BushBundle, BushHorizontalType, BushVerticalType};
 use bunner_rs::ecs::components::car::CarBundle;
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
 use bunner_rs::ecs::components::train::TrainBundle;
@@ -22,7 +23,7 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
-        .add_startup_system(setup)
+        .add_startup_system(setup_bushes)
         .run();
 }
 
@@ -304,7 +305,7 @@ fn add_dirt(commands: &mut Commands, asset_server: &Res<AssetServer>, offset_fro
 }
 
 #[allow(dead_code)]
-fn setup2(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup_hardcoded(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     add_rail(&mut commands, &asset_server, 0.); // 4 rails x 40 px
@@ -323,7 +324,120 @@ fn setup2(mut commands: Commands, asset_server: Res<AssetServer>) {
     ); // 2 road x 40
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+#[allow(dead_code)]
+fn setup_bushes(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+
+    draw_n_rows(
+        &mut commands,
+        &asset_server,
+        Box::new(GrassRow::new_grass_row(0)),
+        10,
+        0.,
+    );
+
+    commands.spawn_bundle(BushBundle::new(
+        &asset_server,
+        -200.,
+        -360.,
+        BushVerticalType::BOTTOM,
+        BushHorizontalType::LEFTMOST,
+    ));
+
+    commands.spawn_bundle(BushBundle::new(
+        &asset_server,
+        -200.,
+        -320.,
+        BushVerticalType::TOP,
+        BushHorizontalType::LEFTMOST,
+    ));
+
+
+    commands.spawn_bundle(BushBundle::new(
+        &asset_server,
+        -200.+40.*1.,
+        -360.,
+        BushVerticalType::BOTTOM,
+        BushHorizontalType::MIDDLE1,
+    ));
+
+    commands.spawn_bundle(BushBundle::new(
+        &asset_server,
+        -200.+40.*1.,
+        -320.,
+        BushVerticalType::TOP,
+        BushHorizontalType::MIDDLE1,
+    ));
+
+    commands.spawn_bundle(BushBundle::new(
+        &asset_server,
+        -200.+40.*2.,
+        -360.,
+        BushVerticalType::BOTTOM,
+        BushHorizontalType::MIDDLE2,
+    ));
+
+    commands.spawn_bundle(BushBundle::new(
+        &asset_server,
+        -200.+40.*2.,
+        -320.,
+        BushVerticalType::TOP,
+        BushHorizontalType::MIDDLE2,
+    ));
+
+    commands.spawn_bundle(BushBundle::new(
+        &asset_server,
+        -200.+40.*3.,
+        -360.,
+        BushVerticalType::BOTTOM,
+        BushHorizontalType::MIDDLE3,
+    ));
+
+    commands.spawn_bundle(BushBundle::new(
+        &asset_server,
+        -200.+40.*3.,
+        -320.,
+        BushVerticalType::TOP,
+        BushHorizontalType::MIDDLE3,
+    ));
+
+    commands.spawn_bundle(BushBundle::new(
+        &asset_server,
+        -200.+40.*4.,
+        -360.,
+        BushVerticalType::BOTTOM,
+        BushHorizontalType::RIGHTMOST,
+    ));
+
+    commands.spawn_bundle(BushBundle::new(
+        &asset_server,
+        -200.+40.*4.,
+        -320.,
+        BushVerticalType::TOP,
+        BushHorizontalType::RIGHTMOST,
+    ));
+
+
+    commands.spawn_bundle(BushBundle::new(
+        &asset_server,
+        -200.+40.*6.,
+        -360.,
+        BushVerticalType::BOTTOM,
+        BushHorizontalType::SINGLE,
+    ));
+
+    commands.spawn_bundle(BushBundle::new(
+        &asset_server,
+        -200.+40.*6.,
+        -320.,
+        BushVerticalType::TOP,
+        BushHorizontalType::SINGLE,
+    ));
+
+}
+
+#[allow(dead_code)]
+fn setup_random(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     let rail_count = 4;
@@ -338,7 +452,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         Box::new(RailRow::new_rail_row(0)),
         rail_count + water_count + sidewalk_count + road_count + water_count_2,
         0.,
-    ); /**/
+    );
 
     commands.spawn_bundle(LogBundle::new(
         MovementDirection::LEFT,
