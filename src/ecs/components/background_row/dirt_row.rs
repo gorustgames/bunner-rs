@@ -1,5 +1,6 @@
 use crate::ecs::components::background_row::row::Row;
 use crate::ecs::components::background_row::{get_road_or_water_row, RowType};
+use std::any::Any;
 
 #[derive(Debug)]
 pub struct DirtRow {
@@ -44,5 +45,9 @@ impl Row for DirtRow {
 
     fn set_row_mask(&mut self, _: [bool; 12]) {
         return;
+    }
+
+    fn set_row_data(&mut self, _: Box<dyn Any>) {
+        todo!()
     }
 }

@@ -1,15 +1,25 @@
 use crate::ecs::components::background_row::row::Row;
 use crate::ecs::components::background_row::{get_road_or_water_row, RowType};
+use std::any::Any;
 
 #[derive(Debug)]
 pub struct GrassRow {
     index: i8,
     mask: Option<[bool; 12]>,
+
+    /// relevant only if mask is Some(...)
+    /// in that case this attribute represents whether
+    /// mask is top bushes row or bottom bushes row
+    row_with_top_bushes: bool,
 }
 
 impl GrassRow {
     pub fn new_grass_row(index: i8) -> Self {
-        GrassRow { index, mask: None }
+        GrassRow {
+            index,
+            mask: None,
+            row_with_top_bushes: false,
+        }
     }
 }
 
@@ -29,6 +39,7 @@ impl Row for GrassRow {
         Box::new(Self {
             index: self.index,
             mask: self.mask,
+            row_with_top_bushes: self.row_with_top_bushes,
         })
     }
 
@@ -49,5 +60,13 @@ impl Row for GrassRow {
 
     fn set_row_mask(&mut self, mask: [bool; 12]) {
         self.mask = Some(mask);
+    }
+
+    fn set_row_data(&mut self, data: Box<dyn Any>) {
+        if let Ok(row_with_top_bushes) = data.downcast::<bool>() {
+            if *row_with_top_bushes && self.mask.is_some() {
+                self.row_with_top_bushes = *row_with_top_bushes;
+            }
+        }
     }
 }

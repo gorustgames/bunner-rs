@@ -2,6 +2,7 @@ use crate::ecs::components::background_row::dirt_row::DirtRow;
 use crate::ecs::components::background_row::row::Row;
 use crate::ecs::components::background_row::RowType;
 use crate::{get_random_float, get_random_i8};
+use std::any::Any;
 
 #[derive(Debug)]
 pub struct WaterRow {
@@ -44,6 +45,10 @@ impl Row for WaterRow {
     }
 
     fn set_row_mask(&mut self, _: [bool; 12]) {
+        return;
+    }
+
+    fn set_row_data(&mut self, _: Box<dyn Any>) {
         return;
     }
 }

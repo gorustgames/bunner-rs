@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::fmt::Debug;
 
 #[derive(Debug, PartialEq)]
@@ -30,4 +31,7 @@ pub trait Row: Send + Sync + Debug {
     fn get_row_mask(&self) -> Option<[bool; 12]>;
 
     fn set_row_mask(&mut self, mask: [bool; 12]);
+
+    /// set row arbitrary data (any)
+    fn set_row_data(&mut self, data: Box<dyn Any>);
 }

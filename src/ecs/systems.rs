@@ -96,14 +96,17 @@ pub fn background_scrolling(
                 if let Some(previous_row) = bg_rows.last_row() {
                     if let Some(row_mask) = previous_row.get_row_mask() {
                         next_bg_row.set_row_mask(row_mask);
+                        next_bg_row.set_row_data(Box::new(true)); // this is top hedge row
                     } else {
                         if is_mask_eligible {
                             next_bg_row.set_row_mask(get_random_row_mask());
+                            next_bg_row.set_row_data(Box::new(false)); // this is bottom hedge row
                         }
                     }
                 } else {
                     if is_mask_eligible {
                         next_bg_row.set_row_mask(get_random_row_mask());
+                        next_bg_row.set_row_data(Box::new(false)); // this is bottom hedge row
                     }
                 }
             }

@@ -3,6 +3,7 @@ use crate::ecs::components::background_row::pavement_row::*;
 use crate::ecs::components::background_row::rail_row::*;
 use crate::ecs::components::background_row::row::*;
 use crate::{get_random_float, get_random_i8};
+use std::any::Any;
 
 #[derive(Debug)]
 pub struct RoadRow {
@@ -63,5 +64,9 @@ impl Row for RoadRow {
 
     fn set_row_mask(&mut self, _: [bool; 12]) {
         return;
+    }
+
+    fn set_row_data(&mut self, _: Box<dyn Any>) {
+        todo!()
     }
 }

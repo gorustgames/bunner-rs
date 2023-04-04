@@ -1,6 +1,7 @@
 use crate::ecs::components::background_row::road_row::RoadRow;
 use crate::ecs::components::background_row::row::Row;
 use crate::ecs::components::background_row::RowType;
+use std::any::Any;
 
 #[derive(Debug)]
 pub struct PavementRow {
@@ -43,5 +44,9 @@ impl Row for PavementRow {
 
     fn set_row_mask(&mut self, _: [bool; 12]) {
         return;
+    }
+
+    fn set_row_data(&mut self, _: Box<dyn Any>) {
+        todo!()
     }
 }
