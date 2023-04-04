@@ -10,7 +10,6 @@ cargo run --example 01_move_sprite
 ## Issues
 
 * first water segment: sometimes higher rows in this first segment just don't have any logs at all
-* not able to make window non-resizable
 
 ## Bevy quick links
 * [Learn Bevi](https://bevyengine.org/learn/)
