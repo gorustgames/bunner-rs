@@ -1,5 +1,15 @@
 use std::fmt::Debug;
 
+#[derive(Debug)]
+pub enum RowType {
+    DIRT,
+    GRASS,
+    PAVEMENT,
+    RAIL,
+    ROAD,
+    WATER,
+}
+
 pub trait Row: Send + Sync + Debug {
     fn next(&self) -> Box<dyn Row>;
 
@@ -12,4 +22,12 @@ pub trait Row: Send + Sync + Debug {
     fn get_img_name(&self) -> String {
         format!("images/{}{}.png", self.get_img_base(), self.get_index())
     }
+
+    fn get_row_type(&self) -> RowType;
+
+    /// mask is currently used only by grass rows to
+    /// represent hedge/bushes
+    fn get_row_mask(&self) -> Option<[bool; 12]>;
+
+    fn set_row_mask(&mut self, mask: [bool; 12]);
 }

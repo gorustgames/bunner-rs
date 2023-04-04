@@ -1,5 +1,5 @@
-use crate::ecs::components::background_row::get_road_or_water_row;
 use crate::ecs::components::background_row::row::Row;
+use crate::ecs::components::background_row::{get_road_or_water_row, RowType};
 
 #[derive(Debug)]
 pub struct DirtRow {
@@ -32,5 +32,17 @@ impl Row for DirtRow {
     }
     fn get_img_base(&self) -> String {
         "dirt".to_string()
+    }
+
+    fn get_row_type(&self) -> RowType {
+        RowType::DIRT
+    }
+
+    fn get_row_mask(&self) -> Option<[bool; 12]> {
+        None
+    }
+
+    fn set_row_mask(&mut self, _: [bool; 12]) {
+        return;
     }
 }

@@ -1,5 +1,6 @@
 use crate::ecs::components::background_row::dirt_row::DirtRow;
 use crate::ecs::components::background_row::row::Row;
+use crate::ecs::components::background_row::RowType;
 use crate::{get_random_float, get_random_i8};
 
 #[derive(Debug)]
@@ -32,5 +33,17 @@ impl Row for WaterRow {
     }
     fn get_img_base(&self) -> String {
         "water".to_string()
+    }
+
+    fn get_row_type(&self) -> RowType {
+        RowType::WATER
+    }
+
+    fn get_row_mask(&self) -> Option<[bool; 12]> {
+        None
+    }
+
+    fn set_row_mask(&mut self, _: [bool; 12]) {
+        return;
     }
 }

@@ -52,4 +52,16 @@ impl Row for RoadRow {
     fn get_img_base(&self) -> String {
         "road".to_string()
     }
+
+    fn get_row_type(&self) -> RowType {
+        RowType::ROAD
+    }
+
+    fn get_row_mask(&self) -> Option<[bool; 12]> {
+        None
+    }
+
+    fn set_row_mask(&mut self, _: [bool; 12]) {
+        return;
+    }
 }

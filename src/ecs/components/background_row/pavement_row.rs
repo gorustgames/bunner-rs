@@ -1,5 +1,6 @@
 use crate::ecs::components::background_row::road_row::RoadRow;
 use crate::ecs::components::background_row::row::Row;
+use crate::ecs::components::background_row::RowType;
 
 #[derive(Debug)]
 pub struct PavementRow {
@@ -30,5 +31,17 @@ impl Row for PavementRow {
     }
     fn get_img_base(&self) -> String {
         "side".to_string()
+    }
+
+    fn get_row_type(&self) -> RowType {
+        RowType::PAVEMENT
+    }
+
+    fn get_row_mask(&self) -> Option<[bool; 12]> {
+        None
+    }
+
+    fn set_row_mask(&mut self, _: [bool; 12]) {
+        return;
     }
 }

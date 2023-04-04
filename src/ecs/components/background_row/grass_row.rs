@@ -1,14 +1,15 @@
-use crate::ecs::components::background_row::get_road_or_water_row;
 use crate::ecs::components::background_row::row::Row;
+use crate::ecs::components::background_row::{get_road_or_water_row, RowType};
 
 #[derive(Debug)]
 pub struct GrassRow {
     index: i8,
+    mask: Option<[bool; 12]>,
 }
 
 impl GrassRow {
     pub fn new_grass_row(index: i8) -> Self {
-        GrassRow { index }
+        GrassRow { index, mask: None }
     }
 }
 
@@ -25,7 +26,10 @@ impl Row for GrassRow {
     }
 
     fn clone_row(&self) -> Box<dyn Row> {
-        Box::new(Self { index: self.index })
+        Box::new(Self {
+            index: self.index,
+            mask: self.mask,
+        })
     }
 
     fn get_index(&self) -> i8 {
@@ -33,5 +37,17 @@ impl Row for GrassRow {
     }
     fn get_img_base(&self) -> String {
         "grass".to_string()
+    }
+
+    fn get_row_type(&self) -> RowType {
+        RowType::GRASS
+    }
+
+    fn get_row_mask(&self) -> Option<[bool; 12]> {
+        self.mask
+    }
+
+    fn set_row_mask(&mut self, mask: [bool; 12]) {
+        self.mask = Some(mask);
     }
 }
