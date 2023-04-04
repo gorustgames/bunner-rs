@@ -1,5 +1,5 @@
 use crate::ecs::components::background_row::{
-    BackgroundRow, GameRowBundle, RailRowMarker, RoadRowMarker, WaterRowMarker,
+    BackgroundRow, GameRowBundle, RailRowMarker, RoadRowMarker, RowType, WaterRowMarker,
 };
 use crate::ecs::components::car::{CarBundle, CarSpeed};
 use crate::ecs::components::log::{LogBundle, LogSize};
@@ -10,9 +10,10 @@ use crate::ecs::components::{
 };
 use crate::ecs::resources::BackgroundRows;
 use crate::{
-    get_random_float, get_random_i32, get_random_i8, is_even_number, is_odd_number, CAR_SPEED_FROM,
-    CAR_SPEED_TO, CAR_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND,
-    SCROLLING_SPEED_LOGS, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, TRAIN_WIDTH,
+    get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
+    is_odd_number, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH,
+    SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT,
+    TRAIN_WIDTH,
 };
 use bevy::prelude::*;
 
@@ -83,7 +84,30 @@ pub fn background_scrolling(
             let x = -1. * (SCREEN_WIDTH / 2.);
             let y = transform.translation.y + SEGMENT_HEIGHT;
 
-            let next_bg_row = bg_row.row.next();
+            let mut next_bg_row = bg_row.row.next();
+
+            // for added rows of grass type we might potentially want to add bushes
+            if next_bg_row.get_row_type() == RowType::GRASS {
+                // generate bushes only for certain grass rows (7,14) randomly (50:50)
+                let is_mask_eligible = get_random_float() < 0.5
+                    && next_bg_row.get_index() > 7
+                    && next_bg_row.get_index() < 14;
+
+                if let Some(previous_row) = bg_rows.last_row() {
+                    if let Some(row_mask) = previous_row.get_row_mask() {
+                        next_bg_row.set_row_mask(row_mask);
+                    } else {
+                        if is_mask_eligible {
+                            next_bg_row.set_row_mask(get_random_row_mask());
+                        }
+                    }
+                } else {
+                    if is_mask_eligible {
+                        next_bg_row.set_row_mask(get_random_row_mask());
+                    }
+                }
+            }
+
             bg_rows.add_row(next_bg_row.clone_row());
             let new_bundle = GameRowBundle::new(next_bg_row, x, y, &asset_server, true);
             new_bundle.spawn_bundle_with_markers(&mut commands);
