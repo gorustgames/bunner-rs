@@ -38,6 +38,7 @@ pub struct BackgroundRow {
     pub is_water_row: bool,
     pub is_rail_row: bool,
     pub is_road_row: bool,
+    pub is_grass_row: bool,
 }
 
 #[derive(Component)]
@@ -48,6 +49,9 @@ pub struct RailRowMarker;
 
 #[derive(Component)]
 pub struct RoadRowMarker;
+
+#[derive(Component)]
+pub struct GrassRowMarker;
 
 #[derive(Bundle)]
 pub struct GameRowBundle {
@@ -76,6 +80,7 @@ impl GameRowBundle {
         // rail segments and respective child entities (aka trains)
         let is_rail_row = row.get_img_base() == "rail" && row.get_index() == 1;
         let is_road_row = row.get_img_base() == "road";
+        let is_grass_row = row.get_img_base() == "grass";
 
         // for some reason road will overlap grass segment cutting of its top
         // explicit ordering helps to solve the issue
@@ -101,6 +106,7 @@ impl GameRowBundle {
                 is_water_row,
                 is_rail_row,
                 is_road_row,
+                is_grass_row,
             },
         };
 
@@ -119,6 +125,8 @@ impl GameRowBundle {
             commands.spawn_bundle(self).insert(RailRowMarker);
         } else if self.game_row.is_road_row {
             commands.spawn_bundle(self).insert(RoadRowMarker);
+        } else if self.game_row.is_grass_row {
+            commands.spawn_bundle(self).insert(GrassRowMarker);
         } else {
             commands.spawn_bundle(self);
         }

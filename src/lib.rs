@@ -45,6 +45,42 @@ where
     !is_even_number(num)
 }
 
+/// returns boolean mask where true represents gap and one represents populated area of 40px
+/// this will be used to populate grass row with bushes randomly
+pub fn get_random_row_mask() -> [bool; 12] {
+    let mut row_mask: [bool; 12] = [false; 12]; // init with false values
+
+    // generate random 12 elements mask (since screen width is 40*12 pixels)
+    // false represents hedge
+    // true represents no hedge
+    for i in 0..12 {
+        row_mask[i] = get_random_float() < 0.01;
+    }
+
+    // make at least one gap in hedge mask
+    row_mask[get_random_i8(0, 11) as usize] = true;
+
+    // widen each gap by one more gap to left or right
+    for i in 0..12 {
+        if row_mask[i] == true {
+            match i {
+                0 => row_mask[1] = true,
+                11 => row_mask[10] = true,
+                _ => {
+                    let left_or_right_idx = if get_random_float() < 0.5 {
+                        i - 1
+                    } else {
+                        i + 1
+                    } as usize;
+                    row_mask[left_or_right_idx] = true;
+                }
+            }
+        }
+    }
+
+    row_mask
+}
+
 #[cfg(test)]
 mod tests {
     use super::is_even_number;
