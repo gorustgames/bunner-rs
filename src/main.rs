@@ -10,6 +10,7 @@ fn main() {
             title: "Infinite Bunner".to_string(),
             width: SCREEN_WIDTH,
             height: SCREEN_HEIGHT,
+            resizable: false,
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
@@ -59,7 +60,7 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 align_items: AlignItems::Center,
                 ..Default::default()
             },
-            image: UiImage::from(asset_server.load("images/start1.png")),
+            // image: UiImage::from(asset_server.load("images/start1.png")),
             color: NORMAL_BUTTON.into(),
             ..Default::default()
         })
@@ -69,7 +70,7 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 text: Text::with_section(
                     "Play",
                     TextStyle {
-                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                        font: asset_server.load("fonts/ALGER.TTF"),
                         font_size: 40.0,
                         color: Color::BLACK,
                     },
@@ -92,11 +93,25 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 align_items: AlignItems::Center,
                 ..Default::default()
             },
-            image: UiImage::from(asset_server.load("images/start0.png")),
+            // image: UiImage::from(asset_server.load("images/start0.png")),
             color: NORMAL_BUTTON.into(),
             ..Default::default()
         })
         .insert(ButtonExitMarker)
+        .with_children(|parent| {
+            parent.spawn_bundle(TextBundle {
+                text: Text::with_section(
+                    "Exit",
+                    TextStyle {
+                        font: asset_server.load("fonts/ALGER.TTF"),
+                        font_size: 40.0,
+                        color: Color::BLACK,
+                    },
+                    Default::default(),
+                ),
+                ..Default::default()
+            });
+        })
         .id();
 
     commands.insert_resource(MenuData {
