@@ -69,4 +69,8 @@ impl Row for GrassRow {
             }
         }
     }
+
+    fn get_row_data(&self) -> Option<Box<dyn Any>> {
+        Some(Box::new(self.row_with_top_bushes))
+    }
 }

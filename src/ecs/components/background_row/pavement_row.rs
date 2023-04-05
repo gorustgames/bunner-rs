@@ -47,6 +47,10 @@ impl Row for PavementRow {
     }
 
     fn set_row_data(&mut self, _: Box<dyn Any>) {
-        todo!()
+        return;
+    }
+
+    fn get_row_data(&self) -> Option<Box<dyn Any>> {
+        None
     }
 }

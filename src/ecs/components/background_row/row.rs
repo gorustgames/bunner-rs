@@ -34,4 +34,6 @@ pub trait Row: Send + Sync + Debug {
 
     /// set row arbitrary data (any)
     fn set_row_data(&mut self, data: Box<dyn Any>);
+
+    fn get_row_data(&self) -> Option<Box<dyn Any>>;
 }

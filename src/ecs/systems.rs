@@ -77,18 +77,22 @@ fn generate_hedge(next_bg_row: &mut Box<dyn Row>, bg_rows: &ResMut<BackgroundRow
 
         if let Some(previous_row) = bg_rows.last_row() {
             if let Some(row_mask) = previous_row.get_row_mask() {
-                next_bg_row.set_row_mask(row_mask);
-                next_bg_row.set_row_data(Box::new(true)); // this is top hedge row
+                if let Some(row_data) = previous_row.get_row_data() {
+                    if let Ok(row_with_top_bushes) = row_data.downcast::<bool>() {
+                        if !*row_with_top_bushes {
+                            // create top hedge row only if previous row is bottom row
+                            // if it is top row do not create anything, we want have gap
+                            // between two hedges
+                            next_bg_row.set_row_mask(row_mask);
+                            next_bg_row.set_row_data(Box::new(true)); // this is top hedge row
+                        }
+                    }
+                }
             } else {
                 if is_mask_eligible {
                     next_bg_row.set_row_mask(get_random_row_mask());
                     next_bg_row.set_row_data(Box::new(false)); // this is bottom hedge row
                 }
-            }
-        } else {
-            if is_mask_eligible {
-                next_bg_row.set_row_mask(get_random_row_mask());
-                next_bg_row.set_row_data(Box::new(false)); // this is bottom hedge row
             }
         }
     }

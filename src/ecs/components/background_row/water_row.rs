@@ -51,4 +51,8 @@ impl Row for WaterRow {
     fn set_row_data(&mut self, _: Box<dyn Any>) {
         return;
     }
+
+    fn get_row_data(&self) -> Option<Box<dyn Any>> {
+        None
+    }
 }
