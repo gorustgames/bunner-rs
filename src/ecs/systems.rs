@@ -463,30 +463,36 @@ pub fn put_bushes_on_grass(
                     };
                 }
 
-                for (mask_index, is_gap) in mask.iter().enumerate() {
-                    if mask_index == 0 {
+                for i in 0..12 {
+                    if i == 0 {
                         bush_horizontal_type = BushHorizontalType::LEFTMOST;
-                    } else if mask_index > 0 && mask_index < 11 {
-                        if mask[mask_index - 1] == true {
+                    } else if i > 0 && i < 11 {
+                        if mask[i - 1] == true && mask[i + 1] == true {
+                            bush_horizontal_type = BushHorizontalType::SINGLE;
+                        } else if mask[i - 1] == true && mask[i + 1] == false {
                             bush_horizontal_type = BushHorizontalType::LEFTMOST;
+                        } else if mask[i - 1] == false && mask[i + 1] == true {
+                            bush_horizontal_type = BushHorizontalType::RIGHTMOST;
                         } else {
                             bush_horizontal_type = BushHorizontalType::MIDDLE1;
                         }
                     } else {
-                        if mask[mask_index - 1] == true {
+                        if mask[i - 1] == true {
                             bush_horizontal_type = BushHorizontalType::LEFTMOST;
                         } else {
                             bush_horizontal_type = BushHorizontalType::MIDDLE1;
                         }
                     }
 
-                    if !is_gap {
+                    if !mask[i]
+                    /* if there should be a bush */
+                    {
                         let bush_bundle = BushBundle::new(
                             &asset_server,
-                            -1. * SCREEN_WIDTH / 2. + mask_index as f32 * SEGMENT_WIDTH,
+                            -1. * SCREEN_WIDTH / 2. + i as f32 * SEGMENT_WIDTH,
                             0.,
                             bush_vertical_type,
-                            BushHorizontalType::LEFTMOST,
+                            bush_horizontal_type,
                         );
 
                         let bush = commands.spawn_bundle(bush_bundle).id();
