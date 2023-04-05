@@ -1,5 +1,5 @@
 use crate::ecs::components::background_row::{
-    BackgroundRow, GameRowBundle, RailRowMarker, RoadRowMarker, RowType, WaterRowMarker,
+    BackgroundRow, GameRowBundle, RailRowMarker, RoadRowMarker, Row, RowType, WaterRowMarker,
 };
 use crate::ecs::components::car::{CarBundle, CarSpeed};
 use crate::ecs::components::log::{LogBundle, LogSize};
@@ -65,6 +65,33 @@ pub fn delayed_spawn_car(
     }
 }
 
+/// generate_hedge is helper function used from background_scrolling
+fn generate_hedge(next_bg_row: &mut Box<dyn Row>, bg_rows: &ResMut<BackgroundRows>) {
+    // for added rows of grass type we might potentially want to add bushes
+    if next_bg_row.get_row_type() == RowType::GRASS {
+        // generate bushes only for certain grass rows (7,14) randomly (50:50)
+        let is_mask_eligible =
+            get_random_float() < 0.5 && next_bg_row.get_index() > 7 && next_bg_row.get_index() < 14;
+
+        if let Some(previous_row) = bg_rows.last_row() {
+            if let Some(row_mask) = previous_row.get_row_mask() {
+                next_bg_row.set_row_mask(row_mask);
+                next_bg_row.set_row_data(Box::new(true)); // this is top hedge row
+            } else {
+                if is_mask_eligible {
+                    next_bg_row.set_row_mask(get_random_row_mask());
+                    next_bg_row.set_row_data(Box::new(false)); // this is bottom hedge row
+                }
+            }
+        } else {
+            if is_mask_eligible {
+                next_bg_row.set_row_mask(get_random_row_mask());
+                next_bg_row.set_row_data(Box::new(false)); // this is bottom hedge row
+            }
+        }
+    }
+}
+
 /// this system takes care of scrolling of generated background landscape
 pub fn background_scrolling(
     mut commands: Commands,
@@ -86,30 +113,7 @@ pub fn background_scrolling(
 
             let mut next_bg_row = bg_row.row.next();
 
-            // for added rows of grass type we might potentially want to add bushes
-            if next_bg_row.get_row_type() == RowType::GRASS {
-                // generate bushes only for certain grass rows (7,14) randomly (50:50)
-                let is_mask_eligible = get_random_float() < 0.5
-                    && next_bg_row.get_index() > 7
-                    && next_bg_row.get_index() < 14;
-
-                if let Some(previous_row) = bg_rows.last_row() {
-                    if let Some(row_mask) = previous_row.get_row_mask() {
-                        next_bg_row.set_row_mask(row_mask);
-                        next_bg_row.set_row_data(Box::new(true)); // this is top hedge row
-                    } else {
-                        if is_mask_eligible {
-                            next_bg_row.set_row_mask(get_random_row_mask());
-                            next_bg_row.set_row_data(Box::new(false)); // this is bottom hedge row
-                        }
-                    }
-                } else {
-                    if is_mask_eligible {
-                        next_bg_row.set_row_mask(get_random_row_mask());
-                        next_bg_row.set_row_data(Box::new(false)); // this is bottom hedge row
-                    }
-                }
-            }
+            generate_hedge(&mut next_bg_row, &bg_rows);
 
             bg_rows.add_row(next_bg_row.clone_row());
             let new_bundle = GameRowBundle::new(next_bg_row, x, y, &asset_server, true);
