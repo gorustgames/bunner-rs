@@ -5,6 +5,7 @@ pub mod ecs;
 pub const SCREEN_HEIGHT: f32 = 800.;
 pub const SCREEN_WIDTH: f32 = 480.;
 pub const SEGMENT_HEIGHT: f32 = 40.;
+pub const SEGMENT_WIDTH: f32 = 40.;
 pub const CAR_SPEED_FROM: i32 = 80;
 pub const CAR_SPEED_TO: i32 = 160;
 pub const CAR_WIDTH: f32 = 90.;

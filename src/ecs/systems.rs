@@ -1,6 +1,8 @@
 use crate::ecs::components::background_row::{
-    BackgroundRow, GameRowBundle, RailRowMarker, RoadRowMarker, Row, RowType, WaterRowMarker,
+    BackgroundRow, GameRowBundle, GrassRowMarker, RailRowMarker, RoadRowMarker, Row, RowType,
+    WaterRowMarker,
 };
+use crate::ecs::components::bush::{BushBundle, BushHorizontalType, BushVerticalType};
 use crate::ecs::components::car::{CarBundle, CarSpeed};
 use crate::ecs::components::log::{LogBundle, LogSize};
 use crate::ecs::components::train::TrainBundle;
@@ -13,7 +15,7 @@ use crate::{
     get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
     is_odd_number, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH,
     SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT,
-    TRAIN_WIDTH,
+    SEGMENT_WIDTH, TRAIN_WIDTH,
 };
 use bevy::prelude::*;
 
@@ -364,6 +366,7 @@ pub fn put_logs_on_water(
     let mut x_odd_row = SCREEN_WIDTH / 2. - LOG_SMALL_WIDTH as f32;
 
     for (entity, bg_row) in q.iter_mut() {
+        // TODO: replace with bg_row.row.get_row_type() == RowType::XXX
         if bg_row.is_water_row {
             for i in 1..LOGS_PER_ROW + 1 {
                 // choose big or small randomly
@@ -429,6 +432,33 @@ pub fn put_logs_on_water(
                         &asset_server,
                     )
                     .spawn_log(&mut commands, entity);
+                }
+            }
+        }
+    }
+}
+
+pub fn put_bushes_on_grass(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut q: Query<(Entity, &BackgroundRow), Added<GrassRowMarker>>,
+) {
+    for (entity, bg_row) in q.iter_mut() {
+        if bg_row.row.get_row_type() == RowType::GRASS {
+            if let Some(mask) = bg_row.row.get_row_mask() {
+                for (mask_index, is_gap) in mask.iter().enumerate() {
+                    if !is_gap {
+                        let bush_bundle = BushBundle::new(
+                            &asset_server,
+                            -1. * SCREEN_WIDTH / 2. + mask_index as f32 * SEGMENT_WIDTH,
+                            0.,
+                            BushVerticalType::BOTTOM,
+                            BushHorizontalType::LEFTMOST,
+                        );
+
+                        let bush = commands.spawn_bundle(bush_bundle).id();
+                        commands.entity(entity).add_child(bush);
+                    }
                 }
             }
         }

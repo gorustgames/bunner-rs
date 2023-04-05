@@ -22,6 +22,7 @@ fn main() {
         .add_system(background_scrolling)
         .add_system(put_trains_on_rails)
         .add_system(put_logs_on_water)
+        .add_system(put_bushes_on_grass)
         .add_system(put_cars_on_roads)
         .add_system(logs_movement)
         .add_system(trains_movement)
