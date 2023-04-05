@@ -450,13 +450,42 @@ pub fn put_bushes_on_grass(
     for (entity, bg_row) in q.iter_mut() {
         if bg_row.row.get_row_type() == RowType::GRASS {
             if let Some(mask) = bg_row.row.get_row_mask() {
+                let mut bush_vertical_type = BushVerticalType::BOTTOM;
+                let mut bush_horizontal_type = BushHorizontalType::LEFTMOST;
+
+                if let Ok(row_with_top_bushes) =
+                    bg_row.row.get_row_data().unwrap().downcast::<bool>()
+                {
+                    bush_vertical_type = if *row_with_top_bushes == true {
+                        BushVerticalType::TOP
+                    } else {
+                        BushVerticalType::BOTTOM
+                    };
+                }
+
                 for (mask_index, is_gap) in mask.iter().enumerate() {
+                    if mask_index == 0 {
+                        bush_horizontal_type = BushHorizontalType::LEFTMOST;
+                    } else if mask_index > 0 && mask_index < 11 {
+                        if mask[mask_index - 1] == true {
+                            bush_horizontal_type = BushHorizontalType::LEFTMOST;
+                        } else {
+                            bush_horizontal_type = BushHorizontalType::MIDDLE1;
+                        }
+                    } else {
+                        if mask[mask_index - 1] == true {
+                            bush_horizontal_type = BushHorizontalType::LEFTMOST;
+                        } else {
+                            bush_horizontal_type = BushHorizontalType::MIDDLE1;
+                        }
+                    }
+
                     if !is_gap {
                         let bush_bundle = BushBundle::new(
                             &asset_server,
                             -1. * SCREEN_WIDTH / 2. + mask_index as f32 * SEGMENT_WIDTH,
                             0.,
-                            BushVerticalType::BOTTOM,
+                            bush_vertical_type,
                             BushHorizontalType::LEFTMOST,
                         );
 
