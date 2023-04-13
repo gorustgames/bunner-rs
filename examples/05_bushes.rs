@@ -5,9 +5,10 @@ use bunner_rs::ecs::components::background_row::{
 
 use bunner_rs::ecs::components::bush::{BushBundle, BushHorizontalType, BushVerticalType};
 use bunner_rs::ecs::resources::BackgroundRows;
-use bunner_rs::{get_random_float, SCREEN_HEIGHT, SCREEN_WIDTH, SEGMENT_HEIGHT, SEGMENT_WIDTH};
+use bunner_rs::{SCREEN_HEIGHT, SCREEN_WIDTH, SEGMENT_HEIGHT, SEGMENT_WIDTH};
 use std::boxed::Box;
 
+/// This sample was created to test bushes generative algorithm
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
@@ -15,7 +16,7 @@ fn main() {
             title: "Infinite Bunner".to_string(),
             width: SCREEN_WIDTH,
             height: SCREEN_HEIGHT,
-            resizable: false,
+            resizable: true,
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
@@ -47,7 +48,7 @@ fn setup(
     rows.reverse();
 
     let dummy_random_mask: [bool; 12] = [
-        false, false, false, false, true, true, true, true, true, true, true, true,
+        false, false, true, false, true, false, true, false, false, true, true, false,
     ];
 
     for i in 0..row_count {
@@ -107,7 +108,7 @@ pub fn put_bushes_on_grass(
             if let Some(mask) = bg_row.row.get_row_mask() {
                 println!("processing row {:?}", bg_row);
                 let mut bush_vertical_type = BushVerticalType::BOTTOM;
-                let mut bush_horizontal_type = BushHorizontalType::LEFTMOST;
+                let mut bush_horizontal_type;
 
                 if let Ok(row_with_top_bushes) =
                     bg_row.row.get_row_data().unwrap().downcast::<bool>()
@@ -121,7 +122,11 @@ pub fn put_bushes_on_grass(
 
                 for i in 0..12 {
                     if i == 0 {
-                        bush_horizontal_type = BushHorizontalType::LEFTMOST;
+                        if mask[i + 1] == true {
+                            bush_horizontal_type = BushHorizontalType::SINGLE;
+                        } else {
+                            bush_horizontal_type = BushHorizontalType::LEFTMOST;
+                        }
                     } else if i > 0 && i < 11 {
                         if mask[i - 1] == true && mask[i + 1] == true {
                             bush_horizontal_type = BushHorizontalType::SINGLE;
@@ -149,7 +154,7 @@ pub fn put_bushes_on_grass(
                         );
                         let bush_bundle = BushBundle::new(
                             &asset_server,
-                            -1. * SCREEN_WIDTH / 2. + i as f32 * SEGMENT_WIDTH,
+                            0. + i as f32 * SEGMENT_WIDTH,
                             0.,
                             bush_vertical_type,
                             bush_horizontal_type,

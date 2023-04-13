@@ -451,7 +451,7 @@ pub fn put_bushes_on_grass(
         if bg_row.row.get_row_type() == RowType::GRASS {
             if let Some(mask) = bg_row.row.get_row_mask() {
                 let mut bush_vertical_type = BushVerticalType::BOTTOM;
-                let mut bush_horizontal_type = BushHorizontalType::LEFTMOST;
+                let mut bush_horizontal_type;
 
                 if let Ok(row_with_top_bushes) =
                     bg_row.row.get_row_data().unwrap().downcast::<bool>()
@@ -465,7 +465,11 @@ pub fn put_bushes_on_grass(
 
                 for i in 0..12 {
                     if i == 0 {
-                        bush_horizontal_type = BushHorizontalType::LEFTMOST;
+                        if mask[i + 1] == true {
+                            bush_horizontal_type = BushHorizontalType::SINGLE;
+                        } else {
+                            bush_horizontal_type = BushHorizontalType::LEFTMOST;
+                        }
                     } else if i > 0 && i < 11 {
                         if mask[i - 1] == true && mask[i + 1] == true {
                             bush_horizontal_type = BushHorizontalType::SINGLE;
@@ -489,7 +493,7 @@ pub fn put_bushes_on_grass(
                     {
                         let bush_bundle = BushBundle::new(
                             &asset_server,
-                            -1. * SCREEN_WIDTH / 2. + i as f32 * SEGMENT_WIDTH,
+                            0. + i as f32 * SEGMENT_WIDTH,
                             0.,
                             bush_vertical_type,
                             bush_horizontal_type,
