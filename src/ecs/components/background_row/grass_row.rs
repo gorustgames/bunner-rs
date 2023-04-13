@@ -58,10 +58,18 @@ impl Row for GrassRow {
         self.mask
     }
 
+    /// row mask is array of booleans that can represent some specific data for given row
+    /// for grass meaning of mask is as follows:
+    /// false - there is hedge/bush present on given 40px part of the row
+    /// true - there is a gap on respective 40px row part
     fn set_row_mask(&mut self, mask: [bool; 12]) {
         self.mask = Some(mask);
     }
 
+    /// row data represents arbitrary data associated with respective row
+    /// for grass row meaning is following:
+    /// true - this is the row with bushes and it is TOP row
+    /// false- this is the row with bushes and it is BOTTOM row
     fn set_row_data(&mut self, data: Box<dyn Any>) {
         if let Ok(row_with_top_bushes) = data.downcast::<bool>() {
             if *row_with_top_bushes && self.mask.is_some() {

@@ -28,12 +28,12 @@ pub trait Row: Send + Sync + Debug {
 
     /// mask is currently used only by grass rows to
     /// represent hedge/bushes
-    fn get_row_mask(&self) -> Option<[bool; 12]>;
-
     fn set_row_mask(&mut self, mask: [bool; 12]);
 
     /// set row arbitrary data (any)
     fn set_row_data(&mut self, data: Box<dyn Any>);
+
+    fn get_row_mask(&self) -> Option<[bool; 12]>;
 
     fn get_row_data(&self) -> Option<Box<dyn Any>>;
 }
