@@ -3,6 +3,7 @@ use bevy::sprite::Anchor;
 use bunner_rs::ecs::components::bush::{BushBundle, BushHorizontalType, BushVerticalType};
 use bunner_rs::ecs::components::car::CarBundle;
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
+use bunner_rs::ecs::components::player::PlayerBundle;
 use bunner_rs::ecs::components::train::TrainBundle;
 use bunner_rs::ecs::components::MovementDirection;
 use rand::seq::SliceRandom;
@@ -325,7 +326,11 @@ fn setup_hardcoded(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 #[allow(dead_code)]
-fn setup_bushes(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup_bushes(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_assets: ResMut<Assets<TextureAtlas>>,
+) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     draw_n_rows(
@@ -431,6 +436,8 @@ fn setup_bushes(mut commands: Commands, asset_server: Res<AssetServer>) {
         BushVerticalType::TOP,
         BushHorizontalType::SINGLE,
     ));
+
+    PlayerBundle::new(0., 0., &asset_server, &mut texture_atlas_assets).spawn_player(&mut commands);
 }
 
 #[allow(dead_code)]

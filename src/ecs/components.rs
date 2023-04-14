@@ -4,6 +4,7 @@ pub mod background_row;
 pub mod bush;
 pub mod car;
 pub mod log;
+pub mod player;
 pub mod train;
 
 #[derive(Debug, Component, PartialEq, Clone)]
