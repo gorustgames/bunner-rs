@@ -17,8 +17,8 @@ use crate::ecs::resources::BackgroundRows;
 use crate::{
     get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
     is_odd_number, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH,
-    SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT,
-    SEGMENT_WIDTH, TRAIN_WIDTH,
+    SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER,
+    SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH,
 };
 use bevy::prelude::*;
 
@@ -167,21 +167,16 @@ pub fn player_movement(
         With<Player>,
     >,
 ) {
-    if let Ok((
-        mut transform,
-        mut sprite,
-        mut timer,
-        mut direction,
-        mut direction_idx,
-    )) = query.get_single_mut()
+    if let Ok((mut transform, mut sprite, mut timer, mut direction, mut direction_idx)) =
+        query.get_single_mut()
     {
         timer.tick(time.delta());
 
         if keyboard_input.pressed(KeyCode::Up) {
             *direction = PlayerDirection::Up;
-            transform.translation.y += 150. * time.delta_seconds();
-            if transform.translation.y > 370. {
-                transform.translation.y = 370.;
+            transform.translation.y += SCROLLING_SPEED_PLAYER * time.delta_seconds();
+            if transform.translation.y > SCREEN_HEIGHT / 2. - SEGMENT_HEIGHT {
+                transform.translation.y = SCREEN_HEIGHT / 2. - SEGMENT_HEIGHT;
             }
 
             if timer.just_finished() {
@@ -191,9 +186,9 @@ pub fn player_movement(
 
         if keyboard_input.pressed(KeyCode::Down) {
             *direction = PlayerDirection::Down;
-            transform.translation.y -= 150. * time.delta_seconds();
-            if transform.translation.y < -370. {
-                transform.translation.y = -370.;
+            transform.translation.y -= SCROLLING_SPEED_PLAYER * time.delta_seconds();
+            if transform.translation.y < SCREEN_HEIGHT / -2. {
+                transform.translation.y = SCREEN_HEIGHT / -2.;
             }
 
             if timer.just_finished() {
@@ -203,9 +198,9 @@ pub fn player_movement(
 
         if keyboard_input.pressed(KeyCode::Left) {
             *direction = PlayerDirection::Left;
-            transform.translation.x -= 150. * time.delta_seconds();
-            if transform.translation.x < -220. {
-                transform.translation.x = -220.;
+            transform.translation.x -= SCROLLING_SPEED_PLAYER * time.delta_seconds();
+            if transform.translation.x < SCREEN_WIDTH / -2. {
+                transform.translation.x = SCREEN_WIDTH / -2.;
             }
 
             if timer.just_finished() {
@@ -215,9 +210,9 @@ pub fn player_movement(
 
         if keyboard_input.pressed(KeyCode::Right) {
             *direction = PlayerDirection::Right;
-            transform.translation.x += 150. * time.delta_seconds();
-            if transform.translation.x > 220. {
-                transform.translation.x = 220.;
+            transform.translation.x += SCROLLING_SPEED_PLAYER * time.delta_seconds();
+            if transform.translation.x > SCREEN_WIDTH / 2. - SEGMENT_WIDTH {
+                transform.translation.x = SCREEN_WIDTH / 2. - SEGMENT_WIDTH;
             }
 
             if timer.just_finished() {
