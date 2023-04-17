@@ -5,6 +5,9 @@ use crate::ecs::components::background_row::{
 use crate::ecs::components::bush::{BushBundle, BushHorizontalType, BushVerticalType};
 use crate::ecs::components::car::{CarBundle, CarSpeed};
 use crate::ecs::components::log::{LogBundle, LogSize};
+use crate::ecs::components::player::{
+    AnimationTimer, Player, PlayerBundle, PlayerDirection, PlayerDirectionIndex,
+};
 use crate::ecs::components::train::TrainBundle;
 use crate::ecs::components::{
     CarTimer, DelayedCarReadyToBeDisplayedMarker, DelayedTrainReadyToBeDisplayedMarker,
@@ -138,6 +141,88 @@ pub fn background_scrolling(
             // ...instead delay the despawning!!!
             // let _empty_entity = commands.spawn().id();
             commands.entity(entity).insert(DespawnEntityTimer::new(5.));
+        }
+    }
+}
+
+/// we are moving player down with the same speed as background is scrolling
+/// this will create illusion of player standing at particular place
+pub fn player_scrolling(time: Res<Time>, mut q: Query<&mut Transform, With<Player>>) {
+    for mut transform in q.iter_mut() {
+        transform.translation.y -= SCROLLING_SPEED_BACKGROUND * time.delta_seconds();
+    }
+}
+
+pub fn player_movement(
+    time: Res<Time>,
+    keyboard_input: Res<Input<KeyCode>>,
+    mut query: Query<
+        (
+            &mut Transform,
+            &mut TextureAtlasSprite,
+            &mut AnimationTimer,
+            &mut PlayerDirection,
+            &mut PlayerDirectionIndex,
+        ),
+        With<Player>,
+    >,
+) {
+    if let Ok((
+        mut transform,
+        mut sprite,
+        mut timer,
+        mut direction,
+        mut direction_idx,
+    )) = query.get_single_mut()
+    {
+        timer.tick(time.delta());
+
+        if keyboard_input.pressed(KeyCode::Up) {
+            *direction = PlayerDirection::Up;
+            transform.translation.y += 150. * time.delta_seconds();
+            if transform.translation.y > 370. {
+                transform.translation.y = 370.;
+            }
+
+            if timer.just_finished() {
+                PlayerBundle::change_sprite_icon(&mut direction, &mut direction_idx, &mut sprite);
+            }
+        }
+
+        if keyboard_input.pressed(KeyCode::Down) {
+            *direction = PlayerDirection::Down;
+            transform.translation.y -= 150. * time.delta_seconds();
+            if transform.translation.y < -370. {
+                transform.translation.y = -370.;
+            }
+
+            if timer.just_finished() {
+                PlayerBundle::change_sprite_icon(&mut direction, &mut direction_idx, &mut sprite);
+            }
+        }
+
+        if keyboard_input.pressed(KeyCode::Left) {
+            *direction = PlayerDirection::Left;
+            transform.translation.x -= 150. * time.delta_seconds();
+            if transform.translation.x < -220. {
+                transform.translation.x = -220.;
+            }
+
+            if timer.just_finished() {
+                PlayerBundle::change_sprite_icon(&mut direction, &mut direction_idx, &mut sprite);
+            }
+        }
+
+        if keyboard_input.pressed(KeyCode::Right) {
+            *direction = PlayerDirection::Right;
+            transform.translation.x += 150. * time.delta_seconds();
+            if transform.translation.x > 220. {
+                transform.translation.x = 220.;
+            }
+
+            if timer.just_finished() {
+                PlayerBundle::change_sprite_icon(&mut direction, &mut direction_idx, &mut sprite);
+            }
         }
     }
 }

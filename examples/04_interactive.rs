@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 use bunner_rs::ecs::components::background_row::{GameRowBundle, GrassRow, Row};
 
+use bunner_rs::ecs::components::player::PlayerBundle;
 use bunner_rs::ecs::resources::BackgroundRows;
 use bunner_rs::ecs::systems::*;
 use bunner_rs::ecs::systems::{delayed_despawn_recursive, delayed_spawn_train};
-use bunner_rs::{SCREEN_HEIGHT, SCREEN_WIDTH, SEGMENT_HEIGHT};
+use bunner_rs::{SCREEN_HEIGHT, SCREEN_WIDTH, SEGMENT_HEIGHT, SEGMENT_WIDTH};
 use std::boxed::Box;
 
 fn main() {
@@ -14,12 +15,14 @@ fn main() {
             title: "Infinite Bunner".to_string(),
             width: SCREEN_WIDTH,
             height: SCREEN_HEIGHT,
-            resizable: false,
+            resizable: true,
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_system(background_scrolling)
+        .add_system(player_scrolling)
+        .add_system(player_movement)
         .add_system(put_trains_on_rails)
         .add_system(put_logs_on_water)
         .add_system(put_bushes_on_grass)
@@ -38,6 +41,7 @@ fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut bg_rows: ResMut<BackgroundRows>,
+    mut texture_atlas_assets: ResMut<Assets<TextureAtlas>>,
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
@@ -56,12 +60,19 @@ fn setup(
     rows.reverse();
 
     for i in 0..row_count {
-        let y = -1. * (SCREEN_HEIGHT / 2.) + SEGMENT_HEIGHT * (i as f32) + offset_from_bottom;
         let x = -1. * (SCREEN_WIDTH / 2.);
+        let y = -1. * (SCREEN_HEIGHT / 2.) + SEGMENT_HEIGHT * (i as f32) + offset_from_bottom;
         let row = rows.pop().unwrap();
 
         bg_rows.add_row(row.clone_row());
         let new_bundle = GameRowBundle::new(row, x, y, &asset_server, i == row_count - 1);
         new_bundle.spawn_bundle_with_markers(&mut commands);
     }
+
+    // center player in the middle of the screen at the last grass
+    //  row of bottom grass section (8 grass rows in total)
+    let player_x = 0. - SEGMENT_WIDTH / 2.;
+    let player_y = -1. * (SCREEN_HEIGHT / 2.) + 8. * SEGMENT_HEIGHT;
+    PlayerBundle::new(player_x, player_y, &asset_server, &mut texture_atlas_assets)
+        .spawn_player(&mut commands);
 }

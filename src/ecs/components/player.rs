@@ -2,10 +2,10 @@ use bevy::prelude::*;
 use bevy::sprite::Anchor;
 
 #[derive(Component)]
-struct Player;
+pub struct Player;
 
 #[derive(Component)]
-enum PlayerDirection {
+pub enum PlayerDirection {
     Up,
     Down,
     Left,
@@ -22,7 +22,7 @@ impl Default for PlayerDirection {
 /// 0 & 1 are indices of normal movement in given direction
 /// 2 is index used when rabbit is hit by car or train (while running in given direction)
 #[derive(Component)]
-struct PlayerDirectionIndex(usize);
+pub struct PlayerDirectionIndex(usize);
 
 impl Default for PlayerDirectionIndex {
     fn default() -> Self {
@@ -30,12 +30,17 @@ impl Default for PlayerDirectionIndex {
     }
 }
 
+#[derive(Component, Deref, DerefMut)]
+pub struct AnimationTimer(Timer);
+
 #[derive(Bundle)]
 pub struct PlayerBundle {
     #[bundle]
     sprite_bundle: SpriteSheetBundle,
     direction: PlayerDirection,
     direction_idx: PlayerDirectionIndex,
+    player: Player,
+    animation_timer: AnimationTimer,
 }
 
 impl PlayerBundle {
@@ -56,15 +61,31 @@ impl PlayerBundle {
                     ..default()
                 },
                 texture_atlas: texture_atlas_handle,
-                transform: Transform::from_xyz(x, y, 1.),
+                transform: Transform::from_xyz(x, y, 2.),
                 ..default()
             },
             direction: PlayerDirection::default(),
             direction_idx: PlayerDirectionIndex::default(),
+            player: Player,
+            animation_timer: AnimationTimer(Timer::from_seconds(0.1, true)),
         }
     }
 
     pub fn spawn_player(self, commands: &mut Commands) {
         commands.spawn_bundle(self);
+    }
+
+    pub fn change_sprite_icon(
+        direction: &PlayerDirection,
+        direction_idx: &mut PlayerDirectionIndex,
+        sprite: &mut TextureAtlasSprite,
+    ) {
+        direction_idx.0 = if direction_idx.0 == 0 { 1 } else { 0 };
+        match *direction {
+            PlayerDirection::Up => sprite.index = 0 + direction_idx.0,
+            PlayerDirection::Down => sprite.index = 7 + direction_idx.0,
+            PlayerDirection::Left => sprite.index = 9 + direction_idx.0,
+            PlayerDirection::Right => sprite.index = 3 + direction_idx.0,
+        }
     }
 }
