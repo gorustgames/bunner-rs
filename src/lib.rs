@@ -1,4 +1,5 @@
 use rand::Rng;
+use uuid::Uuid;
 
 pub mod ecs;
 
@@ -92,6 +93,10 @@ pub fn get_random_row_mask() -> [bool; 12] {
     }
 
     row_mask
+}
+
+pub fn get_uuid() -> String {
+    Uuid::new_v4().to_string()
 }
 
 #[cfg(test)]
