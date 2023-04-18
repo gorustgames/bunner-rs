@@ -16,10 +16,16 @@ const SCROLLING_SPEED_LOGS: f32 = 60.;
 const SCROLLING_SPEED_TRAINS: f32 = 800.;
 const SCROLLING_SPEED_PLAYER: f32 = 150.;
 
+// Z coordinates for different components
+// determine which component is on
+// the top of other component when drawn
 const Z_BACKGROUND_ROW: f32 = 1.0;
-const Z_BACKGROUND_ROW_GRASS: f32 = 0.5;
-const Z_ROW_CHILD_COMPONENTS: f32 = 1.0;
-const Z_ROW_PLAYER: f32 = 2.0;
+const Z_BACKGROUND_ROW_GRASS: f32 = 0.5; // for explanation see comment in GameRowBundle::new (for some reason road will overlap...)
+const Z_ROW_CHILD_COMPONENT_HEDGE:f32 = 1.0;
+const Z_ROW_CHILD_COMPONENT_CAR: f32 = 15.0; // must be more than player
+const Z_ROW_CHILD_COMPONENT_TRAIN: f32 = 15.0; // must be more than player
+const Z_ROW_CHILD_COMPONENT_LOG: f32 = 5.0; // must be less than player
+const Z_PLAYER: f32 = 10.0;
 
 /// returns a random float from interval <0.,1.)
 pub fn get_random_float() -> f64 {

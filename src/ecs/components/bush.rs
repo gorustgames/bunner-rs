@@ -1,6 +1,6 @@
-use crate::Z_ROW_CHILD_COMPONENTS;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use crate::Z_ROW_CHILD_COMPONENT_HEDGE;
 
 /*
 Bush sprite naming convention bushXY, e.g. bush00, bush21, etc.
@@ -53,7 +53,7 @@ impl BushBundle {
                     ..default()
                 },
                 texture: asset_server.load(&format!("images/bush{}{}.png", bht as u8, bvt as u8)),
-                transform: Transform::from_xyz(x, y, Z_ROW_CHILD_COMPONENTS),
+                transform: Transform::from_xyz(x, y, Z_ROW_CHILD_COMPONENT_HEDGE),
                 ..default()
             },
             bvt,

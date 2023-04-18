@@ -1,5 +1,5 @@
 use crate::ecs::components::{CarTimer, MovementDirection};
-use crate::{get_random_i8, Z_ROW_CHILD_COMPONENTS};
+use crate::{get_random_i8, Z_ROW_CHILD_COMPONENT_CAR};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use lazy_static::lazy_static;
@@ -77,7 +77,7 @@ impl CarBundle {
                     ..default()
                 },
                 texture: asset_server.load(&get_random_car(&direction)),
-                transform: Transform::from_xyz(x, y, Z_ROW_CHILD_COMPONENTS),
+                transform: Transform::from_xyz(x, y, Z_ROW_CHILD_COMPONENT_CAR),
                 ..default()
             },
             direction,

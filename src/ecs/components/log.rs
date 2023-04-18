@@ -1,4 +1,5 @@
 use crate::ecs::components::MovementDirection;
+use crate::Z_ROW_CHILD_COMPONENT_LOG;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 
@@ -35,7 +36,7 @@ impl LogBundle {
                 } else {
                     "images/log0.png"
                 }),
-                transform: Transform::from_xyz(x, y, 1.), // z=1 since log is child component drawn over its parent
+                transform: Transform::from_xyz(x, y, Z_ROW_CHILD_COMPONENT_LOG), // z=1 since log is child component drawn over its parent
                 ..default()
             },
             direction,

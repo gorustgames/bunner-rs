@@ -1,5 +1,5 @@
 use crate::ecs::components::{MovementDirection, TrainTimer};
-use crate::get_random_i8;
+use crate::{get_random_i8, Z_ROW_CHILD_COMPONENT_TRAIN};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use lazy_static::lazy_static;
@@ -61,7 +61,7 @@ impl TrainBundle {
                     ..default()
                 },
                 texture: asset_server.load(&get_random_train(&direction)),
-                transform: Transform::from_xyz(x, y, 1.),
+                transform: Transform::from_xyz(x, y, Z_ROW_CHILD_COMPONENT_TRAIN),
                 ..default()
             },
             direction,
