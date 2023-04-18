@@ -21,7 +21,7 @@ const SCROLLING_SPEED_PLAYER: f32 = 150.;
 // the top of other component when drawn
 const Z_BACKGROUND_ROW: f32 = 1.0;
 const Z_BACKGROUND_ROW_GRASS: f32 = 0.5; // for explanation see comment in GameRowBundle::new (for some reason road will overlap...)
-const Z_ROW_CHILD_COMPONENT_HEDGE:f32 = 1.0;
+const Z_ROW_CHILD_COMPONENT_HEDGE: f32 = 1.0;
 const Z_ROW_CHILD_COMPONENT_CAR: f32 = 15.0; // must be more than player
 const Z_ROW_CHILD_COMPONENT_TRAIN: f32 = 15.0; // must be more than player
 const Z_ROW_CHILD_COMPONENT_LOG: f32 = 5.0; // must be less than player

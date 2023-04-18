@@ -1,6 +1,6 @@
 use crate::ecs::components::background_row::{
-    BackgroundRow, GameRowBundle, GrassRowMarker, RailRowMarker, RoadRowMarker, Row, RowType,
-    WaterRowMarker,
+    BackgroundRow, GameRowBundle, GrassRow, GrassRowMarker, RailRowMarker, RoadRowMarker, Row,
+    RowType, WaterRowMarker,
 };
 use crate::ecs::components::bush::{BushBundle, BushHorizontalType, BushVerticalType};
 use crate::ecs::components::car::{CarBundle, CarSpeed};
@@ -586,6 +586,47 @@ pub fn put_bushes_on_grass(
             }
         }
     }
+}
+
+/// this is main setup system of the game
+pub fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut bg_rows: ResMut<BackgroundRows>,
+    mut texture_atlas_assets: ResMut<Assets<TextureAtlas>>,
+) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+
+    let offset_from_bottom = 0.;
+    let row_count = 20;
+
+    let mut rows: Vec<Box<dyn Row>> = vec![];
+    rows.push(Box::new(GrassRow::new_grass_row(0)));
+
+    for i in 0..row_count {
+        if i > 0 {
+            rows.push(rows.get(i as usize - 1).unwrap().next())
+        }
+    }
+
+    rows.reverse();
+
+    for i in 0..row_count {
+        let x = -1. * (SCREEN_WIDTH / 2.);
+        let y = -1. * (SCREEN_HEIGHT / 2.) + SEGMENT_HEIGHT * (i as f32) + offset_from_bottom;
+        let row = rows.pop().unwrap();
+
+        bg_rows.add_row(row.clone_row());
+        let new_bundle = GameRowBundle::new(row, x, y, &asset_server, i == row_count - 1);
+        new_bundle.spawn_bundle_with_markers(&mut commands);
+    }
+
+    // center player in the middle of the screen at the last grass
+    //  row of bottom grass section (8 grass rows in total)
+    let player_x = 0. - SEGMENT_WIDTH / 2.;
+    let player_y = -1. * (SCREEN_HEIGHT / 2.) + 8. * SEGMENT_HEIGHT;
+    PlayerBundle::new(player_x, player_y, &asset_server, &mut texture_atlas_assets)
+        .spawn_player(&mut commands);
 }
 
 #[cfg(test)]

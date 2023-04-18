@@ -1,6 +1,6 @@
+use crate::Z_ROW_CHILD_COMPONENT_HEDGE;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use crate::Z_ROW_CHILD_COMPONENT_HEDGE;
 
 /*
 Bush sprite naming convention bushXY, e.g. bush00, bush21, etc.
