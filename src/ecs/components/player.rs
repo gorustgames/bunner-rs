@@ -1,3 +1,4 @@
+use crate::Z_ROW_PLAYER;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 
@@ -61,7 +62,7 @@ impl PlayerBundle {
                     ..default()
                 },
                 texture_atlas: texture_atlas_handle,
-                transform: Transform::from_xyz(x, y, 2.),
+                transform: Transform::from_xyz(x, y, Z_ROW_PLAYER),
                 ..default()
             },
             direction: PlayerDirection::default(),

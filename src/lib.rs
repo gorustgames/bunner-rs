@@ -16,6 +16,11 @@ const SCROLLING_SPEED_LOGS: f32 = 60.;
 const SCROLLING_SPEED_TRAINS: f32 = 800.;
 const SCROLLING_SPEED_PLAYER: f32 = 150.;
 
+const Z_BACKGROUND_ROW: f32 = 1.0;
+const Z_BACKGROUND_ROW_GRASS: f32 = 0.5;
+const Z_ROW_CHILD_COMPONENTS: f32 = 1.0;
+const Z_ROW_PLAYER: f32 = 2.0;
+
 /// returns a random float from interval <0.,1.)
 pub fn get_random_float() -> f64 {
     let mut rng = rand::thread_rng();

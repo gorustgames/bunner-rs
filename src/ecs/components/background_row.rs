@@ -13,6 +13,7 @@ mod row;
 mod water_row;
 
 // reexport underlying structs to make importing shorter
+use crate::{Z_BACKGROUND_ROW, Z_BACKGROUND_ROW_GRASS};
 pub use dirt_row::*;
 pub use grass_row::*;
 pub use pavement_row::*;
@@ -85,9 +86,9 @@ impl GameRowBundle {
         // for some reason road will overlap grass segment cutting of its top
         // explicit ordering helps to solve the issue
         let z = if row.get_img_base() != "road" {
-            1.
+            Z_BACKGROUND_ROW
         } else {
-            0.5
+            Z_BACKGROUND_ROW_GRASS
         };
 
         let new_bundle = GameRowBundle {

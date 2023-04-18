@@ -35,8 +35,6 @@ impl LogBundle {
                 } else {
                     "images/log0.png"
                 }),
-                // use global transform (instead of transform) to position child entity globally to window, rather than relative to parent entity!
-                //global_transform: GlobalTransform::from_xyz(x, y, 1.), // z=1 since log is child component drawn over its parent
                 transform: Transform::from_xyz(x, y, 1.), // z=1 since log is child component drawn over its parent
                 ..default()
             },

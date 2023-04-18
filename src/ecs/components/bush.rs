@@ -1,3 +1,4 @@
+use crate::Z_ROW_CHILD_COMPONENTS;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 
@@ -52,7 +53,7 @@ impl BushBundle {
                     ..default()
                 },
                 texture: asset_server.load(&format!("images/bush{}{}.png", bht as u8, bvt as u8)),
-                transform: Transform::from_xyz(x, y, 1.),
+                transform: Transform::from_xyz(x, y, Z_ROW_CHILD_COMPONENTS),
                 ..default()
             },
             bvt,
