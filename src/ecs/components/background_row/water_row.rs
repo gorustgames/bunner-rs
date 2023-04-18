@@ -1,17 +1,21 @@
 use crate::ecs::components::background_row::dirt_row::DirtRow;
 use crate::ecs::components::background_row::row::Row;
 use crate::ecs::components::background_row::RowType;
-use crate::{get_random_float, get_random_i8};
+use crate::{get_random_float, get_random_i8, get_uuid};
 use std::any::Any;
 
 #[derive(Debug)]
 pub struct WaterRow {
     index: i8,
+    uuid: String,
 }
 
 impl WaterRow {
     pub fn new_water_row(index: i8) -> Self {
-        WaterRow { index }
+        WaterRow {
+            index,
+            uuid: get_uuid(),
+        }
     }
 }
 
@@ -26,7 +30,10 @@ impl Row for WaterRow {
     }
 
     fn clone_row(&self) -> Box<dyn Row> {
-        Box::new(Self { index: self.index })
+        Box::new(Self {
+            index: self.index,
+            uuid: self.uuid.to_owned(),
+        })
     }
 
     fn get_index(&self) -> i8 {
@@ -54,5 +61,9 @@ impl Row for WaterRow {
 
     fn get_row_data(&self) -> Option<Box<dyn Any>> {
         None
+    }
+
+    fn get_row_uuid(&self) -> String {
+        self.uuid.to_owned()
     }
 }

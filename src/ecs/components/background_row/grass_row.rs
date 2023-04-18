@@ -1,10 +1,12 @@
 use crate::ecs::components::background_row::row::Row;
 use crate::ecs::components::background_row::{get_road_or_water_row, RowType};
+use crate::get_uuid;
 use std::any::Any;
 
 #[derive(Debug)]
 pub struct GrassRow {
     index: i8,
+    uuid: String,
     mask: Option<[bool; 12]>,
 
     /// relevant only if mask is Some(...)
@@ -17,6 +19,8 @@ impl GrassRow {
     pub fn new_grass_row(index: i8) -> Self {
         GrassRow {
             index,
+
+            uuid: get_uuid(),
             mask: None,
             row_with_top_bushes: false,
         }
@@ -38,6 +42,7 @@ impl Row for GrassRow {
     fn clone_row(&self) -> Box<dyn Row> {
         Box::new(Self {
             index: self.index,
+            uuid: self.uuid.to_owned(),
             mask: self.mask,
             row_with_top_bushes: self.row_with_top_bushes,
         })
@@ -80,5 +85,9 @@ impl Row for GrassRow {
 
     fn get_row_data(&self) -> Option<Box<dyn Any>> {
         Some(Box::new(self.row_with_top_bushes))
+    }
+
+    fn get_row_uuid(&self) -> String {
+        self.uuid.to_owned()
     }
 }

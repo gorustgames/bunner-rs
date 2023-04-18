@@ -2,17 +2,21 @@ use crate::ecs::components::background_row::grass_row::*;
 use crate::ecs::components::background_row::pavement_row::*;
 use crate::ecs::components::background_row::rail_row::*;
 use crate::ecs::components::background_row::row::*;
-use crate::{get_random_float, get_random_i8};
+use crate::{get_random_float, get_random_i8, get_uuid};
 use std::any::Any;
 
 #[derive(Debug)]
 pub struct RoadRow {
     index: i8,
+    uuid: String,
 }
 
 impl RoadRow {
     pub fn new_road_row(index: i8) -> Self {
-        RoadRow { index }
+        RoadRow {
+            index,
+            uuid: get_uuid(),
+        }
     }
 }
 
@@ -44,7 +48,10 @@ impl Row for RoadRow {
     }
 
     fn clone_row(&self) -> Box<dyn Row> {
-        Box::new(Self { index: self.index })
+        Box::new(Self {
+            index: self.index,
+            uuid: self.uuid.to_owned(),
+        })
     }
 
     fn get_index(&self) -> i8 {
@@ -72,5 +79,9 @@ impl Row for RoadRow {
 
     fn get_row_data(&self) -> Option<Box<dyn Any>> {
         None
+    }
+
+    fn get_row_uuid(&self) -> String {
+        self.uuid.to_owned()
     }
 }

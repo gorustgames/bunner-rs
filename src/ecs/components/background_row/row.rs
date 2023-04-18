@@ -36,4 +36,6 @@ pub trait Row: Send + Sync + Debug {
     fn get_row_mask(&self) -> Option<[bool; 12]>;
 
     fn get_row_data(&self) -> Option<Box<dyn Any>>;
+
+    fn get_row_uuid(&self) -> String;
 }
