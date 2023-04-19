@@ -11,7 +11,7 @@ fn main() {
             title: "Infinite Bunner".to_string(),
             width: SCREEN_WIDTH,
             height: SCREEN_HEIGHT,
-            resizable: true,
+            resizable: false,
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
@@ -29,6 +29,7 @@ fn main() {
         .add_system(delayed_despawn_recursive)
         .add_system(delayed_spawn_train)
         .add_system(delayed_spawn_car)
+        .add_system(player_is_standing_on)
         .insert_resource(BackgroundRows::new())
         .run();
 }

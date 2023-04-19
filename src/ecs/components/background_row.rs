@@ -40,6 +40,8 @@ pub struct BackgroundRow {
     pub is_rail_row: bool,
     pub is_road_row: bool,
     pub is_grass_row: bool,
+    pub is_dirt_row: bool,
+    pub is_pavement_row: bool,
 }
 
 #[derive(Component)]
@@ -53,6 +55,12 @@ pub struct RoadRowMarker;
 
 #[derive(Component)]
 pub struct GrassRowMarker;
+
+#[derive(Component)]
+pub struct DirtRowMarker;
+
+#[derive(Component)]
+pub struct PavementRowMarker;
 
 #[derive(Bundle)]
 pub struct GameRowBundle {
@@ -82,6 +90,8 @@ impl GameRowBundle {
         let is_rail_row = row.get_img_base() == "rail" && row.get_index() == 1;
         let is_road_row = row.get_img_base() == "road";
         let is_grass_row = row.get_img_base() == "grass";
+        let is_dirt_row = row.get_img_base() == "dirt";
+        let is_pavement_row = row.get_img_base() == "side";
 
         // for some reason road will overlap grass segment cutting of its top
         // explicit ordering helps to solve the issue
@@ -108,6 +118,8 @@ impl GameRowBundle {
                 is_rail_row,
                 is_road_row,
                 is_grass_row,
+                is_dirt_row,
+                is_pavement_row,
             },
         };
 
@@ -128,7 +140,12 @@ impl GameRowBundle {
             commands.spawn_bundle(self).insert(RoadRowMarker);
         } else if self.game_row.is_grass_row {
             commands.spawn_bundle(self).insert(GrassRowMarker);
+        } else if self.game_row.is_dirt_row {
+            commands.spawn_bundle(self).insert(DirtRowMarker);
+        } else if self.game_row.is_pavement_row {
+            commands.spawn_bundle(self).insert(PavementRowMarker);
         } else {
+            // rail rows with idx other than 1 still needs to be spawned!
             commands.spawn_bundle(self);
         }
     }

@@ -629,6 +629,64 @@ pub fn setup(
         .spawn_player(&mut commands);
 }
 
+/// this system detects what the player is standing on (e.g. water, log, road, etc.)
+/// it also detects child entities like cars and trains which mean player is dead
+pub fn player_is_standing_on(
+    q_player: Query<&mut Transform, (With<Player>, Without<BackgroundRow>)>,
+    q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
+    mut q_child: Query<&mut Transform, (Without<BackgroundRow>, Without<Player>)>,
+) {
+    // first determine which background row player is standing on
+    let mut player_y = -1.;
+    for transform in q_player.iter() {
+        player_y = transform.translation.y;
+        break;
+    }
+    if player_y == -1. {
+        println!("unable to find player!!!");
+        return;
+    }
+
+    /*
+    row height is 40 px, player height is 60 px where player is approximately in the center
+    i.e from the bottom: there is approx. 10 empty pixels, then player's pixels and then 10 empty pixels at the top
+    we need to take these margins into account when doing underlying calculation
+    */
+    for (transform, bg_row, children) in q_parent.iter() {
+        if transform.translation.y - player_y >= 0. && transform.translation.y - player_y < 20. {
+            // let row_uuid = bg_row.row.get_row_uuid();
+
+            if bg_row.is_water_row {
+                println!("sending on water row {}", transform.translation.y);
+            }
+
+            if bg_row.is_rail_row {
+                println!("sending on rail row {}", transform.translation.y);
+            }
+
+            if bg_row.is_road_row {
+                println!("sending on road row {}", transform.translation.y);
+            }
+
+            if bg_row.is_grass_row {
+                println!("sending on grass row {}", transform.translation.y);
+            }
+
+            if bg_row.is_dirt_row {
+                println!("sending on dirt row {}", transform.translation.y);
+            }
+
+            if bg_row.is_pavement_row {
+                println!("sending on pavement row {}", transform.translation.y);
+            }
+
+            for &child in children.iter() {
+                // println!("sending on row {}", transform.translation.y);
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::get_random_car_speed;
