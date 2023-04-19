@@ -16,9 +16,9 @@ use crate::ecs::components::{
 use crate::ecs::resources::BackgroundRows;
 use crate::{
     get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
-    is_odd_number, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH,
-    SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER,
-    SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH,
+    is_odd_number, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, LOG_BIG_WIDTH, LOG_SMALL_WIDTH,
+    SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS,
+    SCROLLING_SPEED_PLAYER, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH,
 };
 use bevy::prelude::*;
 
@@ -439,8 +439,6 @@ pub fn put_logs_on_water(
     asset_server: Res<AssetServer>,
     mut q: Query<(Entity, &BackgroundRow), Added<WaterRowMarker>>,
 ) {
-    const LOG_BIG_WIDTH: i32 = 138;
-    const LOG_SMALL_WIDTH: i32 = 84;
     const LOGS_PER_ROW: i32 = 10;
     const LOGS_GAP_FROM: i32 = 20;
     const LOGS_GAP_TO: i32 = 250;
@@ -631,14 +629,24 @@ pub fn setup(
 
 /// this system detects what the player is standing on (e.g. water, log, road, etc.)
 /// it also detects child entities like cars and trains which mean player is dead
+/// IMPORTANT: because q_parent query contains Children component this system will never be called
+/// for background rows without children, i.e.
+///     pavement rows
+///     dirt rows
+///     rails rows with index other than 1 (where the train goes)
+/// Since nothing can happen on there rows to player (TODO: check if this is valid for rail roads where index!=1)
+/// like drowning in the water/jumping on the log, collision with car/train we don't really need to consider these rows
+///  in this system.
 pub fn player_is_standing_on(
-    q_player: Query<&mut Transform, (With<Player>, Without<BackgroundRow>)>,
+    q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
-    mut q_child: Query<&mut Transform, (Without<BackgroundRow>, Without<Player>)>,
+    mut q_child: Query<(&Transform, &GlobalTransform), (Without<BackgroundRow>, Without<Player>)>,
 ) {
     // first determine which background row player is standing on
+    let mut player_x = -1.;
     let mut player_y = -1.;
     for transform in q_player.iter() {
+        player_x = transform.translation.x;
         player_y = transform.translation.y;
         break;
     }
@@ -657,31 +665,91 @@ pub fn player_is_standing_on(
             // let row_uuid = bg_row.row.get_row_uuid();
 
             if bg_row.is_water_row {
-                println!("sending on water row {}", transform.translation.y);
+                let mut standing_on_the_log = false;
+                for &child in children.iter() {
+                    // println!("standing on row {}", transform.translation.y);
+                    if let Ok((child_transform, _child_global_transform)) = q_child.get(child) {
+                        /*
+                        let log_x = _child_global_transform.translation.x;
+                         let log_x_plus_width =
+                             _child_global_transform.translation.x + LOG_BIG_WIDTH as f32;
+                          */
+
+                        // global transform does not work well, seems to be updated quite late
+                        // see https://bevy-cheatbook.github.io/features/transforms.html#transform-propagation
+                        // let's adjust transform to global reference frame. it will be quicker and more precise
+                        let log_x = child_transform.translation.x - SCREEN_WIDTH / 2.;
+                        // TODO: for now log size is hardcoded below regardless of the actual log size!
+                        let log_x_plus_width = child_transform.translation.x + LOG_BIG_WIDTH as f32
+                            - SCREEN_WIDTH / 2.;
+
+                        if player_x >= log_x && player_x <= log_x_plus_width {
+                            standing_on_the_log = true;
+                            break;
+                        }
+                    }
+                }
+                if standing_on_the_log {
+                    println!("standing on the log :-)");
+                } else {
+                    println!("standing on the water :-(");
+                }
             }
 
             if bg_row.is_rail_row {
-                println!("sending on rail row {}", transform.translation.y);
+                let mut standing_under_the_train = false;
+                for &child in children.iter() {
+                    if let Ok((child_transform, _child_global_transform)) = q_child.get(child) {
+                        let log_x = child_transform.translation.x - SCREEN_WIDTH / 2.;
+                        let log_x_plus_width =
+                            child_transform.translation.x + TRAIN_WIDTH as f32 - SCREEN_WIDTH / 2.;
+
+                        if player_x >= log_x && player_x <= log_x_plus_width {
+                            standing_under_the_train = true;
+                            break;
+                        }
+                    }
+                }
+                if !standing_under_the_train {
+                    println!("standing on the empty rail :-)");
+                } else {
+                    println!("standing under the train :-(");
+                }
             }
 
             if bg_row.is_road_row {
-                println!("sending on road row {}", transform.translation.y);
+                let mut standing_under_the_car = false;
+                for &child in children.iter() {
+                    if let Ok((child_transform, _child_global_transform)) = q_child.get(child) {
+                        let log_x = child_transform.translation.x - SCREEN_WIDTH / 2.;
+                        let log_x_plus_width =
+                            child_transform.translation.x + CAR_WIDTH as f32 - SCREEN_WIDTH / 2.;
+
+                        if player_x >= log_x && player_x <= log_x_plus_width {
+                            standing_under_the_car = true;
+                            break;
+                        }
+                    }
+                }
+                if !standing_under_the_car {
+                    println!("standing on the road :-)");
+                } else {
+                    println!("standing under the car :-(");
+                }
             }
 
             if bg_row.is_grass_row {
-                println!("sending on grass row {}", transform.translation.y);
+                // println!("standing on grass row {}", transform.translation.y);
             }
 
             if bg_row.is_dirt_row {
-                println!("sending on dirt row {}", transform.translation.y);
+                // will never happen!
+                println!("standing on dirt row {}", transform.translation.y);
             }
 
             if bg_row.is_pavement_row {
-                println!("sending on pavement row {}", transform.translation.y);
-            }
-
-            for &child in children.iter() {
-                // println!("sending on row {}", transform.translation.y);
+                // will never happen!
+                println!("standing on pavement row {}", transform.translation.y);
             }
         }
     }
