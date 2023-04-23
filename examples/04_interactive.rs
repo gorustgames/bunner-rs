@@ -15,7 +15,7 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
-        .add_startup_system(setup)
+        .add_startup_system(game_setup)
         .add_system(background_scrolling)
         .add_system(player_scrolling)
         .add_system(player_movement)

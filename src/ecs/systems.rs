@@ -587,7 +587,7 @@ pub fn put_bushes_on_grass(
 }
 
 /// this is main setup system of the game
-pub fn setup(
+pub fn game_setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut bg_rows: ResMut<BackgroundRows>,

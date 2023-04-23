@@ -1,5 +1,7 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
+use bunner_rs::ecs::resources::BackgroundRows;
+use bunner_rs::ecs::systems::*;
 use bunner_rs::{SCREEN_HEIGHT, SCREEN_WIDTH};
 
 /// This example illustrates how to use [`States`] to control transitioning from a `Menu` state to
@@ -19,8 +21,28 @@ fn main() {
         .add_system_set(SystemSet::on_update(AppState::Menu).with_system(menu))
         .add_system_set(SystemSet::on_update(AppState::Menu).with_system(exit_system))
         .add_system_set(SystemSet::on_exit(AppState::Menu).with_system(cleanup_menu))
-        .add_system_set(SystemSet::on_enter(AppState::InGame).with_system(setup_game))
-        .add_system_set(SystemSet::on_update(AppState::InGame).with_system(movement))
+        .add_system_set(SystemSet::on_enter(AppState::InGame).with_system(game_setup))
+        //.add_system_set(SystemSet::on_enter(AppState::InGame).with_system(setup_game)
+        //.add_system_set(SystemSet::on_update(AppState::InGame).with_system(movement))
+        .add_system_set(
+            SystemSet::on_update(AppState::InGame)
+                .with_system(background_scrolling)
+                .with_system(player_scrolling)
+                .with_system(player_movement)
+                .with_system(put_trains_on_rails)
+                .with_system(put_logs_on_water)
+                .with_system(put_bushes_on_grass)
+                .with_system(put_cars_on_roads)
+                .with_system(logs_movement)
+                .with_system(trains_movement)
+                .with_system(cars_movement)
+                .with_system(delayed_despawn_recursive)
+                .with_system(delayed_spawn_train)
+                .with_system(delayed_spawn_car)
+                .with_system(player_is_standing_on),
+        )
+        // add_system_set(SystemSet::on_enter(AppState::InGame).with_system(game_over)
+        .insert_resource(BackgroundRows::new())
         .run();
 }
 
@@ -175,7 +197,17 @@ fn cleanup_menu(mut commands: Commands, menu_data: Res<MenuData>) {
         .despawn_recursive();
 }
 
-fn setup_game(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn game_over(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(SpriteBundle {
+        texture: asset_server.load("images/gameover.png"),
+        ..Default::default()
+    });
+}
+
+/// demo setup system for initial experiments with game states
+#[allow(dead_code)]
+fn setup_game_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands.spawn_bundle(SpriteBundle {
         texture: asset_server.load("images/car31.png"),
@@ -183,12 +215,14 @@ fn setup_game(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-const SPEED: f32 = 100.0;
-fn movement(
+/// demo movement system for initial experiments with game states
+#[allow(dead_code)]
+fn movement_demo(
     time: Res<Time>,
     input: Res<Input<KeyCode>>,
     mut query: Query<&mut Transform, With<Sprite>>,
 ) {
+    const SPEED: f32 = 100.0;
     for mut transform in query.iter_mut() {
         let mut direction = Vec3::ZERO;
         if input.pressed(KeyCode::Left) {
