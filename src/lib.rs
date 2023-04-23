@@ -30,6 +30,7 @@ const Z_ROW_CHILD_COMPONENT_CAR: f32 = 15.0; // must be more than player
 const Z_ROW_CHILD_COMPONENT_TRAIN: f32 = 15.0; // must be more than player
 const Z_ROW_CHILD_COMPONENT_LOG: f32 = 5.0; // must be less than player
 const Z_PLAYER: f32 = 10.0;
+const Z_GAMEOVER: f32 = 20.0;
 
 /// Game states
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]

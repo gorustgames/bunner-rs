@@ -41,7 +41,7 @@ fn main() {
         )
         // add_system_set(SystemSet::on_enter(AppState::InGame).with_system(game_over)
         .add_system_set(SystemSet::on_enter(AppState::GameOver).with_system(game_over_enter))
-        .add_system_set(SystemSet::on_update(AppState::GameOver).with_system(game_over))
+        .add_system_set(SystemSet::on_update(AppState::GameOver).with_system(game_over_update))
         .insert_resource(BackgroundRows::new())
         .run();
 }

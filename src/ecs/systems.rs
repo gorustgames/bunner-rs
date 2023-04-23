@@ -19,6 +19,7 @@ use crate::{
     is_odd_number, AppState, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, LOG_BIG_WIDTH,
     LOG_SMALL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS,
     SCROLLING_SPEED_PLAYER, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH,
+    Z_GAMEOVER,
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -639,6 +640,7 @@ pub fn game_setup(
 /// like drowning in the water/jumping on the log, collision with car/train we don't really need to consider these rows
 ///  in this system.
 pub fn player_is_standing_on(
+    mut state: ResMut<State<AppState>>,
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
     mut q_child: Query<(&Transform, &GlobalTransform), (Without<BackgroundRow>, Without<Player>)>,
@@ -694,6 +696,8 @@ pub fn player_is_standing_on(
                     println!("standing on the log :-)");
                 } else {
                     println!("standing on the water :-(");
+                    state.set(AppState::GameOver).unwrap();
+                    return;
                 }
             }
 
@@ -896,20 +900,20 @@ pub fn cleanup_menu(mut commands: Commands, menu_data: Res<MenuData>) {
         .despawn_recursive();
 }
 
-/// game over enter system to do game cleanup
-/// for now placeholder only
 pub fn game_over_enter(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // TODO: do cleanup of running game systems
+    println!("game_over_enter");
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands.spawn_bundle(SpriteBundle {
         texture: asset_server.load("images/gameover.png"),
+        transform: Transform::from_xyz(0., 0., Z_GAMEOVER),
         ..Default::default()
     });
 }
 
 /// game over system
-pub fn game_over(input: Res<Input<KeyCode>>, mut exit: EventWriter<AppExit>) {
+pub fn game_over_update(mut exit: EventWriter<AppExit>, input: Res<Input<KeyCode>>) {
     if input.pressed(KeyCode::Space) {
+        println!("game_over");
         exit.send(AppExit);
     }
 }
