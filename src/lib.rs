@@ -31,6 +31,14 @@ const Z_ROW_CHILD_COMPONENT_TRAIN: f32 = 15.0; // must be more than player
 const Z_ROW_CHILD_COMPONENT_LOG: f32 = 5.0; // must be less than player
 const Z_PLAYER: f32 = 10.0;
 
+/// Game states
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum AppState {
+    Menu,
+    InGame,
+    GameOver,
+}
+
 /// returns a random float from interval <0.,1.)
 pub fn get_random_float() -> f64 {
     let mut rng = rand::thread_rng();

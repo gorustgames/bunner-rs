@@ -68,3 +68,9 @@ impl CarTimer {
         }
     }
 }
+
+#[derive(Component)]
+pub struct ButtonExitMarker;
+
+#[derive(Component)]
+pub struct ButtonPlayMarker;

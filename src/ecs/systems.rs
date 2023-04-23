@@ -10,16 +10,17 @@ use crate::ecs::components::player::{
 };
 use crate::ecs::components::train::TrainBundle;
 use crate::ecs::components::{
-    CarTimer, DelayedCarReadyToBeDisplayedMarker, DelayedTrainReadyToBeDisplayedMarker,
-    DespawnEntityTimer, MovementDirection, TrainTimer,
+    ButtonExitMarker, ButtonPlayMarker, CarTimer, DelayedCarReadyToBeDisplayedMarker,
+    DelayedTrainReadyToBeDisplayedMarker, DespawnEntityTimer, MovementDirection, TrainTimer,
 };
 use crate::ecs::resources::BackgroundRows;
 use crate::{
     get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
-    is_odd_number, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, LOG_BIG_WIDTH, LOG_SMALL_WIDTH,
-    SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS,
+    is_odd_number, AppState, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, LOG_BIG_WIDTH,
+    LOG_SMALL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS,
     SCROLLING_SPEED_PLAYER, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH,
 };
+use bevy::app::AppExit;
 use bevy::prelude::*;
 
 /// this system takes care of entities scheduled for delayed despawning
@@ -751,6 +752,207 @@ pub fn player_is_standing_on(
                 // will never happen!
                 println!("standing on pavement row {}", transform.translation.y);
             }
+        }
+    }
+}
+
+/// structures and constants for UI systems below (shown on initial gam screen)
+pub struct MenuData {
+    button_entity_exit: Entity,
+    button_entity_start: Entity,
+}
+
+const NORMAL_BUTTON: Color = Color::ORANGE;
+const HOVERED_BUTTON: Color = Color::GREEN;
+const PRESSED_BUTTON: Color = Color::RED;
+
+pub fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
+    // ui camera
+    commands.spawn_bundle(UiCameraBundle::default());
+    let button_entity_start = commands
+        .spawn_bundle(ButtonBundle {
+            style: Style {
+                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                // center button
+                margin: Rect::all(Val::Auto),
+                // horizontally center child text
+                justify_content: JustifyContent::Center,
+                // vertically center child text
+                align_items: AlignItems::Center,
+                ..Default::default()
+            },
+            // image: UiImage::from(asset_server.load("images/start1.png")),
+            color: NORMAL_BUTTON.into(),
+            ..Default::default()
+        })
+        .insert(ButtonPlayMarker)
+        .with_children(|parent| {
+            parent.spawn_bundle(TextBundle {
+                text: Text::with_section(
+                    "Play",
+                    TextStyle {
+                        font: asset_server.load("fonts/ALGER.TTF"),
+                        font_size: 40.0,
+                        color: Color::BLACK,
+                    },
+                    Default::default(),
+                ),
+                ..Default::default()
+            });
+        })
+        .id();
+
+    let button_entity_exit = commands
+        .spawn_bundle(ButtonBundle {
+            style: Style {
+                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                // center button
+                margin: Rect::all(Val::Auto),
+                // horizontally center child text
+                justify_content: JustifyContent::Center,
+                // vertically center child text
+                align_items: AlignItems::Center,
+                ..Default::default()
+            },
+            // image: UiImage::from(asset_server.load("images/start0.png")),
+            color: NORMAL_BUTTON.into(),
+            ..Default::default()
+        })
+        .insert(ButtonExitMarker)
+        .with_children(|parent| {
+            parent.spawn_bundle(TextBundle {
+                text: Text::with_section(
+                    "Exit",
+                    TextStyle {
+                        font: asset_server.load("fonts/ALGER.TTF"),
+                        font_size: 40.0,
+                        color: Color::BLACK,
+                    },
+                    Default::default(),
+                ),
+                ..Default::default()
+            });
+        })
+        .id();
+
+    commands.insert_resource(MenuData {
+        button_entity_start,
+        button_entity_exit,
+    });
+}
+
+pub fn play_buttton_interactions(
+    mut state: ResMut<State<AppState>>,
+    mut interaction_query: Query<
+        (&Interaction, &mut UiColor),
+        (Changed<Interaction>, With<Button>, With<ButtonPlayMarker>),
+    >,
+) {
+    for (interaction, mut color) in interaction_query.iter_mut() {
+        match *interaction {
+            Interaction::Clicked => {
+                *color = PRESSED_BUTTON.into();
+                state.set(AppState::InGame).unwrap();
+            }
+            Interaction::Hovered => {
+                *color = HOVERED_BUTTON.into();
+            }
+            Interaction::None => {
+                *color = NORMAL_BUTTON.into();
+            }
+        }
+    }
+}
+
+pub fn exit_button_interactions(
+    mut exit: EventWriter<AppExit>,
+    mut interaction_query: Query<
+        (&Interaction, &mut UiColor),
+        (Changed<Interaction>, With<Button>, With<ButtonExitMarker>),
+    >,
+) {
+    for (interaction, mut color) in interaction_query.iter_mut() {
+        match *interaction {
+            Interaction::Clicked => {
+                *color = PRESSED_BUTTON.into();
+                exit.send(AppExit);
+            }
+            Interaction::Hovered => {
+                *color = HOVERED_BUTTON.into();
+            }
+            Interaction::None => {
+                *color = NORMAL_BUTTON.into();
+            }
+        }
+    }
+}
+
+pub fn cleanup_menu(mut commands: Commands, menu_data: Res<MenuData>) {
+    commands
+        .entity(menu_data.button_entity_start)
+        .despawn_recursive();
+    commands
+        .entity(menu_data.button_entity_exit)
+        .despawn_recursive();
+}
+
+/// game over enter system to do game cleanup
+/// for now placeholder only
+pub fn game_over_enter(mut commands: Commands, asset_server: Res<AssetServer>) {
+    // TODO: do cleanup of running game systems
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(SpriteBundle {
+        texture: asset_server.load("images/gameover.png"),
+        ..Default::default()
+    });
+}
+
+/// game over system
+pub fn game_over(input: Res<Input<KeyCode>>, mut exit: EventWriter<AppExit>) {
+    if input.pressed(KeyCode::Space) {
+        exit.send(AppExit);
+    }
+}
+
+/// demo setup system for initial experiments with game states
+/// originally configured as:
+///.add_system_set(SystemSet::on_enter(AppState::InGame).with_system(setup_game_demo)
+#[allow(dead_code)]
+pub fn setup_game_demo(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(SpriteBundle {
+        texture: asset_server.load("images/car31.png"),
+        ..Default::default()
+    });
+}
+
+/// demo movement system for initial experiments with game states
+/// originally configured as:
+///.add_system_set(SystemSet::on_update(AppState::InGame).with_system(movement_demo))
+#[allow(dead_code)]
+pub fn movement_demo(
+    time: Res<Time>,
+    input: Res<Input<KeyCode>>,
+    mut query: Query<&mut Transform, With<Sprite>>,
+) {
+    const SPEED: f32 = 100.0;
+    for mut transform in query.iter_mut() {
+        let mut direction = Vec3::ZERO;
+        if input.pressed(KeyCode::Left) {
+            direction.x -= 1.0;
+        }
+        if input.pressed(KeyCode::Right) {
+            direction.x += 1.0;
+        }
+        if input.pressed(KeyCode::Up) {
+            direction.y += 1.0;
+        }
+        if input.pressed(KeyCode::Down) {
+            direction.y -= 1.0;
+        }
+
+        if direction != Vec3::ZERO {
+            transform.translation += direction.normalize() * SPEED * time.delta_seconds();
         }
     }
 }
