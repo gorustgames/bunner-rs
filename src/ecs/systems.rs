@@ -631,12 +631,12 @@ pub fn game_setup(
 
 /// this system detects what the player is standing on (e.g. water, log, road, etc.)
 /// it also detects child entities like cars and trains which mean player is dead
-/// IMPORTANT: because q_parent query contains Children component this system will never be called
-/// for background rows without children, i.e.
+/// IMPORTANT: because q_parent query contains Children component this system will never
+/// be called for background rows without children, i.e.:
 ///     pavement rows
 ///     dirt rows
 ///     rails rows with index other than 1 (where the train goes)
-/// Since nothing can happen on there rows to player (TODO: check if this is valid for rail roads where index!=1)
+/// Since nothing can happen on these rows to player (TODO: check if this is valid for rail roads where index!=1)
 /// like drowning in the water/jumping on the log, collision with car/train we don't really need to consider these rows
 ///  in this system.
 pub fn player_is_standing_on(
