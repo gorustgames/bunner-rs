@@ -664,7 +664,7 @@ pub fn player_is_standing_on(
     we need to take these margins into account when doing underlying calculation
     */
     for (transform, bg_row, children) in q_parent.iter() {
-        if transform.translation.y - player_y >= 0. && transform.translation.y - player_y < 20. {
+        if player_y - transform.translation.y > -40. && player_y - transform.translation.y < 40. {
             // let row_uuid = bg_row.row.get_row_uuid();
 
             if bg_row.is_water_row {
@@ -683,10 +683,9 @@ pub fn player_is_standing_on(
                         // let's adjust transform to global reference frame. it will be quicker and more precise
                         let log_x = child_transform.translation.x - SCREEN_WIDTH / 2.;
                         // TODO: for now log size is hardcoded below regardless of the actual log size!
-                        let log_x_plus_width = child_transform.translation.x + LOG_BIG_WIDTH as f32
-                            - SCREEN_WIDTH / 2.;
+                        let log_x_plus_width = log_x + LOG_BIG_WIDTH as f32;
 
-                        if player_x >= log_x && player_x <= log_x_plus_width {
+                        if player_x - log_x > -40. && player_x - log_x_plus_width < 40. {
                             standing_on_the_log = true;
                             break;
                         }
