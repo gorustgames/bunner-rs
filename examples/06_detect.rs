@@ -43,7 +43,9 @@ pub fn game_setup(
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
-    /*
+    // UI camera, needed to display text!
+    commands.spawn_bundle(UiCameraBundle::default());
+
     let offset_from_bottom = 0.;
     let row_count = 20;
 
@@ -80,20 +82,37 @@ pub fn game_setup(
     let player_x = 0. - SEGMENT_WIDTH / 2.;
     let player_y = -1. * (SCREEN_HEIGHT / 2.) + 8. * SEGMENT_HEIGHT;
     PlayerBundle::new(player_x, player_y, &asset_server, &mut texture_atlas_assets)
-        .spawn_player(&mut commands);*/
+        .spawn_player(&mut commands);
 
     commands
         .spawn_bundle(TextBundle {
-            text: Text::with_section(
-                "Play",
-                TextStyle {
-                    font: asset_server.load("fonts/ALGER.TTF"),
-                    font_size: 40.0,
-                    color: Color::RED,
-                },
-                Default::default(),
-            ),
-            //transform: Transform::from_xyz(100., 100., 100.),
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                ..Default::default()
+            },
+            // Use `Text` directly
+            text: Text {
+                // Construct a `Vec` of `TextSection`s
+                sections: vec![
+                    TextSection {
+                        value: "Debug: ".to_string(),
+                        style: TextStyle {
+                            font: asset_server.load("fonts/ALGER.TTF"),
+                            font_size: 20.0,
+                            color: Color::WHITE,
+                        },
+                    },
+                    TextSection {
+                        value: "".to_string(),
+                        style: TextStyle {
+                            font: asset_server.load("fonts/ALGER.TTF"),
+                            font_size: 20.0,
+                            color: Color::GOLD,
+                        },
+                    },
+                ],
+                ..Default::default()
+            },
             ..Default::default()
         })
         .insert(DebugText);
@@ -194,7 +213,6 @@ pub fn put_logs_on_water(
 
 fn text_update_system(mut q: Query<&mut Text, With<DebugText>>) {
     for mut text in q.iter_mut() {
-        //println!("text {}", text.sections[0].value);
-        text.sections[0].value = "Play".to_string();
+        text.sections[1].value = "Play".to_string();
     }
 }
