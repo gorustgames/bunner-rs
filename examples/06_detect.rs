@@ -3,14 +3,12 @@ use bunner_rs::ecs::components::background_row::{
     BackgroundRow, GameRowBundle, GrassRow, Row, RowType, WaterRowMarker,
 };
 use bunner_rs::ecs::components::log::{LogBundle, LogSize};
-use bunner_rs::ecs::components::player::PlayerBundle;
+use bunner_rs::ecs::components::player::{Player, PlayerBundle};
 use bunner_rs::ecs::components::MovementDirection;
 use bunner_rs::ecs::resources::BackgroundRows;
-use bunner_rs::{
-    get_random_i32, is_even_number, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH,
-    SEGMENT_HEIGHT, SEGMENT_WIDTH,
-};
+use bunner_rs::{CAR_WIDTH, get_random_i32, is_even_number, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH};
 use std::boxed::Box;
+use bunner_rs::ecs::systems::player_movement;
 
 #[derive(Component)]
 struct DebugText;
@@ -28,7 +26,9 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(game_setup)
         .add_system(put_logs_on_water)
-        .add_system(text_update_system)
+        //.add_system(text_update_system)
+        .add_system(player_movement)
+        .add_system(player_is_standing_on)
         .insert_resource(BackgroundRows::new())
         .run();
 }
@@ -214,5 +214,68 @@ pub fn put_logs_on_water(
 fn text_update_system(mut q: Query<&mut Text, With<DebugText>>) {
     for mut text in q.iter_mut() {
         text.sections[1].value = "Play".to_string();
+    }
+}
+
+/// simplified version of player_is_standing_on
+/// working with water only
+fn player_is_standing_on(
+    q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
+    q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
+    mut q_debugtxt: Query<&mut Text, With<DebugText>>,
+    mut q_child: Query<(&Transform, &GlobalTransform), (Without<BackgroundRow>, Without<Player>)>,
+) {
+    // first determine which background row player is standing on
+    let mut player_x = -1.;
+    let mut player_y = -1.;
+    for transform in q_player.iter() {
+        player_x = transform.translation.x;
+        player_y = transform.translation.y;
+        break;
+    }
+    if player_y == -1. {
+        println!("unable to find player!!!");
+        return;
+    }
+
+    for (transform, bg_row, children) in q_parent.iter() {
+        if player_y - transform.translation.y > -40. && player_y - transform.translation.y < 40. {
+
+            if bg_row.is_water_row {
+                let mut standing_on_the_log = false;
+                for &child in children.iter() {
+                    // println!("standing on row {}", transform.translation.y);
+                    if let Ok((child_transform, _child_global_transform)) = q_child.get(child) {
+                        /*
+                        let log_x = _child_global_transform.translation.x;
+                         let log_x_plus_width =
+                             _child_global_transform.translation.x + LOG_BIG_WIDTH as f32;
+                          */
+
+                        // global transform does not work well, seems to be updated quite late
+                        // see https://bevy-cheatbook.github.io/features/transforms.html#transform-propagation
+                        // let's adjust transform to global reference frame. it will be quicker and more precise
+                        let log_x = child_transform.translation.x - SCREEN_WIDTH / 2.;
+                        // TODO: for now log size is hardcoded below regardless of the actual log size!
+                        let log_x_plus_width = log_x + LOG_BIG_WIDTH as f32;
+
+                        if player_x - log_x > -40. && player_x - log_x_plus_width < 40. {
+                            standing_on_the_log = true;
+                            break;
+                        }
+                    }
+                }
+                if standing_on_the_log {
+                    for mut text in q_debugtxt.iter_mut() {
+                        text.sections[1].value = "log :)".to_string();
+                    }
+                } else {
+                    for mut text in q_debugtxt.iter_mut() {
+                        text.sections[1].value = "water :(".to_string();
+                    }
+                    return;
+                }
+            }
+        }
     }
 }
