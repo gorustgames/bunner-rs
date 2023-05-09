@@ -12,8 +12,8 @@ pub const CAR_SPEED_TO: i32 = 160;
 pub const CAR_WIDTH: f32 = 90.;
 pub const TRAIN_WIDTH: f32 = 860.;
 
-const LOG_BIG_WIDTH: i32 = 138;
-const LOG_SMALL_WIDTH: i32 = 84;
+pub const LOG_BIG_WIDTH: i32 = 138;
+pub const LOG_SMALL_WIDTH: i32 = 84;
 
 const SCROLLING_SPEED_BACKGROUND: f32 = 45.;
 const SCROLLING_SPEED_LOGS: f32 = 60.;
