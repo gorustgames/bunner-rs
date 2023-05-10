@@ -218,7 +218,7 @@ pub fn put_logs_on_water(
 
 fn text_update_system(mut q: Query<&mut Text, With<DebugText>>) {
     for mut text in q.iter_mut() {
-        text.sections[1].value = "Play".to_string();
+        text.sections[1].value = "SomeText".to_string();
     }
 }
 
@@ -228,7 +228,10 @@ fn player_is_standing_on(
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
     mut q_debugtxt: Query<&mut Text, With<DebugText>>,
-    mut q_child: Query<(&Transform, &GlobalTransform), (Without<BackgroundRow>, Without<Player>)>,
+    mut q_child: Query<
+        (&Transform, &GlobalTransform, &LogSize),
+        (Without<BackgroundRow>, Without<Player>),
+    >,
 ) {
     // first determine which background row player is standing on
     let mut player_x = -1.;
@@ -243,13 +246,19 @@ fn player_is_standing_on(
         return;
     }
 
+    for mut text in q_debugtxt.iter_mut() {
+        text.sections[0].value = format!("x: {:.2}, y: {:.2}", player_x, player_y);
+    }
+
     for (transform, bg_row, children) in q_parent.iter() {
         if player_y - transform.translation.y > -40. && player_y - transform.translation.y < 40. {
             if bg_row.is_water_row {
                 let mut standing_on_the_log = false;
                 for &child in children.iter() {
                     // println!("standing on row {}", transform.translation.y);
-                    if let Ok((child_transform, _child_global_transform)) = q_child.get(child) {
+                    if let Ok((child_transform, _child_global_transform, _log_size)) =
+                        q_child.get(child)
+                    {
                         /*
                         let log_x = _child_global_transform.translation.x;
                          let log_x_plus_width =

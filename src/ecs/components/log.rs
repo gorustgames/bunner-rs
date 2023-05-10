@@ -23,6 +23,8 @@ impl fmt::Debug for LogBundle {
         f.debug_struct("LogBundle")
             .field("x", &self.sprite_bundle.transform.translation.x)
             .field("y", &self.sprite_bundle.transform.translation.y)
+            .field("gx", &self.sprite_bundle.global_transform.translation.x)
+            .field("gy", &self.sprite_bundle.global_transform.translation.y)
             .field("size", &self.log_size)
             .field("direction", &self.direction)
             .finish()
