@@ -6,9 +6,12 @@ use bunner_rs::ecs::components::log::{LogBundle, LogSize};
 use bunner_rs::ecs::components::player::{Player, PlayerBundle};
 use bunner_rs::ecs::components::MovementDirection;
 use bunner_rs::ecs::resources::BackgroundRows;
-use bunner_rs::{CAR_WIDTH, get_random_i32, is_even_number, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH};
-use std::boxed::Box;
 use bunner_rs::ecs::systems::player_movement;
+use bunner_rs::{
+    get_random_i32, is_even_number, CAR_WIDTH, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, SCREEN_HEIGHT,
+    SCREEN_WIDTH, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH,
+};
+use std::boxed::Box;
 
 #[derive(Component)]
 struct DebugText;
@@ -131,7 +134,7 @@ pub fn put_logs_on_water(
     asset_server: Res<AssetServer>,
     mut q: Query<(Entity, &BackgroundRow), Added<WaterRowMarker>>,
 ) {
-    const LOGS_PER_ROW: i32 = 10;
+    const LOGS_PER_ROW: i32 = 4;
     const LOGS_GAP_FROM: i32 = 20;
     const LOGS_GAP_TO: i32 = 250;
 
@@ -167,14 +170,15 @@ pub fn put_logs_on_water(
                         };
                     }
 
-                    LogBundle::new(
-                        MovementDirection::LEFT,
+                    let log_bundle = LogBundle::new(
+                        MovementDirection::RIGHT,
                         log_size,
                         x_even_row,
                         0.,
                         &asset_server,
-                    )
-                    .spawn_log(&mut commands, entity);
+                    );
+                    println!("log_bundle {:?}", log_bundle);
+                    log_bundle.spawn_log(&mut commands, entity);
                 } else
                 /* odd rows */
                 {
@@ -197,14 +201,15 @@ pub fn put_logs_on_water(
                         };
                     }
 
-                    LogBundle::new(
+                    let log_bundle = LogBundle::new(
                         MovementDirection::LEFT,
                         log_size,
                         x_odd_row,
                         0.,
                         &asset_server,
-                    )
-                    .spawn_log(&mut commands, entity);
+                    );
+                    println!("log_bundle {:?}", log_bundle);
+                    log_bundle.spawn_log(&mut commands, entity);
                 }
             }
         }
@@ -240,7 +245,6 @@ fn player_is_standing_on(
 
     for (transform, bg_row, children) in q_parent.iter() {
         if player_y - transform.translation.y > -40. && player_y - transform.translation.y < 40. {
-
             if bg_row.is_water_row {
                 let mut standing_on_the_log = false;
                 for &child in children.iter() {

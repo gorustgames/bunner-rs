@@ -29,7 +29,7 @@ fn main() {
         .add_system(delayed_despawn_recursive)
         .add_system(delayed_spawn_train)
         .add_system(delayed_spawn_car)
-        .add_system(player_is_standing_on)
+        //.add_system(player_is_standing_on)
         .insert_resource(BackgroundRows::new())
         .run();
 }

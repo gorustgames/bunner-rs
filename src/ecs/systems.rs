@@ -479,7 +479,7 @@ pub fn put_logs_on_water(
                     }
 
                     LogBundle::new(
-                        MovementDirection::LEFT,
+                        MovementDirection::RIGHT,
                         log_size,
                         x_even_row,
                         0.,

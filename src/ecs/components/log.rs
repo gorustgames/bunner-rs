@@ -2,6 +2,7 @@ use crate::ecs::components::MovementDirection;
 use crate::Z_ROW_CHILD_COMPONENT_LOG;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use std::fmt;
 
 #[derive(Debug, PartialEq, Component)]
 pub enum LogSize {
@@ -15,6 +16,17 @@ pub struct LogBundle {
     sprite_bundle: SpriteBundle,
     direction: MovementDirection,
     log_size: LogSize,
+}
+
+impl fmt::Debug for LogBundle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("LogBundle")
+            .field("x", &self.sprite_bundle.transform.translation.x)
+            .field("y", &self.sprite_bundle.transform.translation.y)
+            .field("size", &self.log_size)
+            .field("direction", &self.direction)
+            .finish()
+    }
 }
 
 impl LogBundle {
