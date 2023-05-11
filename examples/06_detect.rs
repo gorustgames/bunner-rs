@@ -256,7 +256,7 @@ fn player_is_standing_on(
                 let mut standing_on_the_log = false;
                 for &child in children.iter() {
                     // println!("standing on row {}", transform.translation.y);
-                    if let Ok((child_transform, _child_global_transform, _log_size)) =
+                    if let Ok((child_transform, _child_global_transform, log_size)) =
                         q_child.get(child)
                     {
                         /*
@@ -269,8 +269,8 @@ fn player_is_standing_on(
                         // see https://bevy-cheatbook.github.io/features/transforms.html#transform-propagation
                         // let's adjust transform to global reference frame. it will be quicker and more precise
                         let log_x = child_transform.translation.x - SCREEN_WIDTH / 2.;
-                        // TODO: for now log size is hardcoded below regardless of the actual log size!
-                        let log_x_plus_width = log_x + LOG_BIG_WIDTH as f32;
+                        let log_size_f32: f32 = log_size.into();
+                        let log_x_plus_width = log_x +  log_size_f32;
 
                         if player_x - log_x > -40. && player_x - log_x_plus_width < 40. {
                             standing_on_the_log = true;

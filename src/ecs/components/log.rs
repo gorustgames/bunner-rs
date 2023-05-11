@@ -1,5 +1,5 @@
 use crate::ecs::components::MovementDirection;
-use crate::Z_ROW_CHILD_COMPONENT_LOG;
+use crate::{LOG_BIG_WIDTH, LOG_SMALL_WIDTH, Z_ROW_CHILD_COMPONENT_LOG};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use std::fmt;
@@ -8,6 +8,15 @@ use std::fmt;
 pub enum LogSize {
     SMALL,
     BIG,
+}
+
+impl Into<f32> for &LogSize {
+    fn into(self) -> f32 {
+        match self {
+            LogSize::SMALL => LOG_SMALL_WIDTH as f32,
+            LogSize::BIG => LOG_BIG_WIDTH as f32,
+        }
+    }
 }
 
 #[derive(Bundle)]
