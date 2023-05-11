@@ -1,5 +1,5 @@
 use crate::ecs::components::MovementDirection;
-use crate::{LOG_BIG_WIDTH, LOG_SMALL_WIDTH, Z_ROW_CHILD_COMPONENT_LOG};
+use crate::{get_uuid, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, Z_ROW_CHILD_COMPONENT_LOG};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use std::fmt;
@@ -19,12 +19,22 @@ impl Into<f32> for &LogSize {
     }
 }
 
+#[derive(Component)]
+pub struct LogBundleUuid(String);
+
+impl LogBundleUuid {
+    pub fn get_uuid(&self) -> String {
+        self.0.to_string()
+    }
+}
+
 #[derive(Bundle)]
 pub struct LogBundle {
     #[bundle]
     sprite_bundle: SpriteBundle,
     direction: MovementDirection,
     log_size: LogSize,
+    uuid: LogBundleUuid,
 }
 
 impl fmt::Debug for LogBundle {
@@ -36,6 +46,7 @@ impl fmt::Debug for LogBundle {
             .field("gy", &self.sprite_bundle.global_transform.translation.y)
             .field("size", &self.log_size)
             .field("direction", &self.direction)
+            .field("uuid", &self.uuid.0)
             .finish()
     }
 }
@@ -64,6 +75,7 @@ impl LogBundle {
             },
             direction,
             log_size,
+            uuid: LogBundleUuid(get_uuid()),
         }
     }
 

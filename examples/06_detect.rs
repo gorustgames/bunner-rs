@@ -1,8 +1,9 @@
 use bevy::prelude::*;
+use bevy::transform::TransformSystem;
 use bunner_rs::ecs::components::background_row::{
     BackgroundRow, GameRowBundle, GrassRow, Row, RowType, WaterRowMarker,
 };
-use bunner_rs::ecs::components::log::{LogBundle, LogSize};
+use bunner_rs::ecs::components::log::{LogBundle, LogBundleUuid, LogSize};
 use bunner_rs::ecs::components::player::{Player, PlayerBundle};
 use bunner_rs::ecs::components::MovementDirection;
 use bunner_rs::ecs::resources::BackgroundRows;
@@ -15,6 +16,19 @@ use std::boxed::Box;
 
 #[derive(Component)]
 struct DebugText;
+
+/// helper  resource used to make system run only once
+struct RunOnceRes(bool);
+
+impl RunOnceRes {
+    fn did_run(&self) -> bool {
+        return self.0;
+    }
+
+    fn set_did_run(&mut self) {
+        self.0 = true;
+    }
+}
 
 fn main() {
     App::new()
@@ -32,7 +46,12 @@ fn main() {
         //.add_system(text_update_system)
         .add_system(player_movement)
         .add_system(player_is_standing_on)
+        .add_system_to_stage(
+            CoreStage::PostUpdate,
+            logs_debug.after(TransformSystem::TransformPropagate),
+        )
         .insert_resource(BackgroundRows::new())
+        .insert_resource(RunOnceRes(false))
         .run();
 }
 
@@ -101,7 +120,7 @@ pub fn game_setup(
                         value: "Debug: ".to_string(),
                         style: TextStyle {
                             font: asset_server.load("fonts/ALGER.TTF"),
-                            font_size: 20.0,
+                            font_size: 10.0,
                             color: Color::WHITE,
                         },
                     },
@@ -109,7 +128,7 @@ pub fn game_setup(
                         value: "".to_string(),
                         style: TextStyle {
                             font: asset_server.load("fonts/ALGER.TTF"),
-                            font_size: 20.0,
+                            font_size: 10.0,
                             color: Color::GOLD,
                         },
                     },
@@ -216,6 +235,7 @@ pub fn put_logs_on_water(
     }
 }
 
+#[allow(unused_mut)]
 fn text_update_system(mut q: Query<&mut Text, With<DebugText>>) {
     for mut text in q.iter_mut() {
         text.sections[1].value = "SomeText".to_string();
@@ -229,7 +249,7 @@ fn player_is_standing_on(
     q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
     mut q_debugtxt: Query<&mut Text, With<DebugText>>,
     mut q_child: Query<
-        (&Transform, &GlobalTransform, &LogSize),
+        (&Transform, &GlobalTransform, &LogSize, &LogBundleUuid),
         (Without<BackgroundRow>, Without<Player>),
     >,
 ) {
@@ -254,9 +274,10 @@ fn player_is_standing_on(
         if player_y - transform.translation.y > -40. && player_y - transform.translation.y < 40. {
             if bg_row.is_water_row {
                 let mut standing_on_the_log = false;
+                let mut standing_on_the_log_id = "".to_string();
                 for &child in children.iter() {
                     // println!("standing on row {}", transform.translation.y);
-                    if let Ok((child_transform, _child_global_transform, log_size)) =
+                    if let Ok((child_transform, _child_global_transform, log_size, uuid)) =
                         q_child.get(child)
                     {
                         /*
@@ -270,23 +291,56 @@ fn player_is_standing_on(
                         // let's adjust transform to global reference frame. it will be quicker and more precise
                         let log_x = child_transform.translation.x - SCREEN_WIDTH / 2.;
                         let log_size_f32: f32 = log_size.into();
-                        let log_x_plus_width = log_x +  log_size_f32;
+                        let log_x_plus_width = log_x + log_size_f32;
 
                         if player_x - log_x > -40. && player_x - log_x_plus_width < 40. {
                             standing_on_the_log = true;
+                            standing_on_the_log_id = uuid.get_uuid();
                             break;
                         }
                     }
                 }
                 if standing_on_the_log {
                     for mut text in q_debugtxt.iter_mut() {
-                        text.sections[1].value = "log :)".to_string();
+                        text.sections[1].value = format!("{}", standing_on_the_log_id);
                     }
                 } else {
                     for mut text in q_debugtxt.iter_mut() {
-                        text.sections[1].value = "water :(".to_string();
+                        text.sections[1].value = "".to_string();
                     }
-                    return;
+                }
+            }
+        }
+    }
+}
+
+fn logs_debug(
+    q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
+    mut q_child: Query<
+        (&Transform, &GlobalTransform, &LogSize, &LogBundleUuid),
+        (Without<BackgroundRow>, Without<Player>),
+    >,
+    mut run_once_res: ResMut<RunOnceRes>,
+) {
+    if run_once_res.did_run() {
+        return;
+    }
+    for (_transform, bg_row, children) in q_parent.iter() {
+        if bg_row.is_water_row {
+            for &child in children.iter() {
+                if let Ok((child_transform, child_global_transform, log_size, uuid)) =
+                    q_child.get(child)
+                {
+                    println!(
+                        "x: {} y: {} gx: {} gy: {}, size: {:?}, uuid: {}",
+                        child_transform.translation.x,
+                        child_transform.translation.y,
+                        child_global_transform.translation.x,
+                        child_global_transform.translation.y,
+                        log_size,
+                        uuid.get_uuid(),
+                    );
+                    run_once_res.set_did_run();
                 }
             }
         }
