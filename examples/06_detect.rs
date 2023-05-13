@@ -270,46 +270,41 @@ fn player_is_standing_on(
         text.sections[0].value = format!("x: {:.2}, y: {:.2}", player_x, player_y);
     }
 
-    for (transform, bg_row, children) in q_parent.iter() {
-        if player_y - transform.translation.y > -40. && player_y - transform.translation.y < 40. {
-            if bg_row.is_water_row {
-                let mut standing_on_the_log = false;
-                let mut standing_on_the_log_id = "".to_string();
-                for &child in children.iter() {
-                    // println!("standing on row {}", transform.translation.y);
-                    if let Ok((child_transform, _child_global_transform, log_size, uuid)) =
-                        q_child.get(child)
-                    {
-                        /*
-                        let log_x = _child_global_transform.translation.x;
-                         let log_x_plus_width =
-                             _child_global_transform.translation.x + LOG_BIG_WIDTH as f32;
-                          */
+    let mut standing_on_the_log = false;
+    let mut standing_on_the_log_id = "".to_string();
 
-                        // global transform does not work well, seems to be updated quite late
-                        // see https://bevy-cheatbook.github.io/features/transforms.html#transform-propagation
-                        // let's adjust transform to global reference frame. it will be quicker and more precise
-                        let log_x = child_transform.translation.x - SCREEN_WIDTH / 2.;
-                        let log_size_f32: f32 = log_size.into();
-                        let log_x_plus_width = log_x + log_size_f32;
+    'outer: for (_transform, bg_row, children) in q_parent.iter() {
+        if bg_row.is_water_row {
+            for &child in children.iter() {
+                if let Ok((_child_transform, child_global_transform, log_size, uuid)) =
+                    q_child.get(child)
+                {
+                    let log_size_f32: f32 = log_size.into();
+                    let log_x = child_global_transform.translation.x;
+                    let log_y = child_global_transform.translation.y;
+                    let log_x_plus_width = log_x + log_size_f32;
+                    let log_y_plus_height = log_y + 40.;
+                    let x_from = log_x - 40.;
+                    let x_to = log_x_plus_width - 40.;
+                    let y_from = log_y - 40.;
+                    let y_to = log_y_plus_height - 40.;
 
-                        if player_x - log_x > -40. && player_x - log_x_plus_width < 40. {
-                            standing_on_the_log = true;
-                            standing_on_the_log_id = uuid.get_uuid();
-                            break;
-                        }
-                    }
-                }
-                if standing_on_the_log {
-                    for mut text in q_debugtxt.iter_mut() {
-                        text.sections[1].value = format!("{}", standing_on_the_log_id);
-                    }
-                } else {
-                    for mut text in q_debugtxt.iter_mut() {
-                        text.sections[1].value = "".to_string();
+                    if (x_from..x_to).contains(&player_x) && (y_from..y_to).contains(&player_y) {
+                        standing_on_the_log = true;
+                        standing_on_the_log_id = uuid.get_uuid();
+                        break 'outer;
                     }
                 }
             }
+        }
+    }
+    if standing_on_the_log {
+        for mut text in q_debugtxt.iter_mut() {
+            text.sections[1].value = format!("{}", standing_on_the_log_id);
+        }
+    } else {
+        for mut text in q_debugtxt.iter_mut() {
+            text.sections[1].value = "".to_string();
         }
     }
 }
@@ -317,7 +312,13 @@ fn player_is_standing_on(
 fn logs_debug(
     q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
     mut q_child: Query<
-        (&Transform, &GlobalTransform, &LogSize, &LogBundleUuid),
+        (
+            &Transform,
+            &GlobalTransform,
+            &LogSize,
+            &MovementDirection,
+            &LogBundleUuid,
+        ),
         (Without<BackgroundRow>, Without<Player>),
     >,
     mut run_once_res: ResMut<RunOnceRes>,
@@ -328,21 +329,55 @@ fn logs_debug(
     for (_transform, bg_row, children) in q_parent.iter() {
         if bg_row.is_water_row {
             for &child in children.iter() {
-                if let Ok((child_transform, child_global_transform, log_size, uuid)) =
-                    q_child.get(child)
+                if let Ok((
+                    child_transform,
+                    child_global_transform,
+                    log_size,
+                    log_direction,
+                    uuid,
+                )) = q_child.get(child)
                 {
                     println!(
-                        "x: {} y: {} gx: {} gy: {}, size: {:?}, uuid: {}",
+                        "x: {} y: {} gx: {} gy: {}, size: {:?}, direction: {:?} uuid: {}",
                         child_transform.translation.x,
                         child_transform.translation.y,
                         child_global_transform.translation.x,
                         child_global_transform.translation.y,
                         log_size,
+                        log_direction,
                         uuid.get_uuid(),
                     );
                     run_once_res.set_did_run();
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bunner_rs::ecs::components::log::LogSize;
+
+    #[test]
+    fn test_log_contains_player() {
+        // x: 0 y: 0 gx: -240 gy: -40, size: BIG, uuid: f0168890...
+        let log_size_f32: f32 = (&LogSize::SMALL).into();
+        let log_x = -240.;
+        let log_y = -40.;
+        let log_x_plus_width = log_x + log_size_f32;
+        let log_y_plus_height = log_y + 40.;
+
+        let x_from = log_x - 40.;
+        let x_to = log_x_plus_width + 40.;
+        let y_from = log_y - 40.;
+        let y_to = log_y_plus_height + 40.;
+
+        let player_x = -223.0;
+        let player_y = -42.0;
+
+        assert_eq!(
+            true,
+            (x_from..x_to).contains(&player_x) && (y_from..y_to).contains(&player_y)
+        )
     }
 }

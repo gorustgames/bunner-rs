@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use std::fmt;
 
-#[derive(Debug, PartialEq, Component)]
+#[derive(Debug, PartialEq, Component, Clone)]
 pub enum LogSize {
     SMALL,
     BIG,
