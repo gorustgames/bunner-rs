@@ -46,7 +46,7 @@ fn main() {
         //.add_system(text_update_system)
         .add_system(player_movement)
         .add_system(active_row)
-        .add_system(player_is_standing_on)
+        .add_system(active_row_water)
         .add_system_to_stage(
             CoreStage::PostUpdate,
             logs_debug.after(TransformSystem::TransformPropagate),
@@ -251,9 +251,7 @@ fn text_update_system(mut q: Query<&mut Text, With<DebugText>>) {
     }
 }
 
-/// simplified version of player_is_standing_on
-/// working with water only
-fn player_is_standing_on(
+fn active_row_water(
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     q_background_row: Query<(&Transform, &BackgroundRow, &mut Children)>,
     mut q_debugtxt: Query<&mut Text, With<DebugText>>,

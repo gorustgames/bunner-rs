@@ -41,9 +41,13 @@ pub enum CollisionType {
     /// player is standing on water row
     /// and on the log -> ok!
     WaterLog,
+
     RailsOnly,
+
     RailsTrain,
+
     RoadOnly,
+
     RoadCar,
 
     /// rows like Dirt (i.e. with no child objects)
@@ -52,6 +56,7 @@ pub enum CollisionType {
 }
 
 /// Determines what type of spot player is standing on
+#[derive(Debug)]
 pub struct PlayerPosition {
     /// determines active row
     pub row_type: RowType,
@@ -60,6 +65,62 @@ pub struct PlayerPosition {
     /// is standing on row only (e.g.g RoadOnly) or is colliding with
     /// some child object (i.e. RoadCar)
     pub collision_type: CollisionType,
+}
+
+impl PlayerPosition {
+    /// serves for setting initial position when game starts
+    /// player stands on grass
+    pub fn new() -> Self {
+        PlayerPosition {
+            row_type: RowType::GRASS,
+            collision_type: CollisionType::Other,
+        }
+    }
+
+    pub fn set_water_ok(&mut self) {
+        self.row_type = RowType::WATER;
+        self.collision_type = CollisionType::WaterLog;
+    }
+
+    pub fn set_water_ko(&mut self) {
+        self.row_type = RowType::WATER;
+        self.collision_type = CollisionType::WaterOnly;
+    }
+
+    pub fn set_road_ok(&mut self) {
+        self.row_type = RowType::ROAD;
+        self.collision_type = CollisionType::RoadOnly;
+    }
+
+    pub fn set_road_ko(&mut self) {
+        self.row_type = RowType::ROAD;
+        self.collision_type = CollisionType::RoadCar;
+    }
+
+    pub fn set_rail_ok(&mut self) {
+        self.row_type = RowType::RAIL;
+        self.collision_type = CollisionType::RailsOnly;
+    }
+
+    pub fn set_rail_ko(&mut self) {
+        self.row_type = RowType::RAIL;
+        self.collision_type = CollisionType::RailsTrain;
+    }
+
+    pub fn set_dirt(&mut self) {
+        self.row_type = RowType::DIRT;
+        self.collision_type = CollisionType::Other;
+    }
+
+    pub fn set_grass(&mut self) {
+        self.row_type = RowType::GRASS;
+        self.collision_type = CollisionType::Other;
+    }
+
+    pub fn set_pavement(&mut self) {
+        self.row_type = RowType::PAVEMENT;
+        self.collision_type = CollisionType::Other;
+    }
 }
 
 #[cfg(test)]

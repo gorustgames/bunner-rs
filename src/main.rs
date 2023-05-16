@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bunner_rs::ecs::resources::BackgroundRows;
+use bunner_rs::ecs::resources::{BackgroundRows, PlayerPosition};
 use bunner_rs::ecs::systems::*;
 use bunner_rs::{AppState, SCREEN_HEIGHT, SCREEN_WIDTH};
 
@@ -37,11 +37,16 @@ fn main() {
                 .with_system(delayed_despawn_recursive)
                 .with_system(delayed_spawn_train)
                 .with_system(delayed_spawn_car)
-                .with_system(player_is_standing_on),
+                .with_system(debug_text_update_system)
+                .with_system(active_row)
+                .with_system(active_row_rail)
+                .with_system(active_row_road)
+                .with_system(active_row_water),
         )
         // add_system_set(SystemSet::on_enter(AppState::InGame).with_system(game_over)
         .add_system_set(SystemSet::on_enter(AppState::GameOver).with_system(game_over_enter))
         .add_system_set(SystemSet::on_update(AppState::GameOver).with_system(game_over_update))
         .insert_resource(BackgroundRows::new())
+        .insert_resource(PlayerPosition::new())
         .run();
 }

@@ -4,6 +4,7 @@ use crate::ecs::components::background_row::{
 };
 use crate::ecs::components::bush::{BushBundle, BushHorizontalType, BushVerticalType};
 use crate::ecs::components::car::{CarBundle, CarSpeed};
+use crate::ecs::components::debug_text::{DebugText, DebugTextMarker};
 use crate::ecs::components::log::{LogBundle, LogSize};
 use crate::ecs::components::player::{
     AnimationTimer, Player, PlayerBundle, PlayerDirection, PlayerDirectionIndex,
@@ -13,14 +14,8 @@ use crate::ecs::components::{
     ButtonExitMarker, ButtonPlayMarker, CarTimer, DelayedCarReadyToBeDisplayedMarker,
     DelayedTrainReadyToBeDisplayedMarker, DespawnEntityTimer, MovementDirection, TrainTimer,
 };
-use crate::ecs::resources::{BackgroundRows, MenuData};
-use crate::{
-    get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
-    is_odd_number, AppState, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, HOVERED_BUTTON,
-    LOG_BIG_WIDTH, LOG_SMALL_WIDTH, NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT, SCREEN_WIDTH,
-    SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER,
-    SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH, Z_GAMEOVER,
-};
+use crate::ecs::resources::{BackgroundRows, MenuData, PlayerPosition};
+use crate::{get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number, is_odd_number, AppState, CAR_HEIGHT, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, HOVERED_BUTTON, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH, Z_GAMEOVER, TRAIN_HEIGHT};
 use bevy::app::AppExit;
 use bevy::prelude::*;
 
@@ -627,6 +622,9 @@ pub fn game_setup(
     let player_y = -1. * (SCREEN_HEIGHT / 2.) + 8. * SEGMENT_HEIGHT;
     PlayerBundle::new(player_x, player_y, &asset_server, &mut texture_atlas_assets)
         .spawn_player(&mut commands);
+
+    // used for sending debugging information by dedicated debugging systems
+    DebugText::new(&asset_server).spawn_debug_text(&mut commands);
 }
 
 /// this system detects what the player is standing on (e.g. water, log, road, etc.)
@@ -756,6 +754,231 @@ pub fn player_is_standing_on(
                 println!("standing on pavement row {}", transform.translation.y);
             }
         }
+    }
+}
+
+/// sets global player position when player is standing on dirt, pavement, or grass row
+/// for remaining types (road, rail, water) dedicated systems with collision detection are used.
+pub fn active_row(
+    q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
+    q_bgrow: Query<(&Transform, &BackgroundRow)>,
+    mut player_position: ResMut<PlayerPosition>,
+) {
+    // first determine which background row player is standing on
+    let mut player_y = -1.;
+    for transform in q_player.iter() {
+        player_y = transform.translation.y;
+        break;
+    }
+    if player_y == -1. {
+        println!("unable to find player!!!");
+        return;
+    }
+
+    for (transform, bg_row) in q_bgrow.iter() {
+        let row_y_from = transform.translation.y - 20.;
+        let row_y_to = transform.translation.y + 40. - 20.;
+
+        if (row_y_from..row_y_to).contains(&player_y) {
+            let row_type = bg_row.row.get_row_type();
+            if row_type == RowType::GRASS {
+                player_position.set_grass();
+            }
+            if row_type == RowType::PAVEMENT {
+                player_position.set_pavement();
+            }
+            if row_type == RowType::DIRT {
+                player_position.set_dirt();
+            }
+        }
+    }
+}
+
+pub fn active_row_water(
+    q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
+    q_background_row: Query<(&Transform, &BackgroundRow, &mut Children)>,
+    q_child: Query<(&GlobalTransform, &LogSize), (Without<BackgroundRow>, Without<Player>)>,
+    mut player_position: ResMut<PlayerPosition>,
+) {
+    // first determine which background row player is standing on
+    let mut player_x = -1.;
+    let mut player_y = -1.;
+    for transform in q_player.iter() {
+        player_x = transform.translation.x;
+        player_y = transform.translation.y;
+        break;
+    }
+    if player_y == -1. {
+        println!("unable to find player!!!");
+        return;
+    }
+
+    let mut standing_on_the_water = false;
+    let mut standing_on_the_log = false;
+
+    'outer: for (transform, bg_row, children) in q_background_row.iter() {
+        let bgrow_y_from = transform.translation.y - 20.;
+        let bgrow_y_to = transform.translation.y + 40. - 20.;
+
+        if (bgrow_y_from..bgrow_y_to).contains(&player_y) {
+            if bg_row.is_water_row {
+                standing_on_the_water = true;
+                for &child in children.iter() {
+                    if let Ok((child_global_transform, log_size)) = q_child.get(child) {
+                        let log_size_f32: f32 = log_size.into();
+                        let log_x = child_global_transform.translation.x;
+                        let log_y = child_global_transform.translation.y;
+                        let log_x_plus_width = log_x + log_size_f32;
+                        let log_y_plus_height = log_y + 40.;
+                        let x_from = log_x - 20.;
+                        let x_to = log_x_plus_width - 20.;
+                        let y_from = log_y - 20.;
+                        let y_to = log_y_plus_height - 20.;
+
+                        if (x_from..x_to).contains(&player_x) && (y_from..y_to).contains(&player_y)
+                        {
+                            standing_on_the_log = true;
+                            break 'outer;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if standing_on_the_water && standing_on_the_log {
+        player_position.set_water_ok();
+    } else if standing_on_the_water && !standing_on_the_log {
+        player_position.set_water_ko();
+    } else {
+        // send nothing! player is not standing on the water row!
+    }
+}
+
+pub fn active_row_road(
+    q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
+    q_background_row: Query<(&Transform, &BackgroundRow, &mut Children)>,
+    q_child: Query<&GlobalTransform, (Without<BackgroundRow>, Without<Player>)>,
+    mut player_position: ResMut<PlayerPosition>,
+) {
+    // first determine which background row player is standing on
+    let mut player_x = -1.;
+    let mut player_y = -1.;
+    for transform in q_player.iter() {
+        player_x = transform.translation.x;
+        player_y = transform.translation.y;
+        break;
+    }
+    if player_y == -1. {
+        println!("unable to find player!!!");
+        return;
+    }
+
+    let mut standing_on_the_road = false;
+    let mut hit_by_car = false;
+
+    'outer: for (transform, bg_row, children) in q_background_row.iter() {
+        let bgrow_y_from = transform.translation.y - 20.;
+        let bgrow_y_to = transform.translation.y + 40. - 20.;
+
+        if (bgrow_y_from..bgrow_y_to).contains(&player_y) {
+            if bg_row.is_road_row {
+                standing_on_the_road = true;
+                for &child in children.iter() {
+                    if let Ok(child_global_transform) = q_child.get(child) {
+                        let car_x = child_global_transform.translation.x;
+                        let car_y = child_global_transform.translation.y;
+                        let car_x_plus_width = car_x + CAR_WIDTH;
+                        let car_y_plus_height = car_y + CAR_HEIGHT;
+                        let x_from = car_x - 20.;
+                        let x_to = car_x_plus_width - 20.;
+                        let y_from = car_y - 20.;
+                        let y_to = car_y_plus_height - 20.;
+
+                        if (x_from..x_to).contains(&player_x) && (y_from..y_to).contains(&player_y)
+                        {
+                            hit_by_car = true;
+                            break 'outer;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if standing_on_the_road && !hit_by_car {
+        player_position.set_road_ok();
+    } else if standing_on_the_road && hit_by_car {
+        player_position.set_road_ko();
+    } else {
+        // send nothing! player is not standing on the road row!
+    }
+}
+
+pub fn active_row_rail(
+    q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
+    q_background_row: Query<(&Transform, &BackgroundRow, &mut Children)>,
+    q_child: Query<&GlobalTransform, (Without<BackgroundRow>, Without<Player>)>,
+    mut player_position: ResMut<PlayerPosition>,
+) {
+    // first determine which background row player is standing on
+    let mut player_x = -1.;
+    let mut player_y = -1.;
+    for transform in q_player.iter() {
+        player_x = transform.translation.x;
+        player_y = transform.translation.y;
+        break;
+    }
+    if player_y == -1. {
+        println!("unable to find player!!!");
+        return;
+    }
+
+    let mut standing_on_the_rail = false;
+    let mut hit_by_train = false;
+
+    'outer: for (transform, bg_row, children) in q_background_row.iter() {
+        let bgrow_y_from = transform.translation.y - 20.;
+        let bgrow_y_to = transform.translation.y + 40. - 20.;
+
+        if (bgrow_y_from..bgrow_y_to).contains(&player_y) {
+            if bg_row.is_rail_row {
+                standing_on_the_rail = true;
+                for &child in children.iter() {
+                    if let Ok(child_global_transform) = q_child.get(child) {
+                        let train_x = child_global_transform.translation.x;
+                        let train_y = child_global_transform.translation.y;
+                        let train_x_plus_width = train_x + TRAIN_WIDTH;
+                        let train_y_plus_height = train_y + TRAIN_HEIGHT;
+                        let x_from = train_x - 20.;
+                        let x_to = train_x_plus_width - 20.;
+                        let y_from = train_y - 20.;
+                        let y_to = train_y_plus_height - 20.;
+
+                        if (x_from..x_to).contains(&player_x) && (y_from..y_to).contains(&player_y)
+                        {
+                            hit_by_train = true;
+                            break 'outer;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if standing_on_the_rail && !hit_by_train {
+        player_position.set_rail_ok();
+    } else if standing_on_the_rail && hit_by_train {
+        player_position.set_rail_ko();
+    } else {
+        // send nothing! player is not standing on the rail row!
+    }
+}
+
+pub fn debug_text_update_system(
+    mut q: Query<&mut Text, With<DebugTextMarker>>,
+    player_position: ResMut<PlayerPosition>,
+) {
+    for mut text in q.iter_mut() {
+        text.sections[0].value = format!("{:?}", player_position.row_type);
+        text.sections[1].value = format!("{:?}", player_position.collision_type);
     }
 }
 

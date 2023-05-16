@@ -15,7 +15,9 @@ pub const SEGMENT_WIDTH: f32 = 40.;
 pub const CAR_SPEED_FROM: i32 = 80;
 pub const CAR_SPEED_TO: i32 = 160;
 pub const CAR_WIDTH: f32 = 90.;
+pub const CAR_HEIGHT: f32 = 59.;
 pub const TRAIN_WIDTH: f32 = 860.;
+pub const TRAIN_HEIGHT: f32 = 134.;
 
 pub const LOG_BIG_WIDTH: i32 = 138;
 pub const LOG_SMALL_WIDTH: i32 = 84;
