@@ -45,6 +45,7 @@ fn main() {
         .add_system(put_logs_on_water)
         //.add_system(text_update_system)
         .add_system(player_movement)
+        .add_system(active_row)
         .add_system(player_is_standing_on)
         .add_system_to_stage(
             CoreStage::PostUpdate,
@@ -117,7 +118,7 @@ pub fn game_setup(
                 // Construct a `Vec` of `TextSection`s
                 sections: vec![
                     TextSection {
-                        value: "Debug: ".to_string(),
+                        value: "".to_string(),
                         style: TextStyle {
                             font: asset_server.load("fonts/ALGER.TTF"),
                             font_size: 15.0,
@@ -130,6 +131,14 @@ pub fn game_setup(
                             font: asset_server.load("fonts/ALGER.TTF"),
                             font_size: 15.0,
                             color: Color::GOLD,
+                        },
+                    },
+                    TextSection {
+                        value: "".to_string(),
+                        style: TextStyle {
+                            font: asset_server.load("fonts/ALGER.TTF"),
+                            font_size: 15.0,
+                            color: Color::GREEN,
                         },
                     },
                 ],
@@ -249,7 +258,7 @@ fn player_is_standing_on(
     q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
     mut q_debugtxt: Query<&mut Text, With<DebugText>>,
     mut q_child: Query<
-        (&Transform, &GlobalTransform, &LogSize, &LogBundleUuid),
+        (&GlobalTransform, &LogSize, &LogBundleUuid),
         (Without<BackgroundRow>, Without<Player>),
     >,
 ) {
@@ -276,9 +285,7 @@ fn player_is_standing_on(
     'outer: for (_transform, bg_row, children) in q_parent.iter() {
         if bg_row.is_water_row {
             for &child in children.iter() {
-                if let Ok((_child_transform, child_global_transform, log_size, uuid)) =
-                    q_child.get(child)
-                {
+                if let Ok((child_global_transform, log_size, uuid)) = q_child.get(child) {
                     let log_size_f32: f32 = log_size.into();
                     let log_x = child_global_transform.translation.x;
                     let log_y = child_global_transform.translation.y;
@@ -305,6 +312,34 @@ fn player_is_standing_on(
     } else {
         for mut text in q_debugtxt.iter_mut() {
             text.sections[1].value = "".to_string();
+        }
+    }
+}
+
+fn active_row(
+    q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
+    q_bgrow: Query<(&Transform, &BackgroundRow)>,
+    mut q_debugtxt: Query<&mut Text, With<DebugText>>,
+) {
+    // first determine which background row player is standing on
+    let mut player_y = -1.;
+    for transform in q_player.iter() {
+        player_y = transform.translation.y;
+        break;
+    }
+    if player_y == -1. {
+        println!("unable to find player!!!");
+        return;
+    }
+
+    for (transform, bg_row) in q_bgrow.iter() {
+        let row_y_from = transform.translation.y - 20.;
+        let row_y_to = transform.translation.y + 40. - 20.;
+
+        if (row_y_from..row_y_to).contains(&player_y) {
+            for mut text in q_debugtxt.iter_mut() {
+                text.sections[2].value = format!("{:?}", bg_row.row.get_row_type());
+            }
         }
     }
 }
