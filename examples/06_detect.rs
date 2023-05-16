@@ -120,7 +120,7 @@ pub fn game_setup(
                         value: "Debug: ".to_string(),
                         style: TextStyle {
                             font: asset_server.load("fonts/ALGER.TTF"),
-                            font_size: 10.0,
+                            font_size: 15.0,
                             color: Color::WHITE,
                         },
                     },
@@ -128,7 +128,7 @@ pub fn game_setup(
                         value: "".to_string(),
                         style: TextStyle {
                             font: asset_server.load("fonts/ALGER.TTF"),
-                            font_size: 10.0,
+                            font_size: 15.0,
                             color: Color::GOLD,
                         },
                     },
@@ -284,10 +284,10 @@ fn player_is_standing_on(
                     let log_y = child_global_transform.translation.y;
                     let log_x_plus_width = log_x + log_size_f32;
                     let log_y_plus_height = log_y + 40.;
-                    let x_from = log_x - 40.;
-                    let x_to = log_x_plus_width - 40.;
-                    let y_from = log_y - 40.;
-                    let y_to = log_y_plus_height - 40.;
+                    let x_from = log_x - 20.;
+                    let x_to = log_x_plus_width - 20.;
+                    let y_from = log_y - 20.;
+                    let y_to = log_y_plus_height - 20.;
 
                     if (x_from..x_to).contains(&player_x) && (y_from..y_to).contains(&player_y) {
                         standing_on_the_log = true;
