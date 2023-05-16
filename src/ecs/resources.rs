@@ -1,4 +1,5 @@
 use crate::ecs::components::background_row::Row;
+use bevy::prelude::*;
 use sliding_window::typenum::consts::*;
 use sliding_window::*;
 
@@ -24,6 +25,11 @@ impl BackgroundRows {
             Some(self.rows[self.rows.count() - 1].clone_row())
         };
     }
+}
+
+pub struct MenuData {
+    pub button_entity_exit: Entity,
+    pub button_entity_start: Entity,
 }
 
 #[cfg(test)]

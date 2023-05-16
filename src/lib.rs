@@ -1,7 +1,12 @@
+use bevy::prelude::*;
 use rand::Rng;
 use uuid::Uuid;
 
 pub mod ecs;
+
+const NORMAL_BUTTON: Color = Color::ORANGE;
+const HOVERED_BUTTON: Color = Color::GREEN;
+const PRESSED_BUTTON: Color = Color::RED;
 
 pub const SCREEN_HEIGHT: f32 = 800.;
 pub const SCREEN_WIDTH: f32 = 480.;

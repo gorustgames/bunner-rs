@@ -13,13 +13,13 @@ use crate::ecs::components::{
     ButtonExitMarker, ButtonPlayMarker, CarTimer, DelayedCarReadyToBeDisplayedMarker,
     DelayedTrainReadyToBeDisplayedMarker, DespawnEntityTimer, MovementDirection, TrainTimer,
 };
-use crate::ecs::resources::BackgroundRows;
+use crate::ecs::resources::{BackgroundRows, MenuData};
 use crate::{
     get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
-    is_odd_number, AppState, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, LOG_BIG_WIDTH,
-    LOG_SMALL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS,
-    SCROLLING_SPEED_PLAYER, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH,
-    Z_GAMEOVER,
+    is_odd_number, AppState, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, HOVERED_BUTTON,
+    LOG_BIG_WIDTH, LOG_SMALL_WIDTH, NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT, SCREEN_WIDTH,
+    SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER,
+    SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH, Z_GAMEOVER,
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -643,7 +643,7 @@ pub fn player_is_standing_on(
     mut state: ResMut<State<AppState>>,
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
-    mut q_child: Query<(&Transform, &GlobalTransform), (Without<BackgroundRow>, Without<Player>)>,
+    q_child: Query<(&Transform, &GlobalTransform), (Without<BackgroundRow>, Without<Player>)>,
 ) {
     // first determine which background row player is standing on
     let mut player_x = -1.;
@@ -758,16 +758,6 @@ pub fn player_is_standing_on(
         }
     }
 }
-
-/// structures and constants for UI systems below (shown on initial gam screen)
-pub struct MenuData {
-    button_entity_exit: Entity,
-    button_entity_start: Entity,
-}
-
-const NORMAL_BUTTON: Color = Color::ORANGE;
-const HOVERED_BUTTON: Color = Color::GREEN;
-const PRESSED_BUTTON: Color = Color::RED;
 
 pub fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     // ui camera

@@ -9,8 +9,8 @@ use bunner_rs::ecs::components::MovementDirection;
 use bunner_rs::ecs::resources::BackgroundRows;
 use bunner_rs::ecs::systems::player_movement;
 use bunner_rs::{
-    get_random_i32, is_even_number, CAR_WIDTH, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, SCREEN_HEIGHT,
-    SCREEN_WIDTH, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH,
+    get_random_i32, is_even_number, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH,
+    SEGMENT_HEIGHT, SEGMENT_WIDTH,
 };
 use std::boxed::Box;
 
@@ -244,7 +244,7 @@ pub fn put_logs_on_water(
     }
 }
 
-#[allow(unused_mut)]
+#[allow(dead_code)]
 fn text_update_system(mut q: Query<&mut Text, With<DebugText>>) {
     for mut text in q.iter_mut() {
         text.sections[1].value = "SomeText".to_string();
@@ -257,7 +257,7 @@ fn player_is_standing_on(
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
     mut q_debugtxt: Query<&mut Text, With<DebugText>>,
-    mut q_child: Query<
+    q_child: Query<
         (&GlobalTransform, &LogSize, &LogBundleUuid),
         (Without<BackgroundRow>, Without<Player>),
     >,
@@ -346,7 +346,7 @@ fn active_row(
 
 fn logs_debug(
     q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
-    mut q_child: Query<
+    q_child: Query<
         (
             &Transform,
             &GlobalTransform,
