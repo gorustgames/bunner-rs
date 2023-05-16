@@ -1,4 +1,4 @@
-use crate::ecs::components::background_row::Row;
+use crate::ecs::components::background_row::{Row, RowType};
 use bevy::prelude::*;
 use sliding_window::typenum::consts::*;
 use sliding_window::*;
@@ -30,6 +30,36 @@ impl BackgroundRows {
 pub struct MenuData {
     pub button_entity_exit: Entity,
     pub button_entity_start: Entity,
+}
+
+#[derive(Debug)]
+pub enum CollisionType {
+    /// player is standing on water row
+    /// and on no log -> ko!
+    WaterOnly,
+
+    /// player is standing on water row
+    /// and on the log -> ok!
+    WaterLog,
+    RailsOnly,
+    RailsTrain,
+    RoadOnly,
+    RoadCar,
+
+    /// rows like Dirt (i.e. with no child objects)
+    /// fall under category Other, here no action is needed
+    Other,
+}
+
+/// Determines what type of spot player is standing on
+pub struct PlayerPosition {
+    /// determines active row
+    pub row_type: RowType,
+
+    /// within active row determines whether player
+    /// is standing on row only (e.g.g RoadOnly) or is colliding with
+    /// some child object (i.e. RoadCar)
+    pub collision_type: CollisionType,
 }
 
 #[cfg(test)]

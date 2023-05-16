@@ -255,7 +255,7 @@ fn text_update_system(mut q: Query<&mut Text, With<DebugText>>) {
 /// working with water only
 fn player_is_standing_on(
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
-    q_parent: Query<(&Transform, &BackgroundRow, &mut Children)>,
+    q_background_row: Query<(&Transform, &BackgroundRow, &mut Children)>,
     mut q_debugtxt: Query<&mut Text, With<DebugText>>,
     q_child: Query<
         (&GlobalTransform, &LogSize, &LogBundleUuid),
@@ -281,25 +281,33 @@ fn player_is_standing_on(
 
     let mut standing_on_the_log = false;
     let mut standing_on_the_log_id = "".to_string();
+    let mut _row_type_str = "".to_owned();
 
-    'outer: for (_transform, bg_row, children) in q_parent.iter() {
-        if bg_row.is_water_row {
-            for &child in children.iter() {
-                if let Ok((child_global_transform, log_size, uuid)) = q_child.get(child) {
-                    let log_size_f32: f32 = log_size.into();
-                    let log_x = child_global_transform.translation.x;
-                    let log_y = child_global_transform.translation.y;
-                    let log_x_plus_width = log_x + log_size_f32;
-                    let log_y_plus_height = log_y + 40.;
-                    let x_from = log_x - 20.;
-                    let x_to = log_x_plus_width - 20.;
-                    let y_from = log_y - 20.;
-                    let y_to = log_y_plus_height - 20.;
+    'outer: for (transform, bg_row, children) in q_background_row.iter() {
+        let bgrow_y_from = transform.translation.y - 20.;
+        let bgrow_y_to = transform.translation.y + 40. - 20.;
 
-                    if (x_from..x_to).contains(&player_x) && (y_from..y_to).contains(&player_y) {
-                        standing_on_the_log = true;
-                        standing_on_the_log_id = uuid.get_uuid();
-                        break 'outer;
+        if (bgrow_y_from..bgrow_y_to).contains(&player_y) {
+            _row_type_str = format!("{:?}", bg_row.row.get_row_type());
+            if bg_row.is_water_row {
+                for &child in children.iter() {
+                    if let Ok((child_global_transform, log_size, uuid)) = q_child.get(child) {
+                        let log_size_f32: f32 = log_size.into();
+                        let log_x = child_global_transform.translation.x;
+                        let log_y = child_global_transform.translation.y;
+                        let log_x_plus_width = log_x + log_size_f32;
+                        let log_y_plus_height = log_y + 40.;
+                        let x_from = log_x - 20.;
+                        let x_to = log_x_plus_width - 20.;
+                        let y_from = log_y - 20.;
+                        let y_to = log_y_plus_height - 20.;
+
+                        if (x_from..x_to).contains(&player_x) && (y_from..y_to).contains(&player_y)
+                        {
+                            standing_on_the_log = true;
+                            standing_on_the_log_id = uuid.get_uuid();
+                            break 'outer;
+                        }
                     }
                 }
             }
@@ -308,10 +316,12 @@ fn player_is_standing_on(
     if standing_on_the_log {
         for mut text in q_debugtxt.iter_mut() {
             text.sections[1].value = format!("{}", standing_on_the_log_id);
+            // text.sections[2].value = row_type_str.to_owned();
         }
     } else {
         for mut text in q_debugtxt.iter_mut() {
             text.sections[1].value = "".to_string();
+            // text.sections[2].value = row_type_str.to_owned();
         }
     }
 }
