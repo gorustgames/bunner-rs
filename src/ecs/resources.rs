@@ -1,4 +1,5 @@
 use crate::ecs::components::background_row::{Row, RowType};
+use crate::ecs::components::MovementDirection;
 use bevy::prelude::*;
 use sliding_window::typenum::consts::*;
 use sliding_window::*;
@@ -40,7 +41,7 @@ pub enum CollisionType {
 
     /// player is standing on water row
     /// and on the log -> ok!
-    WaterLog,
+    WaterLog(MovementDirection),
 
     RailsOnly,
 
@@ -77,9 +78,9 @@ impl PlayerPosition {
         }
     }
 
-    pub fn set_water_ok(&mut self) {
+    pub fn set_water_ok(&mut self, direction: MovementDirection) {
         self.row_type = RowType::WATER;
-        self.collision_type = CollisionType::WaterLog;
+        self.collision_type = CollisionType::WaterLog(direction);
     }
 
     pub fn set_water_ko(&mut self) {

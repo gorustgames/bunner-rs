@@ -14,8 +14,14 @@ use crate::ecs::components::{
     ButtonExitMarker, ButtonPlayMarker, CarTimer, DelayedCarReadyToBeDisplayedMarker,
     DelayedTrainReadyToBeDisplayedMarker, DespawnEntityTimer, MovementDirection, TrainTimer,
 };
-use crate::ecs::resources::{BackgroundRows, MenuData, PlayerPosition};
-use crate::{get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number, is_odd_number, AppState, CAR_HEIGHT, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, HOVERED_BUTTON, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_WIDTH, Z_GAMEOVER, TRAIN_HEIGHT};
+use crate::ecs::resources::{BackgroundRows, CollisionType, MenuData, PlayerPosition};
+use crate::{
+    get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
+    is_odd_number, AppState, CAR_HEIGHT, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, HOVERED_BUTTON,
+    LOG_BIG_WIDTH, LOG_SMALL_WIDTH, NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT, SCREEN_WIDTH,
+    SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER,
+    SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_HEIGHT, TRAIN_WIDTH, Z_GAMEOVER,
+};
 use bevy::app::AppExit;
 use bevy::prelude::*;
 
@@ -144,9 +150,23 @@ pub fn background_scrolling(
 
 /// we are moving player down with the same speed as background is scrolling
 /// this will create illusion of player standing at particular place
-pub fn player_scrolling(time: Res<Time>, mut q: Query<&mut Transform, With<Player>>) {
+pub fn player_scrolling(
+    time: Res<Time>,
+    mut q: Query<&mut Transform, With<Player>>,
+    player_position: ResMut<PlayerPosition>,
+) {
     for mut transform in q.iter_mut() {
         transform.translation.y -= SCROLLING_SPEED_BACKGROUND * time.delta_seconds();
+        match &player_position.collision_type {
+            CollisionType::WaterLog(movement_direction) => {
+                if *movement_direction == MovementDirection::RIGHT {
+                    transform.translation.x += SCROLLING_SPEED_LOGS * time.delta_seconds();
+                } else {
+                    transform.translation.x -= SCROLLING_SPEED_LOGS * time.delta_seconds();
+                }
+            }
+            _ => {}
+        }
     }
 }
 
@@ -667,7 +687,10 @@ pub fn active_row(
 pub fn active_row_water(
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     q_background_row: Query<(&Transform, &BackgroundRow, &mut Children)>,
-    q_child: Query<(&GlobalTransform, &LogSize), (Without<BackgroundRow>, Without<Player>)>,
+    q_child: Query<
+        (&GlobalTransform, &LogSize, &MovementDirection),
+        (Without<BackgroundRow>, Without<Player>),
+    >,
     mut player_position: ResMut<PlayerPosition>,
 ) {
     // first determine which background row player is standing on
@@ -685,6 +708,7 @@ pub fn active_row_water(
 
     let mut standing_on_the_water = false;
     let mut standing_on_the_log = false;
+    let mut log_direction: Option<MovementDirection> = None;
 
     'outer: for (transform, bg_row, children) in q_background_row.iter() {
         let bgrow_y_from = transform.translation.y - 20.;
@@ -694,7 +718,9 @@ pub fn active_row_water(
             if bg_row.is_water_row {
                 standing_on_the_water = true;
                 for &child in children.iter() {
-                    if let Ok((child_global_transform, log_size)) = q_child.get(child) {
+                    if let Ok((child_global_transform, log_size, movement_direction)) =
+                        q_child.get(child)
+                    {
                         let log_size_f32: f32 = log_size.into();
                         let log_x = child_global_transform.translation.x;
                         let log_y = child_global_transform.translation.y;
@@ -708,6 +734,7 @@ pub fn active_row_water(
                         if (x_from..x_to).contains(&player_x) && (y_from..y_to).contains(&player_y)
                         {
                             standing_on_the_log = true;
+                            log_direction = Some(movement_direction.clone());
                             break 'outer;
                         }
                     }
@@ -716,7 +743,7 @@ pub fn active_row_water(
         }
     }
     if standing_on_the_water && standing_on_the_log {
-        player_position.set_water_ok();
+        player_position.set_water_ok(log_direction.unwrap());
     } else if standing_on_the_water && !standing_on_the_log {
         player_position.set_water_ko();
     } else {
