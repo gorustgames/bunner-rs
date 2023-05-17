@@ -62,6 +62,11 @@ pub struct PlayerPosition {
     /// determines active row
     pub row_type: RowType,
 
+    /// which row player is standing on
+    /// very bottom row has index 0
+    /// we have together 800 / 40 = 20 rows
+    pub row_index: i8,
+
     /// within active row determines whether player
     /// is standing on row only (e.g.g RoadOnly) or is colliding with
     /// some child object (i.e. RoadCar)
@@ -74,6 +79,7 @@ impl PlayerPosition {
     pub fn new() -> Self {
         PlayerPosition {
             row_type: RowType::GRASS,
+            row_index: 7, // initially the player is at row 8
             collision_type: CollisionType::Other,
         }
     }

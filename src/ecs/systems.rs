@@ -869,13 +869,69 @@ pub fn active_row_rail(
     }
 }
 
+/// determines index of row player is standing on
+pub fn active_row_player(
+    q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
+    mut player_position: ResMut<PlayerPosition>,
+) {
+    let mut player_y = -1;
+    for transform in q_player.iter() {
+        player_y = transform.translation.y as i32;
+        break;
+    }
+    if player_y == -1 {
+        println!("unable to find player!!!");
+        return;
+    }
+
+    // we have bottom left positioning of sprites!
+    // adjust player y so that when player y (i.e. its bottom part) is 35
+    // we consider this as row 11, not row 10!
+    if player_y > 0 {
+        player_y = player_y + 20;
+    } else {
+        player_y = player_y - 20;
+    }
+
+    let player_row = match player_y {
+        0..=40 => 10,
+        41..=80 => 11,
+        81..=120 => 12,
+        121..=160 => 13,
+        161..=200 => 14,
+        201..=240 => 15,
+        241..=280 => 16,
+        281..=320 => 17,
+        321..=360 => 18,
+        361..=400 => 19,
+        -40..=-1 => 9,
+        -80..=-41 => 8,
+        -120..=-81 => 7,
+        -160..=-121 => 6,
+        -200..=-161 => 5,
+        -240..=-201 => 4,
+        -280..=-241 => 3,
+        -320..=-281 => 2,
+        -360..=-321 => 1,
+        -400..=-321 => 0,
+        _ => -1, // will not happen but we need to satisfy compiler
+    };
+
+    if player_row == -1 {
+        println!("active_row_player = -1 for y{:?}", player_y);
+        return;
+    }
+    player_position.row_index = player_row;
+}
+
 pub fn debug_text_update_system(
     mut q: Query<&mut Text, With<DebugTextMarker>>,
     player_position: ResMut<PlayerPosition>,
 ) {
     for mut text in q.iter_mut() {
-        text.sections[0].value = format!("{:?}", player_position.row_type);
-        text.sections[1].value = format!("{:?}", player_position.collision_type);
+        text.sections[0].value = format!(" {:?} ", player_position.row_type);
+        text.sections[1].value = format!(" {:?} ", player_position.collision_type);
+        text.sections[2].value = format!(" {:?} ", player_position.row_index);
     }
 }
 
