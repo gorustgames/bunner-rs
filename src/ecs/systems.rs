@@ -914,14 +914,131 @@ pub fn active_row_player(
         -320..=-281 => 2,
         -360..=-321 => 1,
         -400..=-321 => 0,
-        _ => -1, // will not happen but we need to satisfy compiler
+        _ => -1, // this will happen if player scrolls off the screen, i.e. player is dead!
     };
 
-    if player_row == -1 {
-        println!("active_row_player = -1 for y{:?}", player_y);
+    player_position.row_index = player_row;
+}
+
+pub fn active_col_player(
+    q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
+    mut player_position: ResMut<PlayerPosition>,
+) {
+    let mut player_x = -1;
+    for transform in q_player.iter() {
+        player_x = transform.translation.x as i32;
+        break;
+    }
+    if player_x == -1 {
+        println!("unable to find player!!!");
         return;
     }
-    player_position.row_index = player_row;
+
+    // we have bottom left positioning of sprites!
+    // analogy to alignment in active_row_player
+    if player_x > 0 {
+        player_x = player_x + 20;
+    } else {
+        player_x = player_x - 20;
+    }
+
+    let player_col = match player_x {
+        0..=40 => 6,
+        41..=80 => 7,
+        81..=120 => 8,
+        121..=160 => 9,
+        161..=200 => 10,
+        201..=240 => 11,
+        -40..=-1 => 5,
+        -80..=-41 => 4,
+        -120..=-81 => 3,
+        -160..=-121 => 2,
+        -200..=-161 => 1,
+        -240..=-201 => 0,
+        _ => -1, // this will never happen since we are controlling player not to cross left/right boundary
+    };
+
+    if player_col == -1 {
+        println!("active_col_player = -1 for x{:?}", player_x);
+        return;
+    }
+
+    player_position.col_index = player_col;
+}
+
+pub fn detect_bushes(
+    player_position: Res<PlayerPosition>,
+    bg_rows: Res<BackgroundRows>,
+    query: Query<&PlayerDirection, With<Player>>,
+    mut query_text: Query<&mut Text, With<DebugTextMarker>>,
+) {
+    let player_row = player_position.row_index;
+    let player_col = player_position.col_index as usize;
+
+    if player_row == -1 {
+        // do not run this system if player scrolls off the screen
+        return;
+    }
+
+    let mut player_direction: &PlayerDirection = &PlayerDirection::Up;
+
+    for direction in query.iter() {
+        player_direction = direction;
+    }
+
+    let row = match player_direction {
+        PlayerDirection::Up => bg_rows.get_row(player_row as usize + 1),
+        PlayerDirection::Down => bg_rows.get_row(player_row as usize - 1),
+        _ => bg_rows.get_row(player_row as usize),
+    };
+
+    if row.is_none() {
+        return;
+    }
+    let row = row.unwrap();
+
+    let mut flgHit = false;
+    if let Some(row_mask) = row.get_row_mask() {
+        match player_direction {
+            PlayerDirection::Up => {
+                if row_mask[player_col] == false {
+                    flgHit = true;
+                    for mut text in query_text.iter_mut() {
+                        text.sections[0].value = format!(" UP ");
+                    }
+                }
+            }
+            PlayerDirection::Down => {
+                if row_mask[player_col] == false {
+                    flgHit = true;
+                    for mut text in query_text.iter_mut() {
+                        text.sections[0].value = format!(" DOWN ");
+                    }
+                }
+            }
+            PlayerDirection::Left => {
+                if player_col > 0 && row_mask[player_col - 1] == false {
+                    flgHit = true;
+                    for mut text in query_text.iter_mut() {
+                        text.sections[0].value = format!(" LEFT ");
+                    }
+                }
+            }
+            PlayerDirection::Right => {
+                if player_col < 11 && row_mask[player_col + 1] == false {
+                    flgHit = true;
+                    for mut text in query_text.iter_mut() {
+                        text.sections[0].value = format!(" RIGHT ");
+                    }
+                }
+            }
+        }
+    }
+    if !flgHit {
+        for mut text in query_text.iter_mut() {
+            text.sections[0].value = format!(" - ");
+        }
+    }
 }
 
 pub fn debug_text_update_system(
@@ -929,9 +1046,11 @@ pub fn debug_text_update_system(
     player_position: ResMut<PlayerPosition>,
 ) {
     for mut text in q.iter_mut() {
-        text.sections[0].value = format!(" {:?} ", player_position.row_type);
+        // TODO: uncomment and remove usage of 0 index from detect_bushes
+        //text.sections[0].value = format!(" {:?} ", player_position.row_type);
         text.sections[1].value = format!(" {:?} ", player_position.collision_type);
         text.sections[2].value = format!(" {:?} ", player_position.row_index);
+        text.sections[3].value = format!(" {:?} ", player_position.col_index);
     }
 }
 

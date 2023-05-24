@@ -26,6 +26,14 @@ impl BackgroundRows {
             Some(self.rows[self.rows.count() - 1].clone_row())
         };
     }
+
+    pub fn get_row(&self, row_index: usize) -> Option<Box<dyn Row>> {
+        return if self.rows.count() == 0 {
+            None
+        } else {
+            Some(self.rows[row_index].clone_row())
+        };
+    }
 }
 
 pub struct MenuData {
@@ -67,6 +75,11 @@ pub struct PlayerPosition {
     /// we have together 800 / 40 = 20 rows
     pub row_index: i8,
 
+    /// which column within row player is standing on
+    /// very left columns has index 0
+    /// we have 480 px / 40 px = 12 columns
+    pub col_index: i8,
+
     /// within active row determines whether player
     /// is standing on row only (e.g.g RoadOnly) or is colliding with
     /// some child object (i.e. RoadCar)
@@ -80,6 +93,7 @@ impl PlayerPosition {
         PlayerPosition {
             row_type: RowType::GRASS,
             row_index: 7, // initially the player is at row 8
+            col_index: 5, // initially the player is at column 6
             collision_type: CollisionType::Other,
         }
     }

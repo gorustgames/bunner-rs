@@ -38,8 +38,10 @@ fn main() {
                 .with_system(delayed_spawn_train)
                 .with_system(delayed_spawn_car)
                 .with_system(debug_text_update_system)
+                .with_system(detect_bushes)
                 .with_system(active_row)
                 .with_system(active_row_player)
+                .with_system(active_col_player)
                 .with_system(active_row_rail)
                 .with_system(active_row_road)
                 .with_system(active_row_water),
