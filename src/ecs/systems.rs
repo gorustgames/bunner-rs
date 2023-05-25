@@ -997,12 +997,12 @@ pub fn detect_bushes(
     }
     let row = row.unwrap();
 
-    let mut flgHit = false;
+    let mut flg_hit = false;
     if let Some(row_mask) = row.get_row_mask() {
         match player_direction {
             PlayerDirection::Up => {
                 if row_mask[player_col] == false {
-                    flgHit = true;
+                    flg_hit = true;
                     for mut text in query_text.iter_mut() {
                         text.sections[0].value = format!(" UP ");
                     }
@@ -1010,7 +1010,7 @@ pub fn detect_bushes(
             }
             PlayerDirection::Down => {
                 if row_mask[player_col] == false {
-                    flgHit = true;
+                    flg_hit = true;
                     for mut text in query_text.iter_mut() {
                         text.sections[0].value = format!(" DOWN ");
                     }
@@ -1018,7 +1018,7 @@ pub fn detect_bushes(
             }
             PlayerDirection::Left => {
                 if player_col > 0 && row_mask[player_col - 1] == false {
-                    flgHit = true;
+                    flg_hit = true;
                     for mut text in query_text.iter_mut() {
                         text.sections[0].value = format!(" LEFT ");
                     }
@@ -1026,7 +1026,7 @@ pub fn detect_bushes(
             }
             PlayerDirection::Right => {
                 if player_col < 11 && row_mask[player_col + 1] == false {
-                    flgHit = true;
+                    flg_hit = true;
                     for mut text in query_text.iter_mut() {
                         text.sections[0].value = format!(" RIGHT ");
                     }
@@ -1034,7 +1034,7 @@ pub fn detect_bushes(
             }
         }
     }
-    if !flgHit {
+    if !flg_hit {
         for mut text in query_text.iter_mut() {
             text.sections[0].value = format!(" - ");
         }
