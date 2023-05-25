@@ -55,6 +55,22 @@ impl DebugText {
                                 color: Color::BLUE,
                             },
                         },
+                        TextSection {
+                            value: "".to_string(),
+                            style: TextStyle {
+                                font: asset_server.load("fonts/ALGER.TTF"),
+                                font_size: 15.0,
+                                color: Color::BLUE,
+                            },
+                        },
+                        TextSection {
+                            value: "".to_string(),
+                            style: TextStyle {
+                                font: asset_server.load("fonts/ALGER.TTF"),
+                                font_size: 15.0,
+                                color: Color::BLUE,
+                            },
+                        },
                     ],
                     ..Default::default()
                 },

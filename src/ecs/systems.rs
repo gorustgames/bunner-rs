@@ -14,7 +14,9 @@ use crate::ecs::components::{
     ButtonExitMarker, ButtonPlayMarker, CarTimer, DelayedCarReadyToBeDisplayedMarker,
     DelayedTrainReadyToBeDisplayedMarker, DespawnEntityTimer, MovementDirection, TrainTimer,
 };
-use crate::ecs::resources::{BackgroundRows, CollisionType, MenuData, PlayerPosition};
+use crate::ecs::resources::{
+    BackgroundRows, CollisionType, MenuData, PlayerMovementBlockedDirection, PlayerPosition,
+};
 use crate::{
     get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
     is_odd_number, AppState, CAR_HEIGHT, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, HOVERED_BUTTON,
@@ -173,6 +175,7 @@ pub fn player_scrolling(
 pub fn player_movement(
     time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
+    mut player_position: ResMut<PlayerPosition>,
     mut query: Query<
         (
             &mut Transform,
@@ -191,6 +194,9 @@ pub fn player_movement(
 
         if keyboard_input.pressed(KeyCode::Up) {
             *direction = PlayerDirection::Up;
+            if player_position.movement_blocked_dir == PlayerMovementBlockedDirection::Up {
+                return;
+            }
             transform.translation.y += SCROLLING_SPEED_PLAYER * time.delta_seconds();
             if transform.translation.y > SCREEN_HEIGHT / 2. - SEGMENT_HEIGHT {
                 transform.translation.y = SCREEN_HEIGHT / 2. - SEGMENT_HEIGHT;
@@ -203,6 +209,9 @@ pub fn player_movement(
 
         if keyboard_input.pressed(KeyCode::Down) {
             *direction = PlayerDirection::Down;
+            if player_position.movement_blocked_dir == PlayerMovementBlockedDirection::Down {
+                return;
+            }
             transform.translation.y -= SCROLLING_SPEED_PLAYER * time.delta_seconds();
             if transform.translation.y < SCREEN_HEIGHT / -2. {
                 transform.translation.y = SCREEN_HEIGHT / -2.;
@@ -215,6 +224,9 @@ pub fn player_movement(
 
         if keyboard_input.pressed(KeyCode::Left) {
             *direction = PlayerDirection::Left;
+            if player_position.movement_blocked_dir == PlayerMovementBlockedDirection::Left {
+                return;
+            }
             transform.translation.x -= SCROLLING_SPEED_PLAYER * time.delta_seconds();
             if transform.translation.x < SCREEN_WIDTH / -2. {
                 transform.translation.x = SCREEN_WIDTH / -2.;
@@ -227,6 +239,9 @@ pub fn player_movement(
 
         if keyboard_input.pressed(KeyCode::Right) {
             *direction = PlayerDirection::Right;
+            if player_position.movement_blocked_dir == PlayerMovementBlockedDirection::Right {
+                return;
+            }
             transform.translation.x += SCROLLING_SPEED_PLAYER * time.delta_seconds();
             if transform.translation.x > SCREEN_WIDTH / 2. - SEGMENT_WIDTH {
                 transform.translation.x = SCREEN_WIDTH / 2. - SEGMENT_WIDTH;
@@ -236,6 +251,9 @@ pub fn player_movement(
                 PlayerBundle::change_sprite_icon(&mut direction, &mut direction_idx, &mut sprite);
             }
         }
+
+        player_position.player_x = transform.translation.x;
+        player_position.player_y = transform.translation.y;
     }
 }
 
@@ -967,16 +985,21 @@ pub fn active_col_player(
 }
 
 pub fn detect_bushes(
-    player_position: Res<PlayerPosition>,
+    mut player_position: ResMut<PlayerPosition>,
     bg_rows: Res<BackgroundRows>,
     query: Query<&PlayerDirection, With<Player>>,
-    mut query_text: Query<&mut Text, With<DebugTextMarker>>,
 ) {
     let player_row = player_position.row_index;
     let player_col = player_position.col_index as usize;
 
     if player_row == -1 {
         // do not run this system if player scrolls off the screen
+        return;
+    }
+
+    if player_row == 0 {
+        // this would mean accessing element -1 in sliding window array
+        // which would result in panic
         return;
     }
 
@@ -1003,41 +1026,31 @@ pub fn detect_bushes(
             PlayerDirection::Up => {
                 if row_mask[player_col] == false {
                     flg_hit = true;
-                    for mut text in query_text.iter_mut() {
-                        text.sections[0].value = format!(" UP ");
-                    }
+                    player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Up;
                 }
             }
             PlayerDirection::Down => {
                 if row_mask[player_col] == false {
                     flg_hit = true;
-                    for mut text in query_text.iter_mut() {
-                        text.sections[0].value = format!(" DOWN ");
-                    }
+                    player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Down;
                 }
             }
             PlayerDirection::Left => {
                 if player_col > 0 && row_mask[player_col - 1] == false {
                     flg_hit = true;
-                    for mut text in query_text.iter_mut() {
-                        text.sections[0].value = format!(" LEFT ");
-                    }
+                    player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Left;
                 }
             }
             PlayerDirection::Right => {
                 if player_col < 11 && row_mask[player_col + 1] == false {
                     flg_hit = true;
-                    for mut text in query_text.iter_mut() {
-                        text.sections[0].value = format!(" RIGHT ");
-                    }
+                    player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Right;
                 }
             }
         }
     }
     if !flg_hit {
-        for mut text in query_text.iter_mut() {
-            text.sections[0].value = format!(" - ");
-        }
+        player_position.movement_blocked_dir = PlayerMovementBlockedDirection::None;
     }
 }
 
@@ -1046,11 +1059,15 @@ pub fn debug_text_update_system(
     player_position: ResMut<PlayerPosition>,
 ) {
     for mut text in q.iter_mut() {
-        // TODO: uncomment and remove usage of 0 index from detect_bushes
-        //text.sections[0].value = format!(" {:?} ", player_position.row_type);
+        text.sections[0].value = format!(" {:?} ", player_position.row_type);
         text.sections[1].value = format!(" {:?} ", player_position.collision_type);
         text.sections[2].value = format!(" {:?} ", player_position.row_index);
         text.sections[3].value = format!(" {:?} ", player_position.col_index);
+        text.sections[4].value = format!(" {:?} ", player_position.movement_blocked_dir);
+        text.sections[5].value = format!(
+            " X: {:.2}, Y: {:.2} ",
+            player_position.player_x, player_position.player_y
+        );
     }
 }
 

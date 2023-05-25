@@ -28,7 +28,7 @@ impl BackgroundRows {
     }
 
     pub fn get_row(&self, row_index: usize) -> Option<Box<dyn Row>> {
-        return if self.rows.count() == 0 {
+        return if self.rows.count() == 0 || row_index > self.rows.count() - 1 {
             None
         } else {
             Some(self.rows[row_index].clone_row())
@@ -64,6 +64,19 @@ pub enum CollisionType {
     Other,
 }
 
+/// this enums determines in which direction player movement is blocked
+/// by bushes. since bushes are always rectangular with no corners single
+/// value is always enough, it is not needed to block movement in two directions
+/// at the same time.
+#[derive(Debug, PartialEq)]
+pub enum PlayerMovementBlockedDirection {
+    Up,
+    Down,
+    Left,
+    Right,
+    None,
+}
+
 /// Determines what type of spot player is standing on
 #[derive(Debug)]
 pub struct PlayerPosition {
@@ -84,6 +97,15 @@ pub struct PlayerPosition {
     /// is standing on row only (e.g.g RoadOnly) or is colliding with
     /// some child object (i.e. RoadCar)
     pub collision_type: CollisionType,
+
+    /// global x coordinate of player
+    pub player_x: f32,
+
+    /// global y coordinate of player
+    pub player_y: f32,
+
+    /// determines if player movement is blocked in any way
+    pub movement_blocked_dir: PlayerMovementBlockedDirection,
 }
 
 impl PlayerPosition {
@@ -95,6 +117,9 @@ impl PlayerPosition {
             row_index: 7, // initially the player is at row 8
             col_index: 5, // initially the player is at column 6
             collision_type: CollisionType::Other,
+            player_x: 0., // doesn't really matter what we put here, it will be immediately updated by respective ecs system
+            player_y: 0.,
+            movement_blocked_dir: PlayerMovementBlockedDirection::None,
         }
     }
 
