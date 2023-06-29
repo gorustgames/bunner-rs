@@ -169,6 +169,16 @@ impl PlayerPosition {
     }
 }
 
+pub struct BackgroundScrollingEnabled {
+    pub enabled: bool,
+}
+
+impl BackgroundScrollingEnabled {
+    pub fn new() -> Self {
+        BackgroundScrollingEnabled { enabled: true }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

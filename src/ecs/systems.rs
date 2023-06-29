@@ -15,7 +15,8 @@ use crate::ecs::components::{
     DelayedTrainReadyToBeDisplayedMarker, DespawnEntityTimer, MovementDirection, TrainTimer,
 };
 use crate::ecs::resources::{
-    BackgroundRows, CollisionType, MenuData, PlayerMovementBlockedDirection, PlayerPosition,
+    BackgroundRows, BackgroundScrollingEnabled, CollisionType, MenuData,
+    PlayerMovementBlockedDirection, PlayerPosition,
 };
 use crate::{
     get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
@@ -111,10 +112,15 @@ fn generate_hedge(next_bg_row: &mut Box<dyn Row>, bg_rows: &ResMut<BackgroundRow
 pub fn background_scrolling(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    scrolling_enabled: Res<BackgroundScrollingEnabled>,
     time: Res<Time>,
     mut q: Query<(Entity, &mut Transform, &mut BackgroundRow)>,
     mut bg_rows: ResMut<BackgroundRows>,
 ) {
+    if !scrolling_enabled.enabled {
+        return;
+    }
+
     for (entity, mut transform, mut bg_row) in q.iter_mut() {
         transform.translation.y -= SCROLLING_SPEED_BACKGROUND * time.delta_seconds();
 
@@ -157,7 +163,12 @@ pub fn player_scrolling(
     time: Res<Time>,
     mut q: Query<&mut Transform, With<Player>>,
     player_position: ResMut<PlayerPosition>,
+    scrolling_enabled: Res<BackgroundScrollingEnabled>,
 ) {
+    if !scrolling_enabled.enabled {
+        return;
+    }
+
     for mut transform in q.iter_mut() {
         transform.translation.y -= SCROLLING_SPEED_BACKGROUND * time.delta_seconds();
         match &player_position.collision_type {
@@ -170,6 +181,17 @@ pub fn player_scrolling(
             }
             _ => {}
         }
+    }
+}
+
+/// system to stop background scrolling
+/// intended for debugging only
+pub fn stop_the_world_on_spacebar(
+    mut scrolling_enabled: ResMut<BackgroundScrollingEnabled>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    if keyboard_input.pressed(KeyCode::Space) {
+        scrolling_enabled.enabled = !scrolling_enabled.enabled;
     }
 }
 

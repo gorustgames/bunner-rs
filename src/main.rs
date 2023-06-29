@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bunner_rs::ecs::resources::{BackgroundRows, PlayerPosition};
+use bunner_rs::ecs::resources::{BackgroundRows, BackgroundScrollingEnabled, PlayerPosition};
 use bunner_rs::ecs::systems::*;
 use bunner_rs::{AppState, SCREEN_HEIGHT, SCREEN_WIDTH};
 
@@ -25,6 +25,7 @@ fn main() {
         .add_system_set(
             SystemSet::on_update(AppState::InGame)
                 .with_system(background_scrolling)
+                .with_system(stop_the_world_on_spacebar) // for debugging only
                 .with_system(player_scrolling)
                 .with_system(player_movement)
                 .with_system(put_trains_on_rails)
@@ -51,5 +52,6 @@ fn main() {
         .add_system_set(SystemSet::on_update(AppState::GameOver).with_system(game_over_update))
         .insert_resource(BackgroundRows::new())
         .insert_resource(PlayerPosition::new())
+        .insert_resource(BackgroundScrollingEnabled::new())
         .run();
 }
