@@ -19,10 +19,11 @@ use crate::ecs::resources::{
 };
 use crate::{
     get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
-    is_odd_number, AppState, CAR_HEIGHT, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, HOVERED_BUTTON,
-    LOG_BIG_WIDTH, LOG_SMALL_WIDTH, NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT, SCREEN_WIDTH,
-    SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER,
-    SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_HEIGHT, TRAIN_WIDTH, Z_GAMEOVER,
+    is_odd_number, player_col_to_coords, player_row_to_coords, AppState, CAR_HEIGHT,
+    CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, HOVERED_BUTTON, LOG_BIG_WIDTH, LOG_SMALL_WIDTH,
+    NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND,
+    SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT,
+    SEGMENT_WIDTH, TRAIN_HEIGHT, TRAIN_WIDTH, Z_GAMEOVER,
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -1024,25 +1025,35 @@ pub fn detect_bushes(
     if let Some(row_mask) = row.get_row_mask() {
         match player_direction {
             PlayerDirection::Up => {
-                if row_mask[player_col] == false {
+                if row_mask[player_col] == false
+                    && player_position.player_y > player_row_to_coords(player_row).0
+                {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Up;
                 }
             }
             PlayerDirection::Down => {
-                if row_mask[player_col] == false {
+                if row_mask[player_col] == false
+                    && player_position.player_y < player_row_to_coords(player_row - 1).1
+                {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Down;
                 }
             }
             PlayerDirection::Left => {
-                if player_col > 0 && row_mask[player_col - 1] == false {
+                if player_col > 0
+                    && row_mask[player_col - 1] == false
+                    && player_position.player_x < player_col_to_coords(player_col).0
+                {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Left;
                 }
             }
             PlayerDirection::Right => {
-                if player_col < 11 && row_mask[player_col + 1] == false {
+                if player_col < 11
+                    && row_mask[player_col + 1] == false
+                    && player_position.player_x > player_col_to_coords(player_col).0
+                {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Right;
                 }
