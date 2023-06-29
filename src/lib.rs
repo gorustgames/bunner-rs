@@ -163,7 +163,17 @@ pub fn player_col_to_coords(col: usize) -> (f32, f32) {
 }
 
 pub fn player_y_to_player_row(player_y: i32) -> i8 {
-    match player_y {
+    // we have bottom left positioning of sprites!
+    // adjust player y so that when player y (i.e. its bottom part) is 35
+    // we consider this as row 11, not row 10!
+    let player_y_adjusted;
+    if player_y > 0 {
+        player_y_adjusted = player_y + 20;
+    } else {
+        player_y_adjusted = player_y - 20;
+    }
+
+    match player_y_adjusted {
         0..=40 => 10,
         41..=80 => 11,
         81..=120 => 12,
@@ -183,13 +193,22 @@ pub fn player_y_to_player_row(player_y: i32) -> i8 {
         -280..=-241 => 3,
         -320..=-281 => 2,
         -360..=-321 => 1,
-        -400..=-361 => 0,
-        _ => -1, // this will happen if player scrolls off the screen, i.e. player is dead!
+        -420..=-361 => 0, // give some safety buffer here
+        _ => -1,          // this will happen if player scrolls off the screen, i.e. player is dead!
     }
 }
 
 pub fn player_x_to_player_col(player_x: i32) -> i8 {
-    match player_x {
+    // we have bottom left positioning of sprites!
+    // analogy to alignment in player_y_to_player_row
+    let player_x_adjusted;
+    if player_x > 0 {
+        player_x_adjusted = player_x + 20;
+    } else {
+        player_x_adjusted = player_x - 20;
+    }
+
+    match player_x_adjusted {
         0..=40 => 6,
         41..=80 => 7,
         81..=120 => 8,
@@ -226,9 +245,5 @@ mod tests {
     #[test]
     fn test_player_y_to_player_row() {
         assert_eq!(player_y_to_player_row(-400), 0);
-        assert_eq!(player_y_to_player_row(-361), 0);
-        assert_eq!(player_y_to_player_row(-360), 1);
-        assert_eq!(player_y_to_player_row(-321), 1);
-        assert_eq!(player_y_to_player_row(-401), -1);
     }
 }

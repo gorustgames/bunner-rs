@@ -194,9 +194,16 @@ pub fn debug_system(
     bg_rows: Res<BackgroundRows>,
 ) {
     if keyboard_input.pressed(KeyCode::Space) {
-        scrolling_enabled.enabled = !scrolling_enabled.enabled;
-        // sleep for some time to prevent multiple processing if particular key is pressed longer
-        std::thread::sleep(std::time::Duration::from_millis(200));
+        // debouncing logic below does not work very well, for now let's make
+        // stop the world un-reversible
+        scrolling_enabled.enabled = false
+        // scrolling_enabled.enabled = !scrolling_enabled.enabled;
+        // sleep for some time to prevent debouncing
+        // std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+
+    if keyboard_input.pressed(KeyCode::P) {
+        println!("player_position: {:?}", player_position);
     }
 
     if keyboard_input.pressed(KeyCode::D) {
@@ -222,8 +229,6 @@ pub fn debug_system(
 
         println!("all rows:");
         bg_rows.debug_print();
-        // sleep for some time to prevent multiple processing if particular key is pressed longer
-        std::thread::sleep(std::time::Duration::from_millis(200));
     }
 }
 
@@ -957,15 +962,6 @@ pub fn set_player_row(
         return;
     }
 
-    // we have bottom left positioning of sprites!
-    // adjust player y so that when player y (i.e. its bottom part) is 35
-    // we consider this as row 11, not row 10!
-    if player_y > 0 {
-        player_y = player_y + 20;
-    } else {
-        player_y = player_y - 20;
-    }
-
     let player_row = player_y_to_player_row(player_y);
     player_position.row_index = player_row;
 }
@@ -982,14 +978,6 @@ pub fn set_player_col(
     if player_x == -1 {
         println!("unable to find player!!!");
         return;
-    }
-
-    // we have bottom left positioning of sprites!
-    // analogy to alignment in active_row_player
-    if player_x > 0 {
-        player_x = player_x + 20;
-    } else {
-        player_x = player_x - 20;
     }
 
     let player_col = player_x_to_player_col(player_x);
