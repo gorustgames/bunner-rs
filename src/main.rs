@@ -25,7 +25,7 @@ fn main() {
         .add_system_set(
             SystemSet::on_update(AppState::InGame)
                 .with_system(background_scrolling)
-                .with_system(stop_the_world_on_spacebar) // for debugging only
+                .with_system(debug_system) // for debugging only
                 .with_system(player_scrolling)
                 .with_system(player_movement)
                 .with_system(put_trains_on_rails)

@@ -185,13 +185,39 @@ pub fn player_scrolling(
 }
 
 /// system to stop background scrolling
+/// and other debugging goodies
 /// intended for debugging only
-pub fn stop_the_world_on_spacebar(
+pub fn debug_system(
     mut scrolling_enabled: ResMut<BackgroundScrollingEnabled>,
     keyboard_input: Res<Input<KeyCode>>,
+    player_position: Res<PlayerPosition>,
+    bg_rows: Res<BackgroundRows>,
 ) {
     if keyboard_input.pressed(KeyCode::Space) {
         scrolling_enabled.enabled = !scrolling_enabled.enabled;
+        // sleep for some time to prevent multiple processing if space bar is pressed longer
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+
+    if keyboard_input.pressed(KeyCode::D) {
+        let player_row = player_position.row_index;
+        let _player_col = player_position.col_index as usize;
+
+        let row_above = bg_rows.get_row(player_row as usize + 1);
+        let row_row = bg_rows.get_row(player_row as usize);
+        let row_below = bg_rows.get_row(player_row as usize + 1);
+
+        if let Some(row_mask) = row_above.unwrap().get_row_mask() {
+            println!("row_above: {:?}", row_mask);
+        }
+
+        if let Some(row_mask) = row_row.unwrap().get_row_mask() {
+            println!("row_row: {:?}", row_mask);
+        }
+
+        if let Some(row_mask) = row_below.unwrap().get_row_mask() {
+            println!("row_below: {:?}", row_mask);
+        }
     }
 }
 
