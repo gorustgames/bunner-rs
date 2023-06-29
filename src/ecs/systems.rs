@@ -25,6 +25,7 @@ use crate::{
     HOVERED_BUTTON, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT,
     SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER,
     SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_HEIGHT, TRAIN_WIDTH, Z_GAMEOVER,
+    Z_GRID,
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -227,8 +228,8 @@ pub fn debug_system(
             println!("row_below: {:?}", row_mask);
         }
 
-        println!("all rows:");
-        bg_rows.debug_print();
+        // println!("all rows:");
+        // bg_rows.debug_print();
     }
 }
 
@@ -1030,7 +1031,7 @@ pub fn detect_bushes(
         match player_direction {
             PlayerDirection::Up => {
                 if row_mask[player_col] == false
-                    && player_position.player_y > player_row_to_coords(player_row).0
+                //&& player_position.player_y > player_row_to_coords(player_row).0
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Up;
@@ -1038,25 +1039,23 @@ pub fn detect_bushes(
             }
             PlayerDirection::Down => {
                 if row_mask[player_col] == false
-                    && player_position.player_y < player_row_to_coords(player_row - 1).1
+                //&& player_position.player_y < player_row_to_coords(player_row - 1).1
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Down;
                 }
             }
             PlayerDirection::Left => {
-                if player_col > 0
-                    && row_mask[player_col - 1] == false
-                    && player_position.player_x < player_col_to_coords(player_col).0
+                if player_col > 0 && row_mask[player_col - 1] == false
+                // && player_position.player_x < player_col_to_coords(player_col).0
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Left;
                 }
             }
             PlayerDirection::Right => {
-                if player_col < 11
-                    && row_mask[player_col + 1] == false
-                    && player_position.player_x > player_col_to_coords(player_col).0
+                if player_col < 11 && row_mask[player_col + 1] == false
+                //&& player_position.player_x > player_col_to_coords(player_col).0
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Right;
@@ -1232,6 +1231,55 @@ pub fn game_over_update(mut exit: EventWriter<AppExit>, input: Res<Input<KeyCode
         println!("game_over");
         exit.send(AppExit);
     }
+}
+
+fn draw_line(start_x: f32, start_y: f32, width: f32, height: f32, commands: &mut Commands) {
+    commands.spawn_bundle(SpriteBundle {
+        sprite: Sprite {
+            color: Color::BLACK,
+            custom_size: Some(Vec2::new(width, height)),
+            ..Default::default()
+        },
+        transform: Transform::from_xyz(start_x, start_y, Z_GRID),
+        ..Default::default()
+    });
+}
+
+// draw_grid is for debugging only
+pub fn draw_grid(mut commands: Commands) {
+    // stupid and dirty but works ;)
+    draw_line(-200., 0., 1.0, 800.0, &mut commands);
+    draw_line(-160., 0., 1.0, 800.0, &mut commands);
+    draw_line(-120., 0., 1.0, 800.0, &mut commands);
+    draw_line(-80., 0., 1.0, 800.0, &mut commands);
+    draw_line(-40., 0., 1.0, 800.0, &mut commands);
+    draw_line(0., 0., 1.0, 800.0, &mut commands);
+    draw_line(40., 0., 1.0, 800.0, &mut commands);
+    draw_line(80., 0., 1.0, 800.0, &mut commands);
+    draw_line(120., 0., 1.0, 800.0, &mut commands);
+    draw_line(160., 0., 1.0, 800.0, &mut commands);
+    draw_line(200., 0., 1.0, 800.0, &mut commands);
+
+    draw_line(0., 0., 480., 1.0, &mut commands);
+    draw_line(0., 40., 480., 1.0, &mut commands);
+    draw_line(0., 80., 480., 1.0, &mut commands);
+    draw_line(0., 120., 480., 1.0, &mut commands);
+    draw_line(0., 160., 480., 1.0, &mut commands);
+    draw_line(0., 200., 480., 1.0, &mut commands);
+    draw_line(0., 240., 480., 1.0, &mut commands);
+    draw_line(0., 280., 480., 1.0, &mut commands);
+    draw_line(0., 320., 480., 1.0, &mut commands);
+    draw_line(0., 360., 480., 1.0, &mut commands);
+
+    draw_line(0., -40., 480., 1.0, &mut commands);
+    draw_line(0., -80., 480., 1.0, &mut commands);
+    draw_line(0., -120., 480., 1.0, &mut commands);
+    draw_line(0., -160., 480., 1.0, &mut commands);
+    draw_line(0., -200., 480., 1.0, &mut commands);
+    draw_line(0., -240., 480., 1.0, &mut commands);
+    draw_line(0., -280., 480., 1.0, &mut commands);
+    draw_line(0., -320., 480., 1.0, &mut commands);
+    draw_line(0., -360., 480., 1.0, &mut commands);
 }
 
 /// demo setup system for initial experiments with game states

@@ -37,6 +37,7 @@ const Z_ROW_CHILD_COMPONENT_CAR: f32 = 15.0; // must be more than player
 const Z_ROW_CHILD_COMPONENT_TRAIN: f32 = 15.0; // must be more than player
 const Z_ROW_CHILD_COMPONENT_LOG: f32 = 5.0; // must be less than player
 const Z_PLAYER: f32 = 10.0;
+const Z_GRID: f32 = 15.0;
 const Z_GAMEOVER: f32 = 20.0;
 
 /// Game states
@@ -163,17 +164,7 @@ pub fn player_col_to_coords(col: usize) -> (f32, f32) {
 }
 
 pub fn player_y_to_player_row(player_y: i32) -> i8 {
-    // we have bottom left positioning of sprites!
-    // adjust player y so that when player y (i.e. its bottom part) is 35
-    // we consider this as row 11, not row 10!
-    let player_y_adjusted;
-    if player_y > 0 {
-        player_y_adjusted = player_y + 20;
-    } else {
-        player_y_adjusted = player_y - 20;
-    }
-
-    match player_y_adjusted {
+    match player_y {
         0..=40 => 10,
         41..=80 => 11,
         81..=120 => 12,
@@ -182,8 +173,8 @@ pub fn player_y_to_player_row(player_y: i32) -> i8 {
         201..=240 => 15,
         241..=280 => 16,
         281..=320 => 17,
-        321..=360 => 18,
-        361..=400 => 19,
+        321..=359 => 18,
+        360..=400 => 19,
         -40..=-1 => 9,
         -80..=-41 => 8,
         -120..=-81 => 7,
@@ -193,28 +184,20 @@ pub fn player_y_to_player_row(player_y: i32) -> i8 {
         -280..=-241 => 3,
         -320..=-281 => 2,
         -360..=-321 => 1,
-        -420..=-361 => 0, // give some safety buffer here
+        // -400..=-361 => 0,
+        -420..=-361 => 0, // give some extra safety buffer here
         _ => -1,          // this will happen if player scrolls off the screen, i.e. player is dead!
     }
 }
 
 pub fn player_x_to_player_col(player_x: i32) -> i8 {
-    // we have bottom left positioning of sprites!
-    // analogy to alignment in player_y_to_player_row
-    let player_x_adjusted;
-    if player_x > 0 {
-        player_x_adjusted = player_x + 20;
-    } else {
-        player_x_adjusted = player_x - 20;
-    }
-
-    match player_x_adjusted {
+    match player_x {
         0..=40 => 6,
         41..=80 => 7,
         81..=120 => 8,
         121..=160 => 9,
-        161..=200 => 10,
-        201..=240 => 11,
+        161..=180 => 10,
+        181..=240 => 11,
         -40..=-1 => 5,
         -80..=-41 => 4,
         -120..=-81 => 3,

@@ -26,6 +26,7 @@ fn main() {
             SystemSet::on_update(AppState::InGame)
                 .with_system(background_scrolling)
                 .with_system(debug_system) // for debugging only
+                .with_system(draw_grid) // for debugging only
                 .with_system(player_scrolling)
                 .with_system(player_movement)
                 .with_system(put_trains_on_rails)
