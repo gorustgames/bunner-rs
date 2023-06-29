@@ -30,7 +30,7 @@ fn main() {
         .add_system(delayed_spawn_train)
         .add_system(delayed_spawn_car)
         .add_system(active_row)
-        .add_system(active_row_player)
+        .add_system(set_player_row)
         .add_system(active_row_water)
         .add_system(active_row_road)
         .add_system(active_row_rail)

@@ -943,7 +943,7 @@ pub fn active_row_rail(
 }
 
 /// determines index of row player is standing on
-pub fn active_row_player(
+pub fn set_player_row(
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     mut player_position: ResMut<PlayerPosition>,
 ) {
@@ -993,7 +993,7 @@ pub fn active_row_player(
     player_position.row_index = player_row;
 }
 
-pub fn active_col_player(
+pub fn set_player_col(
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     mut player_position: ResMut<PlayerPosition>,
 ) {
