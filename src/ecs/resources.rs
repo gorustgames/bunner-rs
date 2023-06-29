@@ -34,6 +34,12 @@ impl BackgroundRows {
             Some(self.rows[row_index].clone_row())
         };
     }
+
+    pub fn debug_print(&self) {
+        for row in self.rows.iter() {
+            println!("{:?}", row);
+        }
+    }
 }
 
 pub struct MenuData {

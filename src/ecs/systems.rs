@@ -195,17 +195,18 @@ pub fn debug_system(
 ) {
     if keyboard_input.pressed(KeyCode::Space) {
         scrolling_enabled.enabled = !scrolling_enabled.enabled;
-        // sleep for some time to prevent multiple processing if space bar is pressed longer
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        // sleep for some time to prevent multiple processing if particular key is pressed longer
+        std::thread::sleep(std::time::Duration::from_millis(200));
     }
 
     if keyboard_input.pressed(KeyCode::D) {
         let player_row = player_position.row_index;
         let _player_col = player_position.col_index as usize;
 
+        println!("player_row: {:?}", player_row);
         let row_above = bg_rows.get_row(player_row as usize + 1);
         let row_row = bg_rows.get_row(player_row as usize);
-        let row_below = bg_rows.get_row(player_row as usize + 1);
+        let row_below = bg_rows.get_row(player_row as usize - 1);
 
         if let Some(row_mask) = row_above.unwrap().get_row_mask() {
             println!("row_above: {:?}", row_mask);
@@ -218,6 +219,11 @@ pub fn debug_system(
         if let Some(row_mask) = row_below.unwrap().get_row_mask() {
             println!("row_below: {:?}", row_mask);
         }
+
+        println!("all rows:");
+        bg_rows.debug_print();
+        // sleep for some time to prevent multiple processing if particular key is pressed longer
+        std::thread::sleep(std::time::Duration::from_millis(200));
     }
 }
 
