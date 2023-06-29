@@ -20,11 +20,11 @@ use crate::ecs::resources::{
 };
 use crate::{
     get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
-    is_odd_number, player_col_to_coords, player_row_to_coords, AppState, CAR_HEIGHT,
-    CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, HOVERED_BUTTON, LOG_BIG_WIDTH, LOG_SMALL_WIDTH,
-    NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND,
-    SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT,
-    SEGMENT_WIDTH, TRAIN_HEIGHT, TRAIN_WIDTH, Z_GAMEOVER,
+    is_odd_number, player_col_to_coords, player_row_to_coords, player_x_to_player_col,
+    player_y_to_player_row, AppState, CAR_HEIGHT, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH,
+    HOVERED_BUTTON, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT,
+    SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER,
+    SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_HEIGHT, TRAIN_WIDTH, Z_GAMEOVER,
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -966,30 +966,7 @@ pub fn set_player_row(
         player_y = player_y - 20;
     }
 
-    let player_row = match player_y {
-        0..=40 => 10,
-        41..=80 => 11,
-        81..=120 => 12,
-        121..=160 => 13,
-        161..=200 => 14,
-        201..=240 => 15,
-        241..=280 => 16,
-        281..=320 => 17,
-        321..=360 => 18,
-        361..=400 => 19,
-        -40..=-1 => 9,
-        -80..=-41 => 8,
-        -120..=-81 => 7,
-        -160..=-121 => 6,
-        -200..=-161 => 5,
-        -240..=-201 => 4,
-        -280..=-241 => 3,
-        -320..=-281 => 2,
-        -360..=-321 => 1,
-        -400..=-321 => 0,
-        _ => -1, // this will happen if player scrolls off the screen, i.e. player is dead!
-    };
-
+    let player_row = player_y_to_player_row(player_y);
     player_position.row_index = player_row;
 }
 
@@ -1015,22 +992,7 @@ pub fn set_player_col(
         player_x = player_x - 20;
     }
 
-    let player_col = match player_x {
-        0..=40 => 6,
-        41..=80 => 7,
-        81..=120 => 8,
-        121..=160 => 9,
-        161..=200 => 10,
-        201..=240 => 11,
-        -40..=-1 => 5,
-        -80..=-41 => 4,
-        -120..=-81 => 3,
-        -160..=-121 => 2,
-        -200..=-161 => 1,
-        -240..=-201 => 0,
-        _ => -1, // this will never happen since we are controlling player not to cross left/right boundary
-    };
-
+    let player_col = player_x_to_player_col(player_x);
     if player_col == -1 {
         println!("active_col_player = -1 for x{:?}", player_x);
         return;
