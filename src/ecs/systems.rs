@@ -29,6 +29,7 @@ use crate::{
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 /// this system takes care of entities scheduled for delayed despawning
 pub fn delayed_despawn_recursive(
@@ -195,12 +196,20 @@ pub fn debug_system(
     bg_rows: Res<BackgroundRows>,
 ) {
     if keyboard_input.pressed(KeyCode::Space) {
-        // debouncing logic below does not work very well, for now let's make
-        // stop the world un-reversible
-        scrolling_enabled.enabled = false
-        // scrolling_enabled.enabled = !scrolling_enabled.enabled;
-        // sleep for some time to prevent debouncing
-        // std::thread::sleep(std::time::Duration::from_millis(100));
+        scrolling_enabled.enabled = !scrolling_enabled.enabled;
+
+        let time_now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+
+        if time_now - scrolling_enabled.changed > 2 {
+            scrolling_enabled.changed = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs();
+            scrolling_enabled.changed = time_now;
+        }
     }
 
     if keyboard_input.pressed(KeyCode::P) {

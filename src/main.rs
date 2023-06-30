@@ -26,6 +26,7 @@ fn main() {
             SystemSet::on_update(AppState::InGame)
                 .with_system(background_scrolling)
                 .with_system(debug_system) // for debugging only
+                .with_system(debug_text_update_system) // should be merged with debug_system
                 .with_system(player_scrolling)
                 .with_system(player_movement)
                 .with_system(put_trains_on_rails)
@@ -38,7 +39,6 @@ fn main() {
                 .with_system(delayed_despawn_recursive)
                 .with_system(delayed_spawn_train)
                 .with_system(delayed_spawn_car)
-                .with_system(debug_text_update_system)
                 .with_system(detect_bushes)
                 .with_system(active_row)
                 .with_system(set_player_row)

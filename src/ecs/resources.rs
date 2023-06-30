@@ -177,11 +177,18 @@ impl PlayerPosition {
 
 pub struct BackgroundScrollingEnabled {
     pub enabled: bool,
+
+    /// time from last change
+    /// used to prevent debouncing
+    pub changed: u64,
 }
 
 impl BackgroundScrollingEnabled {
     pub fn new() -> Self {
-        BackgroundScrollingEnabled { enabled: true }
+        BackgroundScrollingEnabled {
+            enabled: true,
+            changed: 0,
+        }
     }
 }
 
