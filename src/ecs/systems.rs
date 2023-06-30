@@ -196,18 +196,13 @@ pub fn debug_system(
     bg_rows: Res<BackgroundRows>,
 ) {
     if keyboard_input.pressed(KeyCode::Space) {
-        scrolling_enabled.enabled = !scrolling_enabled.enabled;
-
         let time_now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs();
 
-        if time_now - scrolling_enabled.changed > 2 {
-            scrolling_enabled.changed = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_secs();
+        if time_now - scrolling_enabled.changed > 1 {
+            scrolling_enabled.enabled = !scrolling_enabled.enabled;
             scrolling_enabled.changed = time_now;
         }
     }
