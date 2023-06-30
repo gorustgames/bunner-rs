@@ -164,7 +164,7 @@ pub fn player_col_to_coords(col: usize) -> (f32, f32) {
 }
 
 pub fn player_y_to_player_row(player_y: i32) -> i8 {
-    match player_y {
+    match player_y + 20 {
         0..=40 => 10,
         41..=80 => 11,
         81..=120 => 12,
@@ -184,14 +184,13 @@ pub fn player_y_to_player_row(player_y: i32) -> i8 {
         -280..=-241 => 3,
         -320..=-281 => 2,
         -360..=-321 => 1,
-        // -400..=-361 => 0,
-        -420..=-361 => 0, // give some extra safety buffer here
-        _ => -1,          // this will happen if player scrolls off the screen, i.e. player is dead!
+        -400..=-361 => 0,
+        _ => -1, // this will happen if player scrolls off the screen, i.e. player is dead!
     }
 }
 
 pub fn player_x_to_player_col(player_x: i32) -> i8 {
-    match player_x {
+    match player_x + 20 {
         0..=40 => 6,
         41..=80 => 7,
         81..=120 => 8,

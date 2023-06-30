@@ -1082,7 +1082,7 @@ pub fn detect_bushes(
         match player_direction {
             PlayerDirection::Up => {
                 if row_mask[player_col] == false
-                //&& player_position.player_y > player_row_to_coords(player_row).0
+                    && player_position.player_y > player_row_to_coords(player_row).0
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Up;
@@ -1090,23 +1090,25 @@ pub fn detect_bushes(
             }
             PlayerDirection::Down => {
                 if row_mask[player_col] == false
-                //&& player_position.player_y < player_row_to_coords(player_row - 1).1
+                    && player_position.player_y < player_row_to_coords(player_row - 1).1
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Down;
                 }
             }
             PlayerDirection::Left => {
-                if player_col > 0 && row_mask[player_col - 1] == false
-                // && player_position.player_x < player_col_to_coords(player_col).0
+                if player_col > 0
+                    && row_mask[player_col - 1] == false
+                    && player_position.player_x < player_col_to_coords(player_col).0
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Left;
                 }
             }
             PlayerDirection::Right => {
-                if player_col < 11 && row_mask[player_col + 1] == false
-                //&& player_position.player_x > player_col_to_coords(player_col).0
+                if player_col < 11
+                    && row_mask[player_col + 1] == false
+                    && player_position.player_x > player_col_to_coords(player_col).0
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Right;
