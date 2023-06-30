@@ -228,8 +228,8 @@ pub fn debug_system(
             println!("row_below: {:?}", row_mask);
         }
 
-        // println!("all rows:");
-        // bg_rows.debug_print();
+        println!("all rows:");
+        bg_rows.debug_print();
     }
 }
 
@@ -682,6 +682,19 @@ pub fn put_bushes_on_grass(
     }
 }
 
+/// helper function used within game_setup (if debugging)
+fn draw_line(start_x: f32, start_y: f32, width: f32, height: f32, commands: &mut Commands) {
+    commands.spawn_bundle(SpriteBundle {
+        sprite: Sprite {
+            color: Color::BLACK,
+            custom_size: Some(Vec2::new(width, height)),
+            ..Default::default()
+        },
+        transform: Transform::from_xyz(start_x, start_y, Z_GRID),
+        ..Default::default()
+    });
+}
+
 /// this is main setup system of the game
 pub fn game_setup(
     mut commands: Commands,
@@ -724,6 +737,40 @@ pub fn game_setup(
 
     // used for sending debugging information by dedicated debugging systems
     DebugText::new(&asset_server).spawn_debug_text(&mut commands);
+
+    // for debugging only
+    draw_line(-200., 0., 1.0, 800.0, &mut commands);
+    draw_line(-160., 0., 1.0, 800.0, &mut commands);
+    draw_line(-120., 0., 1.0, 800.0, &mut commands);
+    draw_line(-80., 0., 1.0, 800.0, &mut commands);
+    draw_line(-40., 0., 1.0, 800.0, &mut commands);
+    draw_line(0., 0., 1.0, 800.0, &mut commands);
+    draw_line(40., 0., 1.0, 800.0, &mut commands);
+    draw_line(80., 0., 1.0, 800.0, &mut commands);
+    draw_line(120., 0., 1.0, 800.0, &mut commands);
+    draw_line(160., 0., 1.0, 800.0, &mut commands);
+    draw_line(200., 0., 1.0, 800.0, &mut commands);
+
+    draw_line(0., 0., 480., 1.0, &mut commands);
+    draw_line(0., 40., 480., 1.0, &mut commands);
+    draw_line(0., 80., 480., 1.0, &mut commands);
+    draw_line(0., 120., 480., 1.0, &mut commands);
+    draw_line(0., 160., 480., 1.0, &mut commands);
+    draw_line(0., 200., 480., 1.0, &mut commands);
+    draw_line(0., 240., 480., 1.0, &mut commands);
+    draw_line(0., 280., 480., 1.0, &mut commands);
+    draw_line(0., 320., 480., 1.0, &mut commands);
+    draw_line(0., 360., 480., 1.0, &mut commands);
+
+    draw_line(0., -40., 480., 1.0, &mut commands);
+    draw_line(0., -80., 480., 1.0, &mut commands);
+    draw_line(0., -120., 480., 1.0, &mut commands);
+    draw_line(0., -160., 480., 1.0, &mut commands);
+    draw_line(0., -200., 480., 1.0, &mut commands);
+    draw_line(0., -240., 480., 1.0, &mut commands);
+    draw_line(0., -280., 480., 1.0, &mut commands);
+    draw_line(0., -320., 480., 1.0, &mut commands);
+    draw_line(0., -360., 480., 1.0, &mut commands);
 }
 
 /// sets global player position when player is standing on dirt, pavement, or grass row
@@ -1231,55 +1278,6 @@ pub fn game_over_update(mut exit: EventWriter<AppExit>, input: Res<Input<KeyCode
         println!("game_over");
         exit.send(AppExit);
     }
-}
-
-fn draw_line(start_x: f32, start_y: f32, width: f32, height: f32, commands: &mut Commands) {
-    commands.spawn_bundle(SpriteBundle {
-        sprite: Sprite {
-            color: Color::BLACK,
-            custom_size: Some(Vec2::new(width, height)),
-            ..Default::default()
-        },
-        transform: Transform::from_xyz(start_x, start_y, Z_GRID),
-        ..Default::default()
-    });
-}
-
-// draw_grid is for debugging only
-pub fn draw_grid(mut commands: Commands) {
-    // stupid and dirty but works ;)
-    draw_line(-200., 0., 1.0, 800.0, &mut commands);
-    draw_line(-160., 0., 1.0, 800.0, &mut commands);
-    draw_line(-120., 0., 1.0, 800.0, &mut commands);
-    draw_line(-80., 0., 1.0, 800.0, &mut commands);
-    draw_line(-40., 0., 1.0, 800.0, &mut commands);
-    draw_line(0., 0., 1.0, 800.0, &mut commands);
-    draw_line(40., 0., 1.0, 800.0, &mut commands);
-    draw_line(80., 0., 1.0, 800.0, &mut commands);
-    draw_line(120., 0., 1.0, 800.0, &mut commands);
-    draw_line(160., 0., 1.0, 800.0, &mut commands);
-    draw_line(200., 0., 1.0, 800.0, &mut commands);
-
-    draw_line(0., 0., 480., 1.0, &mut commands);
-    draw_line(0., 40., 480., 1.0, &mut commands);
-    draw_line(0., 80., 480., 1.0, &mut commands);
-    draw_line(0., 120., 480., 1.0, &mut commands);
-    draw_line(0., 160., 480., 1.0, &mut commands);
-    draw_line(0., 200., 480., 1.0, &mut commands);
-    draw_line(0., 240., 480., 1.0, &mut commands);
-    draw_line(0., 280., 480., 1.0, &mut commands);
-    draw_line(0., 320., 480., 1.0, &mut commands);
-    draw_line(0., 360., 480., 1.0, &mut commands);
-
-    draw_line(0., -40., 480., 1.0, &mut commands);
-    draw_line(0., -80., 480., 1.0, &mut commands);
-    draw_line(0., -120., 480., 1.0, &mut commands);
-    draw_line(0., -160., 480., 1.0, &mut commands);
-    draw_line(0., -200., 480., 1.0, &mut commands);
-    draw_line(0., -240., 480., 1.0, &mut commands);
-    draw_line(0., -280., 480., 1.0, &mut commands);
-    draw_line(0., -320., 480., 1.0, &mut commands);
-    draw_line(0., -360., 480., 1.0, &mut commands);
 }
 
 /// demo setup system for initial experiments with game states

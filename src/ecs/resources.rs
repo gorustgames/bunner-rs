@@ -36,8 +36,8 @@ impl BackgroundRows {
     }
 
     pub fn debug_print(&self) {
-        for row in self.rows.iter() {
-            println!("{:?}", row);
+        for n in (0..self.rows.count()).rev() {
+            println!("row {:?} {:?}", n, &self.rows[n]);
         }
     }
 }
