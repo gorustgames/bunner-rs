@@ -2,6 +2,7 @@ use crate::ecs::components::background_row::{
     BackgroundRow, GameRowBundle, GrassRow, GrassRowMarker, RailRowMarker, RoadRowMarker, Row,
     RowType, WaterRowMarker,
 };
+use crate::ecs::components::background_row_border::{GameRowBorder, GameRowBorderBundle};
 use crate::ecs::components::bush::{BushBundle, BushHorizontalType, BushVerticalType};
 use crate::ecs::components::car::{CarBundle, CarSpeed};
 use crate::ecs::components::debug_text::{DebugText, DebugTextMarker};
@@ -155,6 +156,30 @@ pub fn background_scrolling(
             // ...instead delay the despawning!!!
             // let _empty_entity = commands.spawn().id();
             commands.entity(entity).insert(DespawnEntityTimer::new(5.));
+        }
+    }
+}
+
+pub fn border_adding(mut commands: Commands, mut q: Query<&Transform, Added<BackgroundRow>>) {
+    for transform in q.iter_mut() {
+        GameRowBorderBundle::new(transform.translation.y).spawn_bundle(&mut commands);
+    }
+}
+
+pub fn border_scrolling(
+    scrolling_enabled: Res<BackgroundScrollingEnabled>,
+    time: Res<Time>,
+    mut commands: Commands,
+    mut q: Query<(Entity, &mut Transform), With<GameRowBorder>>,
+) {
+    if !scrolling_enabled.enabled {
+        return;
+    }
+    for (entity, mut transform) in q.iter_mut() {
+        transform.translation.y -= SCROLLING_SPEED_BACKGROUND * time.delta_seconds();
+
+        if transform.translation.y < -500. {
+            commands.entity(entity).despawn_recursive();
         }
     }
 }
@@ -754,27 +779,29 @@ pub fn game_setup(
     draw_line(120., 0., 1.0, 800.0, &mut commands);
     draw_line(160., 0., 1.0, 800.0, &mut commands);
     draw_line(200., 0., 1.0, 800.0, &mut commands);
+    /*
+       draw_line(0., 0., 480., 1.0, &mut commands);
+       draw_line(0., 40., 480., 1.0, &mut commands);
+       draw_line(0., 80., 480., 1.0, &mut commands);
+       draw_line(0., 120., 480., 1.0, &mut commands);
+       draw_line(0., 160., 480., 1.0, &mut commands);
+       draw_line(0., 200., 480., 1.0, &mut commands);
+       draw_line(0., 240., 480., 1.0, &mut commands);
+       draw_line(0., 280., 480., 1.0, &mut commands);
+       draw_line(0., 320., 480., 1.0, &mut commands);
+       draw_line(0., 360., 480., 1.0, &mut commands);
 
-    draw_line(0., 0., 480., 1.0, &mut commands);
-    draw_line(0., 40., 480., 1.0, &mut commands);
-    draw_line(0., 80., 480., 1.0, &mut commands);
-    draw_line(0., 120., 480., 1.0, &mut commands);
-    draw_line(0., 160., 480., 1.0, &mut commands);
-    draw_line(0., 200., 480., 1.0, &mut commands);
-    draw_line(0., 240., 480., 1.0, &mut commands);
-    draw_line(0., 280., 480., 1.0, &mut commands);
-    draw_line(0., 320., 480., 1.0, &mut commands);
-    draw_line(0., 360., 480., 1.0, &mut commands);
+       draw_line(0., -40., 480., 1.0, &mut commands);
+       draw_line(0., -80., 480., 1.0, &mut commands);
+       draw_line(0., -120., 480., 1.0, &mut commands);
+       draw_line(0., -160., 480., 1.0, &mut commands);
+       draw_line(0., -200., 480., 1.0, &mut commands);
+       draw_line(0., -240., 480., 1.0, &mut commands);
+       draw_line(0., -280., 480., 1.0, &mut commands);
+       draw_line(0., -320., 480., 1.0, &mut commands);
+       draw_line(0., -360., 480., 1.0, &mut commands);
 
-    draw_line(0., -40., 480., 1.0, &mut commands);
-    draw_line(0., -80., 480., 1.0, &mut commands);
-    draw_line(0., -120., 480., 1.0, &mut commands);
-    draw_line(0., -160., 480., 1.0, &mut commands);
-    draw_line(0., -200., 480., 1.0, &mut commands);
-    draw_line(0., -240., 480., 1.0, &mut commands);
-    draw_line(0., -280., 480., 1.0, &mut commands);
-    draw_line(0., -320., 480., 1.0, &mut commands);
-    draw_line(0., -360., 480., 1.0, &mut commands);
+    */
 }
 
 /// sets global player position when player is standing on dirt, pavement, or grass row

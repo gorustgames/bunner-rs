@@ -25,6 +25,8 @@ fn main() {
         .add_system_set(
             SystemSet::on_update(AppState::InGame)
                 .with_system(background_scrolling)
+                .with_system(border_adding)
+                .with_system(border_scrolling)
                 .with_system(debug_system) // for debugging only
                 .with_system(debug_text_update_system) // should be merged with debug_system
                 .with_system(player_scrolling)
