@@ -4,8 +4,11 @@ use bevy::prelude::*;
 use sliding_window::typenum::consts::*;
 use sliding_window::*;
 
+/// we have 21 rows in sliding window even though screen has in teory only 20 rowa
+/// i..e 20 x 40 px = 800 px in total. This is so that very bottom row which is already not
+/// visible in total (because it has partly scrolled off) is still available in data
 pub struct BackgroundRows {
-    rows: SlidingWindow<Box<dyn Row>, U20>,
+    rows: SlidingWindow<Box<dyn Row>, U21>,
 }
 
 impl BackgroundRows {
