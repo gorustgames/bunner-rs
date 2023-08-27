@@ -8,6 +8,7 @@ use std::any::Any;
 pub struct PavementRow {
     index: i8,
     uuid: String,
+    y: f32,
 }
 
 impl PavementRow {
@@ -15,6 +16,7 @@ impl PavementRow {
         PavementRow {
             index,
             uuid: get_uuid(),
+            y: 0.,
         }
     }
 }
@@ -32,6 +34,7 @@ impl Row for PavementRow {
         Box::new(Self {
             index: self.index,
             uuid: self.uuid.to_owned(),
+            y: self.y,
         })
     }
 
@@ -64,5 +67,13 @@ impl Row for PavementRow {
 
     fn get_row_uuid(&self) -> String {
         self.uuid.to_owned()
+    }
+
+    fn get_row_y(&self) -> f32 {
+        self.y
+    }
+
+    fn set_row_y(&mut self, y: f32) {
+        self.y = y;
     }
 }

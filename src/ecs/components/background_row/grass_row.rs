@@ -13,6 +13,7 @@ pub struct GrassRow {
     /// in that case this attribute represents whether
     /// mask is top bushes row or bottom bushes row
     row_with_top_bushes: bool,
+    y: f32,
 }
 
 impl GrassRow {
@@ -23,6 +24,7 @@ impl GrassRow {
             uuid: get_uuid(),
             mask: None,
             row_with_top_bushes: false,
+            y: 0.,
         }
     }
 }
@@ -45,6 +47,7 @@ impl Row for GrassRow {
             uuid: self.uuid.to_owned(),
             mask: self.mask,
             row_with_top_bushes: self.row_with_top_bushes,
+            y: self.y,
         })
     }
 
@@ -89,5 +92,13 @@ impl Row for GrassRow {
 
     fn get_row_uuid(&self) -> String {
         self.uuid.to_owned()
+    }
+
+    fn get_row_y(&self) -> f32 {
+        self.y
+    }
+
+    fn set_row_y(&mut self, y: f32) {
+        self.y = y;
     }
 }
