@@ -1046,6 +1046,28 @@ pub fn set_player_row(
     player_position.row_index = player_row;
 }
 
+/// new version of set_player_row that should reflect scrolling nature of the rows
+pub fn set_player_row_ng(
+    q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
+    mut player_position: ResMut<PlayerPosition>,
+    bg_rows: Res<BackgroundRows>,
+) {
+    let mut player_y = -1;
+    for transform in q_player.iter() {
+        player_y = transform.translation.y as i32;
+        break;
+    }
+    if player_y == -1 {
+        println!("unable to find player!!!");
+        return;
+    }
+    if let Some(player_row) = bg_rows.get_player_row(player_y as f32) {
+        player_position.row_index = player_row;
+    } else {
+        println!("set_player_row_ng: unable to retrieve player row!!!");
+    }
+}
+
 pub fn set_player_col(
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     mut player_position: ResMut<PlayerPosition>,
@@ -1110,7 +1132,8 @@ pub fn detect_bushes(
         match player_direction {
             PlayerDirection::Up => {
                 if row_mask[player_col] == false
-                    && player_position.player_y > player_row_to_coords(player_row).0
+                    && player_position.player_y > bg_rows.get_player_row_to_coords(player_row).0
+                // player_row_to_coords(player_row).0
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Up;
@@ -1118,7 +1141,8 @@ pub fn detect_bushes(
             }
             PlayerDirection::Down => {
                 if row_mask[player_col] == false
-                    && player_position.player_y < player_row_to_coords(player_row - 1).1
+                    && player_position.player_y < bg_rows.get_player_row_to_coords(player_row).1
+                // player_row_to_coords(player_row - 1).1
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Down;

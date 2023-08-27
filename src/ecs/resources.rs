@@ -1,5 +1,6 @@
 use crate::ecs::components::background_row::{Row, RowType};
 use crate::ecs::components::MovementDirection;
+use crate::SEGMENT_HEIGHT;
 use bevy::prelude::*;
 
 /// we have 21 rows in sliding window even though screen has in theory only 20 rows
@@ -57,6 +58,25 @@ impl BackgroundRows {
                 break;
             }
         }
+    }
+
+    pub fn get_player_row(&self, player_y: f32) -> Option<i8> {
+        for n in 0..self.data.len() {
+            if player_y + 20. >= self.data[n].get_row_y()
+                && player_y + 20. < self.data[n].get_row_y() + SEGMENT_HEIGHT
+            {
+                return Some(n as i8);
+            }
+        }
+        return None; // this is basically error, we are unable to determine player row
+    }
+
+    /// replacement for fn player_row_to_coords
+    pub fn get_player_row_to_coords(&self, player_row: i8) -> (f32, f32) {
+        (
+            self.data[player_row as usize].get_row_y(),
+            self.data[player_row as usize].get_row_y() + 40.,
+        )
     }
 }
 
