@@ -126,6 +126,7 @@ pub fn background_scrolling(
 
     for (entity, mut transform, mut bg_row) in q.iter_mut() {
         transform.translation.y -= SCROLLING_SPEED_BACKGROUND * time.delta_seconds();
+        bg_rows.set_row_y_by_row_uuid(&bg_row.row.get_row_uuid(), transform.translation.y);
 
         // if current top row's top Y coord is already below top of the screen (i.e. there is blank space) -> create new top row
         if bg_row.is_top_row && transform.translation.y < SCREEN_HEIGHT / 2. - SEGMENT_HEIGHT {
