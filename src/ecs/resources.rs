@@ -1,46 +1,61 @@
 use crate::ecs::components::background_row::{Row, RowType};
 use crate::ecs::components::MovementDirection;
 use bevy::prelude::*;
-use sliding_window::typenum::consts::*;
-use sliding_window::*;
 
-/// we have 21 rows in sliding window even though screen has in teory only 20 rowa
+/// we have 21 rows in sliding window even though screen has in theory only 20 rows
 /// i..e 20 x 40 px = 800 px in total. This is so that very bottom row which is already not
 /// visible in total (because it has partly scrolled off) is still available in data
+
+const SLIDING_WINDOW_SIZE: usize = 21;
+
 pub struct BackgroundRows {
-    rows: SlidingWindow<Box<dyn Row>, U21>,
+    data: Vec<Box<dyn Row>>,
+    window_size: usize,
 }
 
 impl BackgroundRows {
     pub fn new() -> Self {
         BackgroundRows {
-            rows: SlidingWindow::new(),
+            data: Vec::with_capacity(SLIDING_WINDOW_SIZE),
+            window_size: SLIDING_WINDOW_SIZE,
         }
     }
 
     pub fn add_row(&mut self, row: Box<dyn Row>) {
-        self.rows.insert(row);
+        if self.data.len() >= self.window_size {
+            self.data.remove(0);
+        }
+        self.data.push(row);
     }
 
     pub fn last_row(&self) -> Option<Box<dyn Row>> {
-        return if self.rows.count() == 0 {
+        return if self.data.len() == 0 {
             None
         } else {
-            Some(self.rows[self.rows.count() - 1].clone_row())
+            Some(self.data[self.data.len() - 1].clone_row())
         };
     }
 
     pub fn get_row(&self, row_index: usize) -> Option<Box<dyn Row>> {
-        return if self.rows.count() == 0 || row_index > self.rows.count() - 1 {
+        return if self.data.len() == 0 || row_index > self.data.len() - 1 {
             None
         } else {
-            Some(self.rows[row_index].clone_row())
+            Some(self.data[row_index].clone_row())
         };
     }
 
     pub fn debug_print(&self) {
-        for n in (0..self.rows.count()).rev() {
-            println!("row {:?} {:?}", n, &self.rows[n]);
+        for n in (0..self.data.len()).rev() {
+            println!("row {:?} {:?}", n, &self.data[n]);
+        }
+    }
+
+    pub fn set_row_y_by_row_uuid(&mut self, row_uuid: &str, y: f32) {
+        for n in 0..self.data.len() {
+            if self.data[n].get_row_uuid() == row_uuid {
+                self.data[n].set_row_y(y);
+                break;
+            }
         }
     }
 }
@@ -198,7 +213,7 @@ impl BackgroundScrollingEnabled {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ecs::components::background_row::GrassRow;
+    use crate::ecs::components::background_row::{GrassRow, PavementRow};
 
     #[test]
     fn test_last_row() {
@@ -212,5 +227,28 @@ mod tests {
         bgr.add_row(Box::new(grass_row));
         let previous_row = bgr.last_row();
         assert_eq!(previous_row.unwrap().get_row_mask(), Some(mask));
+    }
+
+    // cargo test test_custom_sliding_window -- --show-output
+    #[test]
+    fn test_custom_sliding_window() {
+        let mut sliding_window = BackgroundRows::new();
+
+        for i in 1..22 {
+            sliding_window.add_row(Box::new(GrassRow::new_grass_row(i)));
+        }
+
+        let oldest_minus_one_row_before_slide = sliding_window.get_row(1);
+
+        sliding_window.debug_print();
+        sliding_window.add_row(Box::new(PavementRow::new_pavement_row(5)));
+        println!("--------");
+        let oldest_row_after_slide = sliding_window.get_row(0);
+        sliding_window.debug_print();
+
+        assert_eq!(
+            oldest_minus_one_row_before_slide.unwrap().get_row_uuid(),
+            oldest_row_after_slide.unwrap().get_row_uuid()
+        );
     }
 }
