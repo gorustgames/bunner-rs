@@ -21,12 +21,11 @@ use crate::ecs::resources::{
 };
 use crate::{
     get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
-    is_odd_number, player_col_to_coords, player_row_to_coords, player_x_to_player_col,
-    player_y_to_player_row, AppState, CAR_HEIGHT, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH,
-    HOVERED_BUTTON, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT,
-    SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER,
-    SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_HEIGHT, TRAIN_WIDTH, Z_GAMEOVER,
-    Z_GRID,
+    is_odd_number, player_col_to_coords, player_x_to_player_col, AppState, CAR_HEIGHT,
+    CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, HOVERED_BUTTON, LOG_BIG_WIDTH, LOG_SMALL_WIDTH,
+    NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND,
+    SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT,
+    SEGMENT_WIDTH, TRAIN_HEIGHT, TRAIN_WIDTH, Z_GAMEOVER, Z_GRID,
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -1031,25 +1030,6 @@ pub fn active_row_rail(
 pub fn set_player_row(
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     mut player_position: ResMut<PlayerPosition>,
-) {
-    let mut player_y = -1;
-    for transform in q_player.iter() {
-        player_y = transform.translation.y as i32;
-        break;
-    }
-    if player_y == -1 {
-        println!("unable to find player!!!");
-        return;
-    }
-
-    let player_row = player_y_to_player_row(player_y);
-    player_position.row_index = player_row;
-}
-
-/// new version of set_player_row that should reflect scrolling nature of the rows
-pub fn set_player_row_ng(
-    q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
-    mut player_position: ResMut<PlayerPosition>,
     bg_rows: Res<BackgroundRows>,
 ) {
     let mut player_y = -1;
@@ -1133,7 +1113,6 @@ pub fn detect_bushes(
             PlayerDirection::Up => {
                 if row_mask[player_col] == false
                     && player_position.player_y > bg_rows.get_player_row_to_coords(player_row).0
-                // player_row_to_coords(player_row).0
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Up;
@@ -1142,7 +1121,6 @@ pub fn detect_bushes(
             PlayerDirection::Down => {
                 if row_mask[player_col] == false
                     && player_position.player_y < bg_rows.get_player_row_to_coords(player_row).1
-                // player_row_to_coords(player_row - 1).1
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Down;
