@@ -160,12 +160,17 @@ pub fn background_scrolling(
     }
 }
 
+/// adds horizontal lines/borders for each row. used for debugging
+/// vertical lines are created only once in game_setup startup system
+/// since they are static in nature whereas horizontal lines are scrolling together with
+/// respective background rows
 pub fn border_adding(mut commands: Commands, mut q: Query<&Transform, Added<BackgroundRow>>) {
     for transform in q.iter_mut() {
         GameRowBorderBundle::new(transform.translation.y).spawn_bundle(&mut commands);
     }
 }
 
+/// scrolls horizontal lines/borders for each row with same speed as we are scrolling background
 pub fn border_scrolling(
     scrolling_enabled: Res<BackgroundScrollingEnabled>,
     time: Res<Time>,
@@ -768,7 +773,7 @@ pub fn game_setup(
     DebugText::new(&asset_server).spawn_debug_text(&mut commands);
 
     // for debugging only
-    draw_line(-200., 0., 1.0, 800.0, &mut commands);
+    /*draw_line(-200., 0., 1.0, 800.0, &mut commands);
     draw_line(-160., 0., 1.0, 800.0, &mut commands);
     draw_line(-120., 0., 1.0, 800.0, &mut commands);
     draw_line(-80., 0., 1.0, 800.0, &mut commands);
@@ -778,30 +783,7 @@ pub fn game_setup(
     draw_line(80., 0., 1.0, 800.0, &mut commands);
     draw_line(120., 0., 1.0, 800.0, &mut commands);
     draw_line(160., 0., 1.0, 800.0, &mut commands);
-    draw_line(200., 0., 1.0, 800.0, &mut commands);
-    /*
-       draw_line(0., 0., 480., 1.0, &mut commands);
-       draw_line(0., 40., 480., 1.0, &mut commands);
-       draw_line(0., 80., 480., 1.0, &mut commands);
-       draw_line(0., 120., 480., 1.0, &mut commands);
-       draw_line(0., 160., 480., 1.0, &mut commands);
-       draw_line(0., 200., 480., 1.0, &mut commands);
-       draw_line(0., 240., 480., 1.0, &mut commands);
-       draw_line(0., 280., 480., 1.0, &mut commands);
-       draw_line(0., 320., 480., 1.0, &mut commands);
-       draw_line(0., 360., 480., 1.0, &mut commands);
-
-       draw_line(0., -40., 480., 1.0, &mut commands);
-       draw_line(0., -80., 480., 1.0, &mut commands);
-       draw_line(0., -120., 480., 1.0, &mut commands);
-       draw_line(0., -160., 480., 1.0, &mut commands);
-       draw_line(0., -200., 480., 1.0, &mut commands);
-       draw_line(0., -240., 480., 1.0, &mut commands);
-       draw_line(0., -280., 480., 1.0, &mut commands);
-       draw_line(0., -320., 480., 1.0, &mut commands);
-       draw_line(0., -360., 480., 1.0, &mut commands);
-
-    */
+    draw_line(200., 0., 1.0, 800.0, &mut commands);*/
 }
 
 /// sets global player position when player is standing on dirt, pavement, or grass row
