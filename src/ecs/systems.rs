@@ -949,6 +949,13 @@ pub fn active_row_road(
     }
 }
 
+// TODO: while this approach works well with water and road where children have same height as parent row
+// with train which we are putting on rail1 only (other 3 rail rows having no children) bunner
+// wil get hit by train only when standing on row1 resulting in situation where visually bunner
+// is overrun by train but this is not detected since he is standing on rail0 or rail2 (we can ignore rail3 and
+// treat it like bunner already did cross the rails).
+//
+// the solution for that would be always to check rail1 road even if bunner is standing on rail0 or rail2
 pub fn active_row_rail(
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     q_background_row: Query<(&Transform, &BackgroundRow, &mut Children)>,
