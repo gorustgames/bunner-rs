@@ -115,34 +115,6 @@ pub fn get_random_row_mask() -> [bool; 12] {
     row_mask
 }
 
-/// converts current row (0..19 from bottom to top)
-/// to lower and upper (i.e. lower + 40 px) y coordinate
-pub fn player_row_to_coords(row: i8) -> (f32, f32) {
-    match row {
-        10 => (0., 40.),
-        11 => (41., 80.),
-        12 => (81., 120.),
-        13 => (121., 160.),
-        14 => (161., 200.),
-        15 => (201., 240.),
-        16 => (241., 280.),
-        17 => (281., 320.),
-        18 => (321., 360.),
-        19 => (361., 400.),
-        9 => (-40., -1.),
-        8 => (-80., -41.),
-        7 => (-120., -81.),
-        6 => (-160., -121.),
-        5 => (-200., -161.),
-        4 => (-240., -201.),
-        3 => (-280., -241.),
-        2 => (-320., -281.),
-        1 => (-360., -321.),
-        0 => (-400., -361.),
-        _ => (-1., -1.),
-    }
-}
-
 /// converts current col (0..11 from left to right)
 /// to lower and upper (i.e. lower + 40 px) x coordinate
 pub fn player_col_to_coords(col: usize) -> (f32, f32) {
@@ -160,32 +132,6 @@ pub fn player_col_to_coords(col: usize) -> (f32, f32) {
         1 => (-200., -161.),
         0 => (-240., -201.),
         _ => (-1., -1.),
-    }
-}
-
-pub fn player_y_to_player_row(player_y: i32) -> i8 {
-    match player_y + 20 {
-        0..=40 => 10,
-        41..=80 => 11,
-        81..=120 => 12,
-        121..=160 => 13,
-        161..=200 => 14,
-        201..=240 => 15,
-        241..=280 => 16,
-        281..=320 => 17,
-        321..=359 => 18,
-        360..=400 => 19,
-        -40..=-1 => 9,
-        -80..=-41 => 8,
-        -120..=-81 => 7,
-        -160..=-121 => 6,
-        -200..=-161 => 5,
-        -240..=-201 => 4,
-        -280..=-241 => 3,
-        -320..=-281 => 2,
-        -360..=-321 => 1,
-        -400..=-361 => 0,
-        _ => -1, // this will happen if player scrolls off the screen, i.e. player is dead!
     }
 }
 
@@ -222,10 +168,5 @@ mod tests {
         assert_eq!(is_even_number(0), true);
         assert_eq!(is_even_number(-10), true);
         assert_eq!(is_even_number(-7), false);
-    }
-
-    #[test]
-    fn test_player_y_to_player_row() {
-        assert_eq!(player_y_to_player_row(-400), 0);
     }
 }

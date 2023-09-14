@@ -21,12 +21,11 @@ use crate::ecs::resources::{
 };
 use crate::{
     get_random_float, get_random_i32, get_random_i8, get_random_row_mask, is_even_number,
-    is_odd_number, player_col_to_coords, player_row_to_coords, player_x_to_player_col,
-    player_y_to_player_row, AppState, CAR_HEIGHT, CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH,
-    HOVERED_BUTTON, LOG_BIG_WIDTH, LOG_SMALL_WIDTH, NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT,
-    SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER,
-    SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_HEIGHT, TRAIN_WIDTH, Z_GAMEOVER,
-    Z_GRID,
+    is_odd_number, player_col_to_coords, player_x_to_player_col, AppState, CAR_HEIGHT,
+    CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, HOVERED_BUTTON, LOG_BIG_WIDTH, LOG_SMALL_WIDTH,
+    NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND,
+    SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT,
+    SEGMENT_WIDTH, TRAIN_HEIGHT, TRAIN_WIDTH, Z_GAMEOVER, Z_GRID,
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -126,6 +125,7 @@ pub fn background_scrolling(
 
     for (entity, mut transform, mut bg_row) in q.iter_mut() {
         transform.translation.y -= SCROLLING_SPEED_BACKGROUND * time.delta_seconds();
+        bg_rows.set_row_y_by_row_uuid(&bg_row.row.get_row_uuid(), transform.translation.y);
 
         // if current top row's top Y coord is already below top of the screen (i.e. there is blank space) -> create new top row
         if bg_row.is_top_row && transform.translation.y < SCREEN_HEIGHT / 2. - SEGMENT_HEIGHT {
@@ -1030,6 +1030,7 @@ pub fn active_row_rail(
 pub fn set_player_row(
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
     mut player_position: ResMut<PlayerPosition>,
+    bg_rows: Res<BackgroundRows>,
 ) {
     let mut player_y = -1;
     for transform in q_player.iter() {
@@ -1040,9 +1041,11 @@ pub fn set_player_row(
         println!("unable to find player!!!");
         return;
     }
-
-    let player_row = player_y_to_player_row(player_y);
-    player_position.row_index = player_row;
+    if let Some(player_row) = bg_rows.get_player_row(player_y as f32) {
+        player_position.row_index = player_row;
+    } else {
+        println!("set_player_row_ng: unable to retrieve player row!!!");
+    }
 }
 
 pub fn set_player_col(
@@ -1109,7 +1112,7 @@ pub fn detect_bushes(
         match player_direction {
             PlayerDirection::Up => {
                 if row_mask[player_col] == false
-                    && player_position.player_y > player_row_to_coords(player_row).0
+                    && player_position.player_y > bg_rows.get_player_row_to_coords(player_row).0
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Up;
@@ -1117,7 +1120,7 @@ pub fn detect_bushes(
             }
             PlayerDirection::Down => {
                 if row_mask[player_col] == false
-                    && player_position.player_y < player_row_to_coords(player_row - 1).1
+                    && player_position.player_y < bg_rows.get_player_row_to_coords(player_row).1
                 {
                     flg_hit = true;
                     player_position.movement_blocked_dir = PlayerMovementBlockedDirection::Down;

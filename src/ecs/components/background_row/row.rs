@@ -38,4 +38,8 @@ pub trait Row: Send + Sync + Debug {
     fn get_row_data(&self) -> Option<Box<dyn Any>>;
 
     fn get_row_uuid(&self) -> String;
+
+    fn get_row_y(&self) -> f32;
+
+    fn set_row_y(&mut self, y: f32);
 }

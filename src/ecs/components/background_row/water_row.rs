@@ -8,6 +8,7 @@ use std::any::Any;
 pub struct WaterRow {
     index: i8,
     uuid: String,
+    y: f32,
 }
 
 impl WaterRow {
@@ -15,6 +16,7 @@ impl WaterRow {
         WaterRow {
             index,
             uuid: get_uuid(),
+            y: 0.,
         }
     }
 }
@@ -33,6 +35,7 @@ impl Row for WaterRow {
         Box::new(Self {
             index: self.index,
             uuid: self.uuid.to_owned(),
+            y: self.y,
         })
     }
 
@@ -65,5 +68,13 @@ impl Row for WaterRow {
 
     fn get_row_uuid(&self) -> String {
         self.uuid.to_owned()
+    }
+
+    fn get_row_y(&self) -> f32 {
+        self.y
+    }
+
+    fn set_row_y(&mut self, y: f32) {
+        self.y = y;
     }
 }
