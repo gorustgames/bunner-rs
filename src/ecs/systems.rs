@@ -717,6 +717,7 @@ pub fn put_bushes_on_grass(
 }
 
 /// helper function used within game_setup (if debugging)
+#[allow(dead_code)]
 fn draw_line(start_x: f32, start_y: f32, width: f32, height: f32, commands: &mut Commands) {
     commands.spawn_bundle(SpriteBundle {
         sprite: Sprite {
