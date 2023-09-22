@@ -6,6 +6,7 @@ use crate::ecs::components::background_row_border::{GameRowBorder, GameRowBorder
 use crate::ecs::components::bush::{BushBundle, BushHorizontalType, BushVerticalType};
 use crate::ecs::components::car::{CarBundle, CarSpeed};
 use crate::ecs::components::debug_text::{DebugText, DebugTextMarker};
+use crate::ecs::components::eagle::EagleBundle;
 use crate::ecs::components::log::{LogBundle, LogSize};
 use crate::ecs::components::player::{
     AnimationTimer, Player, PlayerBundle, PlayerDirection, PlayerDirectionIndex,
@@ -13,7 +14,8 @@ use crate::ecs::components::player::{
 use crate::ecs::components::train::TrainBundle;
 use crate::ecs::components::{
     ButtonExitMarker, ButtonPlayMarker, CarTimer, DelayedCarReadyToBeDisplayedMarker,
-    DelayedTrainReadyToBeDisplayedMarker, DespawnEntityTimer, MovementDirection, TrainTimer,
+    DelayedEagleReadyToBeDisplayedMarker, DelayedTrainReadyToBeDisplayedMarker, DespawnEntityTimer,
+    EagleTimer, MovementDirection, TrainTimer,
 };
 use crate::ecs::resources::{
     BackgroundRows, BackgroundScrollingEnabled, CollisionType, MenuData,
@@ -24,8 +26,8 @@ use crate::{
     is_odd_number, player_col_to_coords, player_x_to_player_col, AppState, CAR_HEIGHT,
     CAR_SPEED_FROM, CAR_SPEED_TO, CAR_WIDTH, HOVERED_BUTTON, LOG_BIG_WIDTH, LOG_SMALL_WIDTH,
     NORMAL_BUTTON, PRESSED_BUTTON, SCREEN_HEIGHT, SCREEN_WIDTH, SCROLLING_SPEED_BACKGROUND,
-    SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER, SCROLLING_SPEED_TRAINS, SEGMENT_HEIGHT,
-    SEGMENT_WIDTH, TRAIN_HEIGHT, TRAIN_WIDTH, Z_GAMEOVER, Z_GRID,
+    SCROLLING_SPEED_EAGLE, SCROLLING_SPEED_LOGS, SCROLLING_SPEED_PLAYER, SCROLLING_SPEED_TRAINS,
+    SEGMENT_HEIGHT, SEGMENT_WIDTH, TRAIN_HEIGHT, TRAIN_WIDTH, Z_GAMEOVER, Z_GRID,
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -1143,7 +1145,10 @@ pub fn detect_bushes(
 
 /// responsible for player collision detection (with water, train or car)
 /// and transitioning into JustDied state
-pub fn player_die(player_position: Res<PlayerPosition>, mut state: ResMut<State<AppState>>) {
+pub fn player_die_detection(
+    player_position: Res<PlayerPosition>,
+    mut state: ResMut<State<AppState>>,
+) {
     if player_position.collision_type == CollisionType::RoadCar {
         state.set(AppState::JustDied).unwrap();
     }
@@ -1151,7 +1156,7 @@ pub fn player_die(player_position: Res<PlayerPosition>, mut state: ResMut<State<
 
 /// called when player transitions into JustDied state
 /// will set proper player icon and disable scrolling
-pub fn player_die_enter(
+pub fn player_just_died_enter(
     mut scrolling_enabled: ResMut<BackgroundScrollingEnabled>,
     mut query: Query<
         (
@@ -1161,10 +1166,45 @@ pub fn player_die_enter(
         ),
         With<Player>,
     >,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    player_position: Res<PlayerPosition>,
 ) {
     if let Ok((mut sprite, mut direction, mut direction_idx)) = query.get_single_mut() {
         PlayerBundle::change_sprite_icon_crushed(&mut direction, &mut direction_idx, &mut sprite);
         scrolling_enabled.enabled = false;
+
+        EagleBundle::new(player_position.player_x - 45., &asset_server)
+            .spawn_eagle_with_delay(&mut commands, 3.0);
+    }
+}
+
+pub fn delayed_spawn_eagle(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut EagleTimer)>,
+) {
+    for (entity, mut se_timer) in query.iter_mut() {
+        if se_timer.timer.tick(time.delta()).just_finished() {
+            commands
+                .entity(entity)
+                .insert(DelayedEagleReadyToBeDisplayedMarker);
+        }
+    }
+}
+
+pub fn eagle_movement(
+    mut q: Query<&mut Transform, With<DelayedEagleReadyToBeDisplayedMarker>>,
+    time: Res<Time>,
+    mut state: ResMut<State<AppState>>,
+) {
+    for mut transform in q.iter_mut() {
+        transform.translation.y -= SCROLLING_SPEED_EAGLE * time.delta_seconds();
+
+        if transform.translation.y < SCREEN_HEIGHT / -2. - 100. {
+            // once eagle is gone go to final game over state
+            state.set(AppState::GameOver).unwrap();
+        }
     }
 }
 

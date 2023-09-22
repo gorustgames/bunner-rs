@@ -5,6 +5,7 @@ pub mod background_row_border;
 pub mod bush;
 pub mod car;
 pub mod debug_text;
+pub mod eagle;
 pub mod log;
 pub mod player;
 pub mod train;
@@ -54,7 +55,7 @@ impl TrainTimer {
     }
 }
 
-/// same 3 components to support delayed spawning of the cars
+/// same 2 components to support delayed spawning of the cars
 #[derive(Component)]
 pub struct DelayedCarReadyToBeDisplayedMarker;
 
@@ -66,6 +67,22 @@ pub struct CarTimer {
 impl CarTimer {
     pub fn new(delay_sec: f32) -> Self {
         CarTimer {
+            timer: Timer::from_seconds(delay_sec, false),
+        }
+    }
+}
+
+#[derive(Component)]
+pub struct DelayedEagleReadyToBeDisplayedMarker;
+
+#[derive(Component)]
+pub struct EagleTimer {
+    pub timer: Timer,
+}
+
+impl EagleTimer {
+    pub fn new(delay_sec: f32) -> Self {
+        EagleTimer {
             timer: Timer::from_seconds(delay_sec, false),
         }
     }

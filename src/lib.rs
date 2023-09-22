@@ -26,6 +26,7 @@ const SCROLLING_SPEED_BACKGROUND: f32 = 45.;
 const SCROLLING_SPEED_LOGS: f32 = 60.;
 const SCROLLING_SPEED_TRAINS: f32 = 800.;
 const SCROLLING_SPEED_PLAYER: f32 = 150.;
+const SCROLLING_SPEED_EAGLE: f32 = 200.;
 
 // Z coordinates for different components
 // determine which component is on
@@ -35,6 +36,7 @@ const Z_BACKGROUND_ROW_GRASS: f32 = 0.5; // for explanation see comment in GameR
 const Z_ROW_CHILD_COMPONENT_HEDGE: f32 = 1.0;
 const Z_ROW_CHILD_COMPONENT_CAR: f32 = 15.0; // must be more than player
 const Z_ROW_CHILD_COMPONENT_TRAIN: f32 = 15.0; // must be more than player
+const Z_ROW_CHILD_COMPONENT_EAGLE: f32 = 20.0; // must be more than player, car & train
 const Z_ROW_CHILD_COMPONENT_LOG: f32 = 5.0; // must be less than player
 const Z_PLAYER: f32 = 10.0;
 const Z_GRID: f32 = 15.0;
