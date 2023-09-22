@@ -53,10 +53,6 @@ fn main() {
         .add_system_set(SystemSet::on_enter(AppState::JustDied).with_system(player_just_died_enter))
         .add_system_set(
             SystemSet::on_update(AppState::JustDied)
-                .with_system(put_trains_on_rails)
-                .with_system(put_logs_on_water)
-                .with_system(put_bushes_on_grass)
-                .with_system(put_cars_on_roads)
                 .with_system(logs_movement)
                 .with_system(trains_movement)
                 .with_system(cars_movement)
