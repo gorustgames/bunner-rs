@@ -1141,6 +1141,33 @@ pub fn detect_bushes(
     }
 }
 
+/// responsible for player collision detection (with water, train or car)
+/// and transitioning into JustDied state
+pub fn player_die(player_position: Res<PlayerPosition>, mut state: ResMut<State<AppState>>) {
+    if player_position.collision_type == CollisionType::RoadCar {
+        state.set(AppState::JustDied).unwrap();
+    }
+}
+
+/// called when player transitions into JustDied state
+/// will set proper player icon and disable scrolling
+pub fn player_die_enter(
+    mut scrolling_enabled: ResMut<BackgroundScrollingEnabled>,
+    mut query: Query<
+        (
+            &mut TextureAtlasSprite,
+            &mut PlayerDirection,
+            &mut PlayerDirectionIndex,
+        ),
+        With<Player>,
+    >,
+) {
+    if let Ok((mut sprite, mut direction, mut direction_idx)) = query.get_single_mut() {
+        PlayerBundle::change_sprite_icon_crushed(&mut direction, &mut direction_idx, &mut sprite);
+        scrolling_enabled.enabled = false;
+    }
+}
+
 pub fn debug_text_update_system(
     mut q: Query<&mut Text, With<DebugTextMarker>>,
     player_position: ResMut<PlayerPosition>,

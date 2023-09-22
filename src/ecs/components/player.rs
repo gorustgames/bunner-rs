@@ -89,4 +89,18 @@ impl PlayerBundle {
             PlayerDirection::Right => sprite.index = 3 + direction_idx.0,
         }
     }
+
+    pub fn change_sprite_icon_crushed(
+        direction: &PlayerDirection,
+        direction_idx: &mut PlayerDirectionIndex,
+        sprite: &mut TextureAtlasSprite,
+    ) {
+        direction_idx.0 = 2;
+        match *direction {
+            PlayerDirection::Up => sprite.index = 0 + direction_idx.0,
+            PlayerDirection::Down => sprite.index = 7 + direction_idx.0,
+            PlayerDirection::Left => sprite.index = 9 + direction_idx.0,
+            PlayerDirection::Right => sprite.index = 3 + direction_idx.0,
+        }
+    }
 }

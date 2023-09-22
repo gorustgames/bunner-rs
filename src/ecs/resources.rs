@@ -85,7 +85,7 @@ pub struct MenuData {
     pub button_entity_start: Entity,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum CollisionType {
     /// player is standing on water row
     /// and on no log -> ko!

@@ -43,8 +43,20 @@ const Z_GAMEOVER: f32 = 20.0;
 /// Game states
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum AppState {
+    /// initial menu from where player can either exit or start game
     Menu,
+
+    /// player is playing
     InGame,
+
+    /// player has just died
+    /// movement and scrolling will be disabled
+    /// for couple of seconds to enjoy the scenery
+    /// then we will transition to GameOver state
+    JustDied,
+
+    /// When this state is entered we display game over caption
+    /// and upon pressing space game will exit
     GameOver,
 }
 

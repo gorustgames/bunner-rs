@@ -47,7 +47,19 @@ fn main() {
                 .with_system(active_row)
                 .with_system(active_row_rail)
                 .with_system(active_row_road)
-                .with_system(active_row_water),
+                .with_system(active_row_water)
+                .with_system(player_die),
+        )
+        .add_system_set(SystemSet::on_enter(AppState::JustDied).with_system(player_die_enter))
+        .add_system_set(
+            SystemSet::on_update(AppState::JustDied)
+                .with_system(put_trains_on_rails)
+                .with_system(put_logs_on_water)
+                .with_system(put_bushes_on_grass)
+                .with_system(put_cars_on_roads)
+                .with_system(logs_movement)
+                .with_system(trains_movement)
+                .with_system(cars_movement),
         )
         // add_system_set(SystemSet::on_enter(AppState::InGame).with_system(game_over)
         .add_system_set(SystemSet::on_enter(AppState::GameOver).with_system(game_over_enter))
