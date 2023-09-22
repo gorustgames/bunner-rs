@@ -81,6 +81,12 @@ impl PlayerBundle {
         direction_idx: &mut PlayerDirectionIndex,
         sprite: &mut TextureAtlasSprite,
     ) {
+        if direction_idx.0 == 2 {
+            // if player is already crushed (see change_sprite_icon_crushed)
+            // prevent accidental change to standing position
+            return;
+        }
+
         direction_idx.0 = if direction_idx.0 == 0 { 1 } else { 0 };
         match *direction {
             PlayerDirection::Up => sprite.index = 0 + direction_idx.0,
