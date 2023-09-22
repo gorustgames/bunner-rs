@@ -1197,10 +1197,20 @@ pub fn eagle_movement(
     mut q: Query<&mut Transform, With<DelayedEagleReadyToBeDisplayedMarker>>,
     time: Res<Time>,
     mut state: ResMut<State<AppState>>,
+    player_position: Res<PlayerPosition>,
+    mut q_player: Query<&mut Visibility, With<Player>>,
 ) {
     for mut transform in q.iter_mut() {
         transform.translation.y -= SCROLLING_SPEED_EAGLE * time.delta_seconds();
 
+        // once eagle flies over rabbit make it invisible
+        if transform.translation.y < player_position.player_y {
+            if let Ok(mut visibility) = q_player.get_single_mut() {
+                visibility.is_visible = false;
+            }
+        }
+
+        // once eagle leaves the screen at the bottom go to game over screen
         if transform.translation.y < SCREEN_HEIGHT / -2. - 100. {
             // once eagle is gone go to final game over state
             state.set(AppState::GameOver).unwrap();
