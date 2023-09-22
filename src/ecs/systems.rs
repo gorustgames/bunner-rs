@@ -1149,7 +1149,10 @@ pub fn player_die_detection(
     player_position: Res<PlayerPosition>,
     mut state: ResMut<State<AppState>>,
 ) {
-    if player_position.collision_type == CollisionType::RoadCar {
+    if player_position.collision_type == CollisionType::RoadCar
+        || player_position.collision_type == CollisionType::RailsTrain
+        || player_position.collision_type == CollisionType::WaterOnly
+    {
         state.set(AppState::JustDied).unwrap();
     }
 }
