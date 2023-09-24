@@ -865,9 +865,11 @@ pub fn active_row_water(
                     {
                         let log_size_f32: f32 = log_size.into();
                         let log_x = child_global_transform.translation.x;
-                        let log_y = child_global_transform.translation.y;
+                        // -10 so that bank to log/log to log/log to bank does not cause the death
+                        let log_y = child_global_transform.translation.y - 10.;
                         let log_x_plus_width = log_x + log_size_f32;
-                        let log_y_plus_height = log_y + 40.;
+                        // +10 so that bank to log/log to log/log to bank does not cause the death
+                        let log_y_plus_height = log_y + 40. + 10.;
                         let x_from = log_x - 20.;
                         let x_to = log_x_plus_width - 20.;
                         let y_from = log_y - 20.;
