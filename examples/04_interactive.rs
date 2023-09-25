@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bunner_rs::ecs::resources::{BackgroundRows, PlayerPosition};
+use bunner_rs::ecs::resources::{BackgroundRows, BackgroundScrollingEnabled, PlayerPosition};
 use bunner_rs::ecs::systems::*;
 use bunner_rs::ecs::systems::{delayed_despawn_recursive, delayed_spawn_train};
 use bunner_rs::{SCREEN_HEIGHT, SCREEN_WIDTH};
@@ -37,5 +37,6 @@ fn main() {
         .add_system(debug_text_update_system)
         .insert_resource(BackgroundRows::new())
         .insert_resource(PlayerPosition::new())
+        .insert_resource(BackgroundScrollingEnabled::new())
         .run();
 }
