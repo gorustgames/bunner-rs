@@ -575,10 +575,9 @@ pub fn put_logs_on_water(
     const LOGS_GAP_FROM: i32 = 20;
     const LOGS_GAP_TO: i32 = 70;
 
-    for (entity, bg_row) in q.iter_mut() {
+    if let Ok((entity, bg_row)) = q.get_single_mut() {
         // TODO: replace with bg_row.row.get_row_type() == RowType::XXX
         if bg_row.is_water_row {
-
             // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
             let mut x_even_row = 0.;
             let mut x_odd_row = SCREEN_WIDTH / 2. - LOG_SMALL_WIDTH as f32;
