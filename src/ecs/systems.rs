@@ -596,7 +596,7 @@ pub fn put_logs_on_water(
                 if is_even_number(bg_row.row.get_index())
                 /* even rows IMPORTANT: row 0 is EVEN ROW*/
                 {
-                    // handle logs for even rows. these logs are flowing from left to right
+                    // handle logs for even rows. these logs are flowing from right to left
                     // choose negative X offset from previous log randomly so that logs do not overlap
                     // the space between two logs will be within range <LOGS_GAP_FROM, LOGS_GAP_TO>
                     if i > 1 {
@@ -626,7 +626,7 @@ pub fn put_logs_on_water(
                 } else
                 /* odd rows. IMPORTANT: row 0 is EVEN ROW */
                 {
-                    // handle logs for odd rows. these logs are flowing from right to left
+                    // handle logs for odd rows. these logs are flowing from left to right
                     // choose positive X offset from previous log randomly so that logs do not overlap
                     // the space between two logs will be within range <20,200>
                     if i > 1 {
