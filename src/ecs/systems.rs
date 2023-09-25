@@ -367,10 +367,10 @@ pub fn logs_movement(
                     // logs in odd rows flow from right to left
                     // logs in even rows flow from left to right
                     if is_odd_number(bg_row.row.get_index()) {
-                        child_transform.translation.x -=
+                        child_transform.translation.x +=
                             SCROLLING_SPEED_LOGS * time.delta_seconds();
                     } else {
-                        child_transform.translation.x +=
+                        child_transform.translation.x -=
                             SCROLLING_SPEED_LOGS * time.delta_seconds();
                     }
                 }
