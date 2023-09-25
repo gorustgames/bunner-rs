@@ -575,7 +575,7 @@ pub fn put_logs_on_water(
     const LOGS_GAP_FROM: i32 = 20;
     const LOGS_GAP_TO: i32 = 70;
 
-    if let Ok((entity, bg_row)) = q.get_single_mut() {
+    for (entity, bg_row) in q.iter_mut() {
         // TODO: replace with bg_row.row.get_row_type() == RowType::XXX
         if bg_row.is_water_row {
             // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
@@ -583,7 +583,7 @@ pub fn put_logs_on_water(
             let mut x_odd_row = SCREEN_WIDTH / 2. - LOG_SMALL_WIDTH as f32;
 
             for i in 1..LOGS_PER_ROW + 1 {
-                // println!("adding log {:?} for row {:?}",i,bg_row.row.get_index());
+                println!("adding log {:?} for row {:?}",i,bg_row.row.get_index());
                 // choose big or small randomly
                 let log_size = get_random_log_size();
 
@@ -1154,7 +1154,7 @@ pub fn player_die_detection(
 ) {
     if player_position.collision_type == CollisionType::RoadCar
         || player_position.collision_type == CollisionType::RailsTrain
-        || player_position.collision_type == CollisionType::WaterOnly
+     //   || player_position.collision_type == CollisionType::WaterOnly
     {
         state.set(AppState::JustDied).unwrap();
     }
