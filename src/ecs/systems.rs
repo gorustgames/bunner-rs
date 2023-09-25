@@ -198,6 +198,7 @@ pub fn player_scrolling(
     mut q: Query<&mut Transform, With<Player>>,
     player_position: ResMut<PlayerPosition>,
     scrolling_enabled: Res<BackgroundScrollingEnabled>,
+    mut state: ResMut<State<AppState>>,
 ) {
     if !scrolling_enabled.enabled {
         return;
@@ -205,6 +206,11 @@ pub fn player_scrolling(
 
     for mut transform in q.iter_mut() {
         transform.translation.y -= SCROLLING_SPEED_BACKGROUND * time.delta_seconds();
+
+        if transform.translation.y < SCREEN_HEIGHT / -2. - SEGMENT_HEIGHT - 10. {
+            state.set(AppState::JustDied).unwrap();
+        }
+
         match &player_position.collision_type {
             CollisionType::WaterLog(movement_direction) => {
                 if *movement_direction == MovementDirection::RIGHT {
