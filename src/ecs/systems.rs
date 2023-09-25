@@ -562,33 +562,33 @@ pub fn put_cars_on_roads(
 /// puts logs on newly added water row
 /// With<Added<WaterRowMarker>>
 /// uses bevy change detection to do it only once
-/// we are randomizing log size and putting 10 logs in each row
+/// we are randomizing log size and putting 40 logs in each row
 /// with random distance between them from 20 to 200 pixels.
-/// 10 random logs should be enough so that there are still some logs
+/// 40 random logs should be enough so that there are still some logs
 ///  on the water while water row is visible (i.e. it does not scroll of vertically) on the screen
 pub fn put_logs_on_water(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut q: Query<(Entity, &BackgroundRow), Added<WaterRowMarker>>,
 ) {
-    const LOGS_PER_ROW: i32 = 50;
+    const LOGS_PER_ROW: i32 = 40;
     const LOGS_GAP_FROM: i32 = 20;
-    const LOGS_GAP_TO: i32 = 70;
+    const LOGS_GAP_TO: i32 = 200;
 
     for (entity, bg_row) in q.iter_mut() {
         // TODO: replace with bg_row.row.get_row_type() == RowType::XXX
         if bg_row.is_water_row {
             // child position is relative to parent (i.e. left bottom to parent row is 0,0)!
             let mut x_even_row = 0.;
-            let mut x_odd_row = SCREEN_WIDTH / 2. - LOG_SMALL_WIDTH as f32;
+            let mut x_odd_row = SCREEN_WIDTH - LOG_SMALL_WIDTH as f32;
 
             for i in 1..LOGS_PER_ROW + 1 {
-                println!("adding log {:?} for row {:?}",i,bg_row.row.get_index());
+                // println!("adding log {:?} for row {:?}", i, bg_row.row.get_index());
                 // choose big or small randomly
                 let log_size = get_random_log_size();
 
                 if is_even_number(bg_row.row.get_index())
-                /* even rows*/
+                /* even rows IMPORTANT: row 0 is EVEN ROW*/
                 {
                     // handle logs for even rows. these logs are flowing from left to right
                     // choose negative X offset from previous log randomly so that logs do not overlap
@@ -596,42 +596,12 @@ pub fn put_logs_on_water(
                     if i > 1 {
                         x_even_row = if log_size == LogSize::BIG {
                             x_even_row
-                                - get_random_i32(
-                                    LOG_BIG_WIDTH + LOGS_GAP_FROM,
-                                    LOG_BIG_WIDTH + LOGS_GAP_TO,
-                                ) as f32
-                        } else {
-                            x_even_row
-                                - get_random_i32(
-                                    LOG_SMALL_WIDTH + LOGS_GAP_FROM,
-                                    LOG_SMALL_WIDTH + LOGS_GAP_TO,
-                                ) as f32
-                        };
-                    }
-
-                    LogBundle::new(
-                        MovementDirection::RIGHT,
-                        log_size,
-                        x_even_row,
-                        0.,
-                        &asset_server,
-                    )
-                    .spawn_log(&mut commands, entity);
-                } else
-                /* odd rows */
-                {
-                    // handle logs for odd rows. these logs are flowing from right to left
-                    // choose positive X offset from previous log randomly so that logs do not overlap
-                    // the space between two logs will be within range <20,200>
-                    if i > 1 {
-                        x_odd_row = if log_size == LogSize::BIG {
-                            x_odd_row
                                 + get_random_i32(
                                     LOG_BIG_WIDTH + LOGS_GAP_FROM,
                                     LOG_BIG_WIDTH + LOGS_GAP_TO,
                                 ) as f32
                         } else {
-                            x_odd_row
+                            x_even_row
                                 + get_random_i32(
                                     LOG_SMALL_WIDTH + LOGS_GAP_FROM,
                                     LOG_SMALL_WIDTH + LOGS_GAP_TO,
@@ -641,6 +611,36 @@ pub fn put_logs_on_water(
 
                     LogBundle::new(
                         MovementDirection::LEFT,
+                        log_size,
+                        x_even_row,
+                        0.,
+                        &asset_server,
+                    )
+                    .spawn_log(&mut commands, entity);
+                } else
+                /* odd rows. IMPORTANT: row 0 is EVEN ROW */
+                {
+                    // handle logs for odd rows. these logs are flowing from right to left
+                    // choose positive X offset from previous log randomly so that logs do not overlap
+                    // the space between two logs will be within range <20,200>
+                    if i > 1 {
+                        x_odd_row = if log_size == LogSize::BIG {
+                            x_odd_row
+                                - get_random_i32(
+                                    LOG_BIG_WIDTH + LOGS_GAP_FROM,
+                                    LOG_BIG_WIDTH + LOGS_GAP_TO,
+                                ) as f32
+                        } else {
+                            x_odd_row
+                                - get_random_i32(
+                                    LOG_SMALL_WIDTH + LOGS_GAP_FROM,
+                                    LOG_SMALL_WIDTH + LOGS_GAP_TO,
+                                ) as f32
+                        };
+                    }
+
+                    LogBundle::new(
+                        MovementDirection::RIGHT,
                         log_size,
                         x_odd_row,
                         0.,
@@ -1154,7 +1154,7 @@ pub fn player_die_detection(
 ) {
     if player_position.collision_type == CollisionType::RoadCar
         || player_position.collision_type == CollisionType::RailsTrain
-     //   || player_position.collision_type == CollisionType::WaterOnly
+    //   || player_position.collision_type == CollisionType::WaterOnly
     {
         state.set(AppState::JustDied).unwrap();
     }
