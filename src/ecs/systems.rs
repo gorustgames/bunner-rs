@@ -571,7 +571,7 @@ pub fn put_logs_on_water(
     asset_server: Res<AssetServer>,
     mut q: Query<(Entity, &BackgroundRow), Added<WaterRowMarker>>,
 ) {
-    const LOGS_PER_ROW: i32 = 500;
+    const LOGS_PER_ROW: i32 = 50;
     const LOGS_GAP_FROM: i32 = 20;
     const LOGS_GAP_TO: i32 = 70;
 
@@ -584,7 +584,7 @@ pub fn put_logs_on_water(
             let mut x_odd_row = SCREEN_WIDTH / 2. - LOG_SMALL_WIDTH as f32;
 
             for i in 1..LOGS_PER_ROW + 1 {
-                println!("adding log {:?} for row {:?}",i,bg_row.row.get_index());
+                // println!("adding log {:?} for row {:?}",i,bg_row.row.get_index());
                 // choose big or small randomly
                 let log_size = get_random_log_size();
 

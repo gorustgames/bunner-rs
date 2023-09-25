@@ -9,7 +9,7 @@ fn main() {
             title: "Infinite Bunner".to_string(),
             width: SCREEN_WIDTH,
             height: SCREEN_HEIGHT,
-            resizable: true,
+            resizable: false,
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
