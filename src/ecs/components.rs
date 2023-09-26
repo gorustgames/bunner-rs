@@ -8,6 +8,7 @@ pub mod debug_text;
 pub mod eagle;
 pub mod log;
 pub mod player;
+pub mod splash;
 pub mod train;
 
 #[derive(Debug, Component, PartialEq, Clone)]

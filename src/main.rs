@@ -59,6 +59,18 @@ fn main() {
                 .with_system(delayed_spawn_eagle)
                 .with_system(eagle_movement),
         )
+        .add_system_set(
+            SystemSet::on_enter(AppState::JustDiedInWater)
+                .with_system(player_just_died_in_water_enter),
+        )
+        .add_system_set(
+            SystemSet::on_update(AppState::JustDiedInWater)
+                .with_system(logs_movement)
+                .with_system(trains_movement)
+                .with_system(cars_movement)
+                .with_system(animate_splash)
+                .with_system(animate_splash_finish),
+        )
         // add_system_set(SystemSet::on_enter(AppState::InGame).with_system(game_over)
         .add_system_set(SystemSet::on_enter(AppState::GameOver).with_system(game_over_enter))
         .add_system_set(SystemSet::on_update(AppState::GameOver).with_system(game_over_update))

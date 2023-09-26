@@ -11,6 +11,8 @@ use crate::ecs::components::log::{LogBundle, LogSize};
 use crate::ecs::components::player::{
     AnimationTimer, Player, PlayerBundle, PlayerDirection, PlayerDirectionIndex,
 };
+use crate::ecs::components::splash::SplashBundle;
+use crate::ecs::components::splash::{AnimationTimer as SplashAnimationTimer, Splash};
 use crate::ecs::components::train::TrainBundle;
 use crate::ecs::components::{
     ButtonExitMarker, ButtonPlayMarker, CarTimer, DelayedCarReadyToBeDisplayedMarker,
@@ -1160,9 +1162,12 @@ pub fn player_die_detection(
 ) {
     if player_position.collision_type == CollisionType::RoadCar
         || player_position.collision_type == CollisionType::RailsTrain
-    //   || player_position.collision_type == CollisionType::WaterOnly
     {
         state.set(AppState::JustDied).unwrap();
+    }
+
+    if player_position.collision_type == CollisionType::WaterOnly {
+        state.set(AppState::JustDiedInWater).unwrap();
     }
 }
 
@@ -1225,6 +1230,49 @@ pub fn eagle_movement(
         // once eagle leaves the screen at the bottom go to game over screen
         if transform.translation.y < SCREEN_HEIGHT / -2. - 100. {
             // once eagle is gone go to final game over state
+            state.set(AppState::GameOver).unwrap();
+        }
+    }
+}
+
+pub fn player_just_died_in_water_enter(
+    mut commands: Commands,
+    mut q_player: Query<&mut Visibility, With<Player>>,
+    asset_server: Res<AssetServer>,
+    player_position: Res<PlayerPosition>,
+    mut texture_atlas_assets: ResMut<Assets<TextureAtlas>>,
+) {
+    if let Ok(mut visibility) = q_player.get_single_mut() {
+        visibility.is_visible = false;
+        SplashBundle::new(
+            player_position.player_x,
+            player_position.player_y,
+            &asset_server,
+            &mut texture_atlas_assets,
+        )
+        .spawn_splash(&mut commands);
+    }
+}
+
+pub fn animate_splash(
+    time: Res<Time>,
+    mut query: Query<(
+        &mut SplashAnimationTimer,
+        &mut Splash,
+        &mut TextureAtlasSprite,
+    )>,
+) {
+    for (mut timer, mut splash, mut sprite) in query.iter_mut() {
+        timer.tick(time.delta());
+        if timer.just_finished() {
+            SplashBundle::change_sprite_icon(&mut splash, &mut sprite);
+        }
+    }
+}
+
+pub fn animate_splash_finish(query: Query<&Splash>, mut state: ResMut<State<AppState>>) {
+    for splash in query.iter() {
+        if splash.has_splashed() {
             state.set(AppState::GameOver).unwrap();
         }
     }

@@ -39,6 +39,7 @@ const Z_ROW_CHILD_COMPONENT_TRAIN: f32 = 15.0; // must be more than player
 const Z_ROW_CHILD_COMPONENT_EAGLE: f32 = 20.0; // must be more than player, car & train
 const Z_ROW_CHILD_COMPONENT_LOG: f32 = 5.0; // must be less than player
 const Z_PLAYER: f32 = 10.0;
+const Z_SPLASH: f32 = 11.0;
 const Z_GRID: f32 = 15.0;
 const Z_GAMEOVER: f32 = 20.0;
 
@@ -56,6 +57,10 @@ pub enum AppState {
     /// for couple of seconds to enjoy the scenery
     /// then we will transition to GameOver state
     JustDied,
+
+    /// similar as JustDied but instead of showing eagle
+    /// we show splash only before transitioning to GameOver state
+    JustDiedInWater,
 
     /// When this state is entered we display game over caption
     /// and upon pressing space game will exit
