@@ -55,6 +55,8 @@ pub fn delayed_despawn_recursive(
 pub fn delayed_spawn_train(
     mut commands: Commands,
     time: Res<Time>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
     mut query: Query<(Entity, &mut TrainTimer)>,
 ) {
     for (entity, mut se_timer) in query.iter_mut() {
@@ -62,6 +64,7 @@ pub fn delayed_spawn_train(
             commands
                 .entity(entity)
                 .insert(DelayedTrainReadyToBeDisplayedMarker);
+            audio.play(asset_server.load("sounds/train1.wav"));
         }
     }
 }
@@ -745,6 +748,7 @@ fn draw_line(start_x: f32, start_y: f32, width: f32, height: f32, commands: &mut
 pub fn game_setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
     mut bg_rows: ResMut<BackgroundRows>,
     mut texture_atlas_assets: ResMut<Assets<TextureAtlas>>,
 ) {
@@ -780,6 +784,8 @@ pub fn game_setup(
     let player_y = -1. * (SCREEN_HEIGHT / 2.) + 8. * SEGMENT_HEIGHT;
     PlayerBundle::new(player_x, player_y, &asset_server, &mut texture_atlas_assets)
         .spawn_player(&mut commands);
+
+    audio.play(asset_server.load("music/theme.ogg"));
 
     // used for sending debugging information by dedicated debugging systems
     DebugText::new(&asset_server).spawn_debug_text(&mut commands);
@@ -1185,6 +1191,7 @@ pub fn player_just_died_enter(
     >,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
     player_position: Res<PlayerPosition>,
 ) {
     if let Ok((mut sprite, mut direction, mut direction_idx)) = query.get_single_mut() {
@@ -1193,6 +1200,8 @@ pub fn player_just_died_enter(
 
         EagleBundle::new(player_position.player_x - 45., &asset_server)
             .spawn_eagle_with_delay(&mut commands, 3.0);
+
+        audio.play(asset_server.load("sounds/splat0.wav"));
     }
 }
 
@@ -1200,12 +1209,15 @@ pub fn delayed_spawn_eagle(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<(Entity, &mut EagleTimer)>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
 ) {
     for (entity, mut se_timer) in query.iter_mut() {
         if se_timer.timer.tick(time.delta()).just_finished() {
             commands
                 .entity(entity)
                 .insert(DelayedEagleReadyToBeDisplayedMarker);
+            audio.play(asset_server.load("sounds/eagle0.wav"));
         }
     }
 }
@@ -1239,6 +1251,7 @@ pub fn player_just_died_in_water_enter(
     mut commands: Commands,
     mut q_player: Query<&mut Visibility, With<Player>>,
     asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
     player_position: Res<PlayerPosition>,
     mut texture_atlas_assets: ResMut<Assets<TextureAtlas>>,
 ) {
@@ -1251,6 +1264,7 @@ pub fn player_just_died_in_water_enter(
             &mut texture_atlas_assets,
         )
         .spawn_splash(&mut commands);
+        audio.play(asset_server.load("sounds/splash0.wav"));
     }
 }
 
