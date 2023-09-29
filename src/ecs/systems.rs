@@ -64,7 +64,7 @@ pub fn delayed_spawn_train(
             commands
                 .entity(entity)
                 .insert(DelayedTrainReadyToBeDisplayedMarker);
-            audio.play(asset_server.load("sounds/train1.wav"));
+            audio.play(asset_server.load(&format!("sounds/train{:?}.wav", get_random_i8(0, 1))));
         }
     }
 }
@@ -75,6 +75,8 @@ pub fn delayed_spawn_train(
 pub fn delayed_spawn_car(
     mut commands: Commands,
     time: Res<Time>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
     mut query: Query<(Entity, &mut CarTimer)>,
 ) {
     for (entity, mut se_timer) in query.iter_mut() {
@@ -82,6 +84,8 @@ pub fn delayed_spawn_car(
             commands
                 .entity(entity)
                 .insert(DelayedCarReadyToBeDisplayedMarker);
+
+            audio.play(asset_server.load(&format!("sounds/honk{:?}.wav", get_random_i8(0, 3))));
         }
     }
 }
