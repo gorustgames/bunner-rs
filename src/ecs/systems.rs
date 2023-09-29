@@ -548,7 +548,7 @@ pub fn put_cars_on_roads(
             // generate 4 to 20 cars per each road row
             for _ in 1..=get_random_i8(4, 20) {
                 // randomize car delay
-                car_delay = car_delay + get_random_i8(3, 7) as f32;
+                car_delay = car_delay + get_random_i8(1, 7) as f32;
 
                 // each car can have at most same speed as previous car to prevent clashes!
                 let car_speed =
