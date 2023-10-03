@@ -45,7 +45,7 @@ fn main() {
                 .with_system(set_player_row)
                 .with_system(set_player_col)
                 .with_system(active_row)
-                .with_system(active_row_rail)
+                .with_system(active_row_rail_2)
                 .with_system(active_row_road)
                 .with_system(active_row_water)
                 .with_system(player_die_detection),

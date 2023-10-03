@@ -1039,6 +1039,63 @@ pub fn active_row_rail(
     }
 }
 
+/// active_row_rail_2 is improved version of active_row_rail
+/// that should detect collision with train even if bunner is standing on rail 1
+/// TODO: seems this system is working fine, decommission active_row_rail after some more testing
+pub fn active_row_rail_2(
+    q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
+    q_background_row: Query<(&Transform, &BackgroundRow, &mut Children)>,
+    q_child: Query<&GlobalTransform, (Without<BackgroundRow>, Without<Player>)>,
+    mut player_position: ResMut<PlayerPosition>,
+) {
+    // first determine which background row player is standing on
+    let mut player_x = -1.;
+    let mut player_y = -1.;
+    for transform in q_player.iter() {
+        player_x = transform.translation.x;
+        player_y = transform.translation.y;
+        break;
+    }
+    if player_y == -1. {
+        println!("unable to find player!!!");
+        return;
+    }
+
+    let mut standing_on_the_rail = false;
+    let mut hit_by_train = false;
+
+    'outer: for (transform, bg_row, children) in q_background_row.iter() {
+        let bgrow_y_from = transform.translation.y - 20.;
+        let bgrow_y_to = transform.translation.y + 2. * SEGMENT_HEIGHT - 20.;
+
+        if bg_row.is_rail_row {
+            if (bgrow_y_from..bgrow_y_to).contains(&player_y) {
+                standing_on_the_rail = true;
+                for &child in children.iter() {
+                    if let Ok(child_global_transform) = q_child.get(child) {
+                        let train_x = child_global_transform.translation.x;
+                        let train_x_plus_width = train_x + TRAIN_WIDTH;
+                        let x_from = train_x - 20.;
+                        let x_to = train_x_plus_width - 20.;
+
+                        if (x_from..x_to).contains(&player_x) {
+                            hit_by_train = true;
+                            break 'outer;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if standing_on_the_rail && !hit_by_train {
+        player_position.set_rail_ok();
+    } else if standing_on_the_rail && hit_by_train {
+        player_position.set_rail_ko();
+    } else {
+        // send nothing! player is not standing on the rail row!
+    }
+}
+
 /// determines index of row player is standing on
 pub fn set_player_row(
     q_player: Query<&Transform, (With<Player>, Without<BackgroundRow>)>,
