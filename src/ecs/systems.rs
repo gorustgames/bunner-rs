@@ -205,7 +205,7 @@ pub fn border_scrolling(
 pub fn player_scrolling(
     time: Res<Time>,
     mut q: Query<&mut Transform, With<Player>>,
-    player_position: ResMut<PlayerPosition>,
+    mut player_position: ResMut<PlayerPosition>,
     scrolling_enabled: Res<BackgroundScrollingEnabled>,
     mut state: ResMut<State<AppState>>,
 ) {
@@ -226,6 +226,16 @@ pub fn player_scrolling(
                     transform.translation.x += SCROLLING_SPEED_LOGS * time.delta_seconds();
                 } else {
                     transform.translation.x -= SCROLLING_SPEED_LOGS * time.delta_seconds();
+                }
+
+                // this can happen when player is floating on the log and will float off the screen
+                if transform.translation.x < SCREEN_WIDTH / -2. - SEGMENT_WIDTH {
+                    state.set(AppState::JustDiedInWater).unwrap();
+                }
+                if transform.translation.x > SCREEN_WIDTH / 2. {
+                    // adjust player x so that splash is visible!
+                    player_position.player_x = player_position.player_x - SEGMENT_WIDTH - 10.;
+                    state.set(AppState::JustDiedInWater).unwrap();
                 }
             }
             _ => {}
