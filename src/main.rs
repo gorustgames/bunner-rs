@@ -25,10 +25,11 @@ fn main() {
         .add_system_set(
             SystemSet::on_update(AppState::InGame)
                 .with_system(background_scrolling)
-                .with_system(border_adding)
-                .with_system(border_scrolling)
-                .with_system(debug_system) // for debugging only
-                .with_system(debug_text_update_system) // should be merged with debug_system
+                // uncomment vertical lines in game_setup should they be needed
+                // .with_system(border_adding) // for debugging only
+                //.with_system(border_scrolling) // for debugging only
+                //.with_system(debug_system) // for debugging only
+                //.with_system(debug_text_update_system) // for debugging only
                 .with_system(player_scrolling)
                 .with_system(player_movement)
                 .with_system(put_trains_on_rails)
@@ -71,7 +72,6 @@ fn main() {
                 .with_system(animate_splash)
                 .with_system(animate_splash_finish),
         )
-        // add_system_set(SystemSet::on_enter(AppState::InGame).with_system(game_over)
         .add_system_set(SystemSet::on_enter(AppState::GameOver).with_system(game_over_enter))
         .add_system_set(SystemSet::on_update(AppState::GameOver).with_system(game_over_update))
         .insert_resource(BackgroundRows::new())
