@@ -1,5 +1,7 @@
 # bunner-rs
 
+[![CI](https://github.com/gorustgames/bunner-rs/actions/workflows/ci.yaml/badge.svg)](https://github.com/gorustgames/bunner-rs/actions/workflows/ci.yaml)
+
 Simple game utilizing [bevy](https://bevyengine.org/) game engine and [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system) architecture.
 
 ## How to run examples
