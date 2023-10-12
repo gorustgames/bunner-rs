@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name:
+        uses: actions/checkout@v2
+
+      - name: Build code
+        run: cargo build --verbose
+
+      - name: Build examples
+        run: cargo build --examples --verbose
+
+      - name: Build tests
+        run: cargo build --tests --verbose
+
+  test:
+    runs-on: ubuntu-latest
+    needs: ["build"]
+    steps:
+      - name:
+        uses: actions/checkout@v2
+
+      - name: Run tests
+        run: cargo test
