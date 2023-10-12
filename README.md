@@ -37,3 +37,28 @@ StackOverflow:
 
 * [link1](https://stackoverflow.com/questions/29672373/what-is-difference-between-mut-a-t-and-a-mut-t)
 * [link2](https://stackoverflow.com/questions/28587698/whats-the-difference-between-placing-mut-before-a-variable-name-and-after-the)
+
+## Bevy coords
+
+Below are the coordinates for top level bevy entities within game.
+**IMPORTANT**: child entities coords are relative to parents and left bottom of parent entity has coords [0,0] 
+
+```
+y (total screen height=800)
+^
+|
+|
+|--------------------------- [240,400]
+|[-240,400]   |            |
+|             |            |
+|             |            |
+|             |            |
+|             | [0,0]      |
+|-------------|------------| [240,0]
+|             |            |
+|             |            |
+|             |            |
+|             |            |
+|[-240,-400]  |            | [240,-400]
+-------------------------------->x (totla screen widht=480)
+```
